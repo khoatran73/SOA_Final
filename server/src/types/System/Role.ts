@@ -1,4 +1,4 @@
-import { CoreEntity, Identifier } from './shared';
+import { CoreEntity, Identifier } from '../shared';
 
 export interface IRole extends CoreEntity {
     code: string;

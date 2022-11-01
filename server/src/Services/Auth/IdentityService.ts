@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import _ from 'lodash';
-import { ApiResponse, ResponseFail, ResponseOk } from '../common/ApiResponse';
-import Role from '../Models/Role';
-import { AuthUser, NewUser, LoginParams, AppUser } from '../types/Identity';
-import User from './../Models/User';
-import UserRole from './../Models/UserRole';
+import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
+import Role from '../../Models/Role';
+import User from '../../Models/User';
+import UserRole from '../../Models/UserRole';
+import { AppUser, AuthUser, LoginParams, NewUser } from '../../types/Auth/Identity';
 
 declare module 'express-session' {
     interface SessionData {
@@ -12,8 +12,17 @@ declare module 'express-session' {
     }
 }
 
-export const checkLogin = async (req: Request, res: Response) => {
-    const user = req.session.user;
+const checkLogin = async (req: Request, res: Response) => {
+    // const user = req.session.user;
+    const user = {
+        email: '',
+        fullName: 'Quản trị viên hệ thống',
+        id: 'a35002f3-c2bd-4949-a76f-9702e360feb7',
+        isSupper: true,
+        username: 'admin',
+        phoneNumber: '',
+        amount: 10127,
+    };
     if (user) {
         const isSupper = user.isSupper;
         const userRoles = await UserRole.find({ userId: user.id });
@@ -25,12 +34,12 @@ export const checkLogin = async (req: Request, res: Response) => {
             rights: rolesCode,
             user,
         };
-        return res.json(ResponseOk(result));
+        return res.json(ResponseOk<AuthUser>(result));
     }
     return res.json(ResponseFail());
 };
 
-export const addUser = async (req: Request<any, any, NewUser>, res: Response) => {
+const addUser = async (req: Request<any, any, NewUser>, res: Response) => {
     try {
         const isExistUser = Boolean(await User.findOne({ username: req.body.username }));
 
@@ -51,7 +60,7 @@ export const addUser = async (req: Request<any, any, NewUser>, res: Response) =>
     }
 };
 
-export const login = async (req: Request<any, any, LoginParams>, res: Response) => {
+const login = async (req: Request<any, any, LoginParams>, res: Response) => {
     const user = await User.findOne({ username: req.body.username });
 
     if (!user) {
@@ -77,15 +86,24 @@ export const login = async (req: Request<any, any, LoginParams>, res: Response) 
             isSupper: isSupper,
             username: user.username,
             phoneNumber: user.phoneNumber,
-            amount: user.amount
+            amount: user.amount,
         },
     };
     req.session.user = result.user;
 
-    return res.json(ResponseOk(result));
+    return res.json(ResponseOk<AuthUser>(result));
 };
 
-export const logout = (req: Request, res: Response) => {
+const logout = (req: Request, res: Response) => {
     if (req.session.user) delete req.session.user;
     return res.json(ResponseOk());
 };
+
+const IdentityService = {
+    checkLogin,
+    login,
+    addUser,
+    logout,
+};
+
+export default IdentityService;

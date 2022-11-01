@@ -1,5 +1,5 @@
 import { Model, model, Schema } from 'mongoose';
-import { IUserRole } from '../types/Role';
+import { IUserRole } from '../types/System/Role';
 
 interface IUserRoleMethod {}
 

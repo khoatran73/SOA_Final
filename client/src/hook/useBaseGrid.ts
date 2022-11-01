@@ -62,7 +62,7 @@ export function useBaseGrid<TData>({ pageSize = 25, ...props }: Props): BaseGrid
                 data: response.data?.result?.items,
             });
         }
-
+        props.gridRef?.current?.api.sizeColumnsToFit();
         props.gridRef?.current?.api.hideOverlay();
     };
 

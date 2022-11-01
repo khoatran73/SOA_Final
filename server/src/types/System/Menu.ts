@@ -1,4 +1,4 @@
-import { Identifier } from './shared';
+import { Identifier } from '../shared';
 
 export interface IMenu {
     id: Identifier;
@@ -8,11 +8,12 @@ export interface IMenu {
     parentId?: Identifier;
     background?: string;
     path: string;
-    level?: number;
+    level: number;
     permissions?: string;
     isDisplay?: boolean;
     displayIndex?: number | null;
     group?: string[];
+    index?: number;
 }
 
 export interface MenuLayout {

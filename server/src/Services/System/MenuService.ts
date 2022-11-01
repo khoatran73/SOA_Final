@@ -1,28 +1,40 @@
 import { Request, Response } from 'express';
 import _ from 'lodash';
-import { ResponseFail, ResponseOk } from '../common/ApiResponse';
-import { PaginatedListConstructor, PaginatedListQuery } from '../common/PaginatedList';
-import Menu from '../Models/Menu';
-import Role from '../Models/Role';
-import UserRole from '../Models/UserRole';
-import { IMenu, MenuLayout } from '../types/Menu';
+import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
+import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
+import Menu from '../../Models/Menu';
+import Role from '../../Models/Role';
+import UserRole from '../../Models/UserRole';
+import { IMenu, MenuLayout } from '../../types/System/Menu';
 
-export const getMenuIndex = async (req: Request<any, any, any, PaginatedListQuery>, res: Response) => {
+const getMenuIndex = async (req: Request<any, any, any, PaginatedListQuery>, res: Response) => {
     const menus = await Menu.find().exec();
 
-    const menuResults = menus.map(menu => {
-        const doc = _.get({ ...menu }, '_doc');
-        return { ...doc, group: buildTreeGroup(menu.path, menus) } as IMenu;
-    });
+    const menuResults = menus
+        .sort((a, b) => a.level - b.level)
+        .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+        .map(menu => {
+            const doc = _.get({ ...menu }, '_doc');
+            return { ...doc, group: buildTreeGroup(menu.path, menus) } as IMenu;
+        });
 
     const result = PaginatedListConstructor<IMenu>(menuResults, req.query.offset, req.query.limit);
 
-    return res.json(ResponseOk<IMenu[]>(result));
+    return res.json(ResponseOk<PaginatedList<IMenu>>(result));
 };
 
-export const getMenuLayout = async (req: Request, res: Response) => {
+const getMenuLayout = async (req: Request, res: Response) => {
     const menus = await Menu.find();
-    const user = req.session.user;
+    // const user = req.session.user;
+    const user = {
+        email: '',
+        fullName: 'Quản trị viên hệ thống',
+        id: 'a35002f3-c2bd-4949-a76f-9702e360feb7',
+        isSupper: true,
+        username: 'admin',
+        phoneNumber: '',
+        amount: 10127,
+    };
 
     const isSupper = user?.isSupper;
     const userRoles = await UserRole.find({ userId: user?.id });
@@ -32,6 +44,8 @@ export const getMenuLayout = async (req: Request, res: Response) => {
 
     const result = menus
         .filter(menu => !menu.permissions || rolesCode.includes(menu.permissions ?? ''))
+        .sort((a, b) => a.level - b.level)
+        .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
         .map(menu => {
             return {
                 key: menu.id,
@@ -52,7 +66,7 @@ export const getMenuLayout = async (req: Request, res: Response) => {
     return res.json(ResponseOk<MenuLayout[]>(result));
 };
 
-export const addMenu = async (req: Request<any, any, IMenu>, res: Response) => {
+const addMenu = async (req: Request<any, any, IMenu>, res: Response) => {
     try {
         const isExistMenu = Boolean(await Menu.findOne({ route: req.body.route }));
 
@@ -76,7 +90,7 @@ export const addMenu = async (req: Request<any, any, IMenu>, res: Response) => {
     }
 };
 
-export const updateMenu = async (req: Request<{ id: string }, any, IMenu>, res: Response) => {
+const updateMenu = async (req: Request<{ id: string }, any, IMenu>, res: Response) => {
     const id = req.params.id;
 
     const menu = await Menu.findOne({ id: id });
@@ -95,7 +109,7 @@ export const updateMenu = async (req: Request<{ id: string }, any, IMenu>, res: 
     return res.json(ResponseOk());
 };
 
-export const deleteMenu = async (req: Request<{ id: string }, any, IMenu>, res: Response) => {
+const deleteMenu = async (req: Request<{ id: string }, any, IMenu>, res: Response) => {
     const id = req.params.id;
     return Menu.deleteOne({ id: id })
         .then(() => res.json(ResponseOk()))
@@ -114,3 +128,13 @@ const buildTreeGroup = (path: string, menus: IMenu[]): string[] => {
 };
 
 // #endregion
+
+const MenuService = {
+    getMenuIndex,
+    getMenuLayout,
+    addMenu,
+    updateMenu,
+    deleteMenu,
+};
+
+export default MenuService;

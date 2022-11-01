@@ -9,6 +9,7 @@ import { Popconfirm } from 'antd';
 import _ from 'lodash';
 import React, { ReactChild } from 'react';
 import { ButtonBase } from '../Elements/Button/ButtonBase';
+import Loading from '../Elements/loading/Loading';
 import './styles/BaseGrid.scss';
 
 export interface BaseGridColDef extends ColDef, Partial<ColGroupDef> {}
@@ -57,8 +58,11 @@ const BaseGrid = React.forwardRef<BaseGridRef, BaseGridProps>((props, ref) => {
                       field: 'stt',
                       headerName: 'STT',
                       width: 60,
+                      maxWidth: 60,
                       cellStyle: {
-                          textAlign: 'center',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                       },
                       valueGetter: params => {
                           const rowIndex = _.get(params, 'node.rowIndex');
@@ -78,7 +82,9 @@ const BaseGrid = React.forwardRef<BaseGridRef, BaseGridProps>((props, ref) => {
             headerName: 'Hành động',
             width: props.actionRowsWidth ?? 100,
             cellStyle: {
-                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
             },
             cellRenderer: (params: any) => {
                 const data = _.get(params, 'data');
@@ -152,19 +158,12 @@ const BaseGrid = React.forwardRef<BaseGridRef, BaseGridProps>((props, ref) => {
                         columnDefs={customColDefs}
                         defaultColDef={{
                             resizable: true,
-                            suppressSizeToFit: true,
                             floatingFilter: false,
-                            suppressAutoSize: true,
                             ...props.defaultColDef,
                         }}
-                        suppressAutoSize
+                        loadingOverlayComponent={() => <Loading />}
                         pagination={pagination}
-                        // onGridReady={() => {
-                        //     // console.log(123);
-                        //     setTimeout(function () {
-                        //         gridRef.current?.api.sizeColumnsToFit();
-                        //     }, 200);
-                        // }}
+                        onGridReady={params => params.api.sizeColumnsToFit()}
                         treeData={props.treeData}
                         animateRows
                         getDataPath={props.getDataPath}

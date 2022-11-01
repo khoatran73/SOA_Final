@@ -6,8 +6,9 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useAppState } from '~/AppStore';
 import { logoutAsync } from '~/store/authSlice';
+import { useNavigate } from 'react-router-dom';
 
-type Action = 'userInfo' | 'userSetting' | 'logout' | 'legal';
+type Action = 'userPage' | 'logout'  ;
 
 interface Props {
     toggle: () => void;
@@ -17,9 +18,13 @@ const Header: React.FC<Props> = props => {
     const dispatch = useDispatch();
     const { toggle } = props;
     const { isAuthenticated, authUser } = useAppState(state => state.authData);
+    const navigate = useNavigate();
 
     const onActionClick = (action: Action) => {
         switch (action) {
+            case 'userPage':
+                navigate('/');
+                return;
             case 'logout':
                 dispatch(logoutAsync(() => null));
                 return;
@@ -28,6 +33,12 @@ const Header: React.FC<Props> = props => {
 
     const menu = (
         <Menu>
+            <Menu.Item key="userPage" onClick={() => onActionClick('userPage')}>
+                <div className="flex items-center justify-start">
+                    <FontAwesomeIcon icon={faSignOut} />
+                    <span className="ml-3">Trang người dùng</span>
+                </div>
+            </Menu.Item>
             <Menu.Item key="logout" onClick={() => onActionClick('logout')}>
                 <div className="flex items-center justify-start">
                     <FontAwesomeIcon icon={faSignOut} />

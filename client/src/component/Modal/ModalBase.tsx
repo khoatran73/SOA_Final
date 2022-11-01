@@ -1,6 +1,6 @@
 import { faCircleInfo, faCirclePlus, IconDefinition, faPlus, faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Modal } from 'antd';
+import { Modal, ModalProps } from 'antd';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import './ModalBase.scss';
 
@@ -25,7 +25,7 @@ interface IState {
     percentWidth: Percentage;
     icon: IconDefinition;
 }
-const ModalBase = forwardRef((props, ref) => {
+const ModalBase = forwardRef((props: ModalProps, ref) => {
     const [state, setState] = useState<IState>({
         visible: false,
         title: '',
@@ -88,7 +88,8 @@ const ModalBase = forwardRef((props, ref) => {
             closeIcon={<FontAwesomeIcon icon={faClose} />}
             onCancel={handleCancel}
             destroyOnClose
-            footer={null}
+            footer={props.footer ?? null}
+            open={props.open}
             width={(window.innerWidth * parseInt(state.percentWidth.replace('%', ''))) / 100}
         >
             {state.children}

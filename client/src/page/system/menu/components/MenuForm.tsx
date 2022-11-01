@@ -83,8 +83,9 @@ const MenuForm: React.FC<Props> = props => {
             },
         };
 
+
         let urlParam;
-        if (props.initialValues) {
+        if (props.initialValues?.id) {
             urlParam = urlParams.update;
         } else if (props.parentId) {
             urlParam = urlParams.createChild;
@@ -142,6 +143,11 @@ const MenuForm: React.FC<Props> = props => {
                         children: <Checkbox />,
                         initialValue: false,
                         valuePropName: 'checked',
+                    },
+                    {
+                        label: 'Thứ tự',
+                        name: nameof.full<Menu>(x => x.index),
+                        children: <Input type='number' placeholder="Nhập thứ tự..."  />,
                     },
                     {
                         label: 'Quyền xem',

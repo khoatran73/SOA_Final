@@ -16,6 +16,7 @@ export interface Menu {
     displayIndex?: number | null;
     children: Menu[] | null;
     group?: string[];
+    index?: number;
 }
 
 export interface MenuLayout {

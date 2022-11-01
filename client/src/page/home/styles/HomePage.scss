@@ -1,0 +1,30 @@
+$header-height: 100px;
+$footer-height: 26px;
+$main-height: calc(100vh - ($header-height + $footer-height));
+
+// color
+$header-bg-color: #ffba00;
+
+
+.home {
+    width: 100%;
+    &-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        width: 100%;
+        height: $header-height;
+        background-color: $header-bg-color;
+    }
+
+    &-main {
+        margin-top: $header-height;
+        min-height: $main-height;
+    }
+
+    &-footer {
+        height: $footer-height;
+    }
+}

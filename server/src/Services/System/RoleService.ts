@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import _ from 'lodash';
-import { ResponseFail, ResponseOk } from '../common/ApiResponse';
-import { PaginatedListConstructor, PaginatedListQuery } from '../common/PaginatedList';
-import Role from '../Models/Role';
-import User from '../Models/User';
-import UserRole from '../Models/UserRole';
-import { IRole, IUserRole, RoleGrid, UserRoleUpdateRequest } from '../types/Role';
-import { ComboOption } from '../types/shared';
+import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
+import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
+import Role from '../../Models/Role';
+import User from '../../Models/User';
+import UserRole from '../../Models/UserRole';
+import { IRole, IUserRole, RoleGrid, UserRoleUpdateRequest } from '../../types/System/Role';
+import { ComboOption, Identifier } from '../../types/shared';
 
-export const getRoleIndex = async (req: Request<any, any, any, PaginatedListQuery>, res: Response) => {
+const getRoleIndex = async (req: Request<any, any, any, PaginatedListQuery>, res: Response) => {
     const roles = await Role.find();
     const userRoles = await UserRole.find();
 
@@ -23,10 +23,10 @@ export const getRoleIndex = async (req: Request<any, any, any, PaginatedListQuer
     );
 
     const result = PaginatedListConstructor<RoleGrid>(roleGrids, req.query.offset, req.query.limit);
-    return res.json(ResponseOk<RoleGrid[]>(result));
+    return res.json(ResponseOk<PaginatedList<RoleGrid>>(result));
 };
 
-export const addRole = async (req: Request<any, any, IRole, any>, res: Response) => {
+const addRole = async (req: Request<any, any, IRole, any>, res: Response) => {
     try {
         const isExistRole = Boolean(await Role.findOne({ code: req.body.code }));
         if (isExistRole) {
@@ -42,7 +42,7 @@ export const addRole = async (req: Request<any, any, IRole, any>, res: Response)
     }
 };
 
-export const updateRole = async (req: Request<{ id: string }, any, IRole, any>, res: Response) => {
+const updateRole = async (req: Request<{ id: string }, any, IRole, any>, res: Response) => {
     const id = req.params.id;
 
     const role = await Role.findOne({ id: id });
@@ -61,14 +61,14 @@ export const updateRole = async (req: Request<{ id: string }, any, IRole, any>, 
     return res.json(ResponseOk());
 };
 
-export const deleteRole = async (req: Request<{ id: string }, any, IRole>, res: Response) => {
+const deleteRole = async (req: Request<{ id: string }, any, IRole>, res: Response) => {
     const id = req.params.id;
     return Role.deleteOne({ id: id })
         .then(() => res.json(ResponseOk()))
         .catch(err => res.json(ResponseFail(err?.message)));
 };
 
-export const getComboRole = async (req: Request, res: Response) => {
+const getComboRole = async (req: Request, res: Response) => {
     const roles = await Role.find();
 
     const result = roles.map(
@@ -79,10 +79,10 @@ export const getComboRole = async (req: Request, res: Response) => {
             } as ComboOption),
     );
 
-    return res.json(ResponseOk(result));
+    return res.json(ResponseOk<ComboOption<Identifier>[]>(result));
 };
 
-export const updateUserRole = async (req: Request<any, any, UserRoleUpdateRequest, any>, res: Response) => {
+const updateUserRole = async (req: Request<any, any, UserRoleUpdateRequest, any>, res: Response) => {
     const userRoles = await UserRole.find({ roleId: req.body.roleId });
     const { roleId, userIds } = req.body;
     const userRolesWillDelete: IUserRole[] = userRoles.filter(ur => !userIds.includes(ur.userId));
@@ -102,3 +102,14 @@ export const updateUserRole = async (req: Request<any, any, UserRoleUpdateReques
 
     return res.json(ResponseOk());
 };
+
+const RoleService = {
+    getRoleIndex,
+    addRole,
+    updateRole,
+    deleteRole,
+    getComboRole,
+    updateUserRole,
+};
+
+export default RoleService;

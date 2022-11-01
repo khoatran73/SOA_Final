@@ -1,6 +1,4 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import React, { useRef } from 'react';
-import { ButtonBase } from '~/component/Elements/Button/ButtonBase';
 import Loading from '~/component/Elements/loading/Loading';
 import BaseGrid, { BaseGridColDef, BaseGridRef } from '~/component/Grid/BaseGrid';
 import { GridToolbar } from '~/component/Grid/Components/GridToolbar';
@@ -13,9 +11,7 @@ import { ROLE_DELETE_API, ROLE_INDEX_API } from './api/api';
 import RoleAddUserForm from './components/RoleAddUserForm';
 import RoleForm from './components/RoleForm';
 
-interface Props {}
-
-const RoleListView: React.FC<Props> = props => {
+const RoleListView: React.FC = () => {
     const gridRef = useRef<BaseGridRef>(null);
     const modalRef = useRef<ModalRef>(null);
 
@@ -33,7 +29,7 @@ const RoleListView: React.FC<Props> = props => {
                 }}
                 onClose={modalRef.current?.onClose}
             />,
-            'Tạo mới Menu',
+            'Tạo mới vai trò',
             '50%',
         );
     };
@@ -48,7 +44,7 @@ const RoleListView: React.FC<Props> = props => {
                 }}
                 onClose={modalRef.current?.onClose}
             />,
-            'Cập nhật Menu',
+            'Cập nhật vai trò',
             '50%',
         );
     };
@@ -69,7 +65,7 @@ const RoleListView: React.FC<Props> = props => {
                 }}
                 onClose={modalRef.current?.onClose}
             />,
-            'Cập nhật Menu',
+            'Cập nhật vai trò',
             '50%',
         );
     };
@@ -78,13 +74,13 @@ const RoleListView: React.FC<Props> = props => {
         {
             headerName: 'Mã vai trò',
             field: nameof.full<RoleGrid>(x => x.code),
-            minWidth: 300,
+            minWidth: 200,
             flex: 1,
         },
         {
             headerName: 'Tên vai trò',
             field: nameof.full<RoleGrid>(x => x.name),
-            minWidth: 500,
+            minWidth: 300,
         },
     ];
 
@@ -105,6 +101,9 @@ const RoleListView: React.FC<Props> = props => {
                             onClickAddUserBtn: onAddUserRole,
                             onClickEditBtn: onUpdate,
                             onClickDeleteBtn: onDelete,
+                        }}
+                        defaultColDef={{
+                            autoHeight: true,
                         }}
                         actionRowsWidth={120}
                     >

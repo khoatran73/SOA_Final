@@ -83,7 +83,13 @@ const MenuListView: React.FC = () => {
         {
             headerName: 'Route',
             field: nameof.full<Menu>(x => x.route),
-            minWidth: 500,
+            minWidth: 400,
+        },
+        {
+            headerName: 'Thứ tự',
+            field: nameof.full<Menu>(x => x.index),
+            width: 100,
+            cellClass: 'text-center',
         },
         {
             headerName: 'Biểu tượng',
@@ -104,7 +110,7 @@ const MenuListView: React.FC = () => {
     const autoGroupColumnDef = useMemo<BaseGridColDef>(() => {
         return {
             headerName: 'Tên',
-            minWidth: 500,
+            minWidth: 400,
             cellRendererParams: {
                 suppressCount: true,
             },
@@ -135,7 +141,6 @@ const MenuListView: React.FC = () => {
                         actionRowsWidth={120}
                         autoGroupColumnDef={autoGroupColumnDef}
                         getDataPath={getDataPath}
-                        groupDefaultExpanded={-1}
                     >
                         <GridToolbar
                             hasCreateButton

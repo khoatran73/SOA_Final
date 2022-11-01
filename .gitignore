@@ -2,9 +2,11 @@ client/node_modules
 client/yarn.lock
 client/package-log.json
 client/yarn-error.log
-
+client/.vscode/*
 
 server/node_modules
 server/yarn.lock
 server/package-log.json
 server/yarn-error.log
+server/assets/*
+server/.vscode/*

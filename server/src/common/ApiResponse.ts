@@ -8,7 +8,7 @@ export interface ApiResponse<T = any> {
     result?: T;
 }
 
-export const ResponseOk = <T = any>(result?: any, message: string | undefined = undefined): ApiResponse<T> => {
+export const ResponseOk = <T = any>(result?: T, message: string | undefined = undefined): ApiResponse<T> => {
     return {
         result: result,
         message: message,

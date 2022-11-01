@@ -1,6 +1,7 @@
 import { Schema, Model, model } from 'mongoose';
-import crypto from 'crypto';
 import { Identifier } from '../types/shared';
+import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 
 export interface IUser {
     id?: Identifier;
@@ -22,7 +23,7 @@ interface IUserMethod {
 type UserModel = Model<IUser, {}, IUserMethod>;
 
 const schema = new Schema<IUser, UserModel, IUserMethod>({
-    id: { type: String, unique: true, required: true, default: crypto.randomUUID() },
+    id: { type: String, unique: true, required: true, default: uuidv4() },
     username: { type: String, unique: true, required: true },
     passwordHash: { type: String, required: true },
     salt: { type: String, required: true },
