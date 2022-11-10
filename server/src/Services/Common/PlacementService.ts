@@ -25,12 +25,34 @@ const getTreeProvince = (req: Request, res: Response) => {
     return res.json(ResponseOk<ProvinceTree>(getProvincesWithDetail()));
 };
 
+const getProvinceByCode = (code?: string) => {
+    if (!code) return {} as Province;
+    const provinces = getProvinces();
+    return provinces.find(x => x.code === code);
+};
+
+const getDistrictByCode = (provinceCode?: string, districtCode?: string) => {
+    if (!provinceCode || !districtCode) return {} as District;
+    const districts = getDistrictsByProvinceCode(provinceCode);
+    return districts.find(x => x.code === districtCode);
+};
+
+const getWardByCode = (districtCode?: string, wardCode?: string) => {
+    if (!wardCode || !districtCode) return {} as Ward;
+    const wards = getWardsByDistrictCode(districtCode);
+    return wards.find(x => x.code === wardCode);
+};
+
 const PlacementService = {
     getAllProvinces,
     getProvince,
     getDistricts,
     getWards,
-    getTreeProvince
+    getTreeProvince,
+    //
+    getProvinceByCode,
+    getDistrictByCode,
+    getWardByCode,
 };
 
 export default PlacementService;

@@ -11,7 +11,14 @@ export type AppUser = {
     email: string;
     phoneNumber?: string;
     amount?: number;
-}
+    //
+    province?: string;
+    provinceName?: string;
+    district?: string;
+    districtName?: string;
+    ward?: string;
+    wardName?: string;
+};
 
 export interface LoginParams {
     username: string;

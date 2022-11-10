@@ -1,8 +1,10 @@
 import { Form, FormInstance } from 'antd';
+import { FormItemInputProps } from 'antd/es/form/FormItemInput';
+import { FormItemLabelProps } from 'antd/es/form/FormItemLabel';
 import { NamePath } from 'antd/lib/form/interface';
 import clsx from 'clsx';
 import React, { useImperativeHandle, useRef } from 'react';
-import './styles/BaseForm.scss'
+import './styles/BaseForm.scss';
 
 export interface BaseFormProps {
     initialValues?: Record<string, any>;
@@ -16,12 +18,12 @@ export interface BaseFormProps {
     renderBtnBottom?: () => JSX.Element;
 }
 
-export interface BaseFormItem {
-    label?: React.ReactNode;
-    name: string;
+export type BaseFormItem = Partial<FormItemInputProps & FormItemLabelProps> & {
+    name?: string;
     rules?: Array<Record<string, any>>;
     initialValue?: any;
     valuePropName?: string;
+    style?: React.CSSProperties;
     children?: React.ReactNode;
 }
 
@@ -38,6 +40,7 @@ export interface BaseFormRef {
     setFields: (fields: FieldData[]) => void;
     setFieldValue: (name: NamePath, value: any) => void;
     setFieldsValue: (values: any) => void;
+    onSubmit: () => void;
 }
 
 const BaseForm = React.forwardRef<BaseFormRef, BaseFormProps>((props, ref) => {
@@ -56,6 +59,7 @@ const BaseForm = React.forwardRef<BaseFormRef, BaseFormProps>((props, ref) => {
         setFields: (fields: FieldData[]) => formRef.current?.setFields(fields),
         setFieldValue: (name: NamePath, value: any) => formRef.current?.setFieldValue(name, value),
         setFieldsValue: (values: any) => formRef.current?.setFieldsValue(values),
+        onSubmit: () => formRef.current?.submit()
     }));
 
     return (

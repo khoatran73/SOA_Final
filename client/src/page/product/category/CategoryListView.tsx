@@ -9,7 +9,7 @@ import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import { useBaseGrid } from '~/hook/useBaseGrid';
 import { baseDeleteApi } from '~/lib/axios';
 import { Category } from '~/types/product/Category';
-import { CATEGORY_INDEX_API, CATEGORY_UPDATE_API } from './api/api';
+import { CATEGORY_DELETE_API, CATEGORY_INDEX_API } from './api/api';
 import CategoryForm from './components/CategoryForm';
 
 const CategoryListView: React.FC = () => {
@@ -97,7 +97,7 @@ const CategoryListView: React.FC = () => {
     ];
 
     const onDelete = (data: Category) => {
-        baseDeleteApi(CATEGORY_UPDATE_API, data.id);
+        baseDeleteApi(CATEGORY_DELETE_API, data.id);
         gridController?.reloadData();
     };
 

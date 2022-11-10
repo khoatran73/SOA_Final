@@ -4,7 +4,7 @@ import { Input, Upload } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { Method } from 'axios';
 import _ from 'lodash';
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { ButtonBase } from '~/component/Elements/Button/ButtonBase';
 import BaseForm, { BaseFormRef } from '~/component/Form/BaseForm';
 import { AppModalContainer } from '~/component/Layout/AppModalContainer';
@@ -14,6 +14,7 @@ import NotificationConstant from '~/configs/contants';
 import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
 import { Category } from '~/types/product/Category';
+import FileUtil from '~/util/FileUtil';
 import NotifyUtil from '~/util/NotifyUtil';
 import { CATEGORY_CREATE_API, CATEGORY_UPDATE_API } from '../api/api';
 
@@ -22,14 +23,6 @@ interface Props {
     onClose?: () => void;
     onSubmitSuccessfully?: () => void;
 }
-
-const getBase64 = (file: RcFile): Promise<string> =>
-    new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = error => reject(error);
-    });
 
 type State = {
     // imageList: UploadFile[];
@@ -100,7 +93,7 @@ const CategoryForm: React.FC<Props> = props => {
 
     const handlePreview = async (file: UploadFile) => {
         if (!file.url && !file.preview) {
-            file.preview = await getBase64(file.originFileObj as RcFile);
+            file.preview = await FileUtil.getBase64(file.originFileObj as RcFile);
         }
 
         modalRef?.current?.onOpen(

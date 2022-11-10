@@ -2,8 +2,9 @@ import { Schema, Model, model } from 'mongoose';
 import { Identifier } from '../types/shared';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
+import { AppUser } from 'Auth/Identity';
 
-export interface IUser {
+export interface IUser extends Pick<AppUser, 'province' | 'district' | 'ward'> {
     id?: Identifier;
     username: string;
     passwordHash: string;
@@ -32,6 +33,10 @@ const schema = new Schema<IUser, UserModel, IUserMethod>({
     phoneNumber: { type: String, default: '' },
     isAdmin: { type: Boolean, default: false },
     amount: { type: Number, default: 0 },
+    // address
+    province: String,
+    district: String,
+    ward: String,
 });
 
 schema.methods.hasRoleAdminSystem = function () {

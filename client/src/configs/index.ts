@@ -13,3 +13,8 @@ export const COMBO_USER_WITH_KEY_API = APP_API_PATH + '/common/combo-user-with-k
 
 // upload file
 export const UPLOAD_FILE_API = APP_API_PATH + '/common/upload-file';
+
+// 
+export const PROVINCE_COMBO_API = APP_API_PATH + '/placement/provinces';
+export const DISTRICT_COMBO_API = APP_API_PATH + '/placement/districts';
+export const WARD_COMBO_API = APP_API_PATH + '/placement/wards';

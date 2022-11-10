@@ -1,5 +1,5 @@
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColDef, ColGroupDef, GetDataPath, ModuleRegistry } from '@ag-grid-community/core';
+import { ColDef, ColGroupDef, GetDataPath, ModuleRegistry, RowGroupingDisplayType } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import { RowGroupingModule } from '@ag-grid-enterprise/row-grouping';
 import { faEdit, faFile, faPlus, faTrash, faUserPlus } from '@fortawesome/free-solid-svg-icons';
@@ -40,6 +40,7 @@ export interface BaseGridProps {
     getDataPath?: GetDataPath;
     groupDefaultExpanded?: number;
     autoGroupColumnDef?: ColDef<any>;
+    groupDisplayType?: RowGroupingDisplayType;
     pagination?: boolean;
     children?: ReactChild; // grid tool bar
 }
@@ -169,6 +170,7 @@ const BaseGrid = React.forwardRef<BaseGridRef, BaseGridProps>((props, ref) => {
                         getDataPath={props.getDataPath}
                         groupDefaultExpanded={props.groupDefaultExpanded}
                         detailCellRenderer
+                        groupDisplayType={props.groupDisplayType}
                         {...props.gridConfig}
                     />
                 )}

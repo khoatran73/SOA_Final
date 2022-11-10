@@ -9,5 +9,6 @@ router.post('/create', CategoryService.addCategory);
 router.put('/update/:id', CategoryService.updateCategory);
 router.delete('/delete/:id', CategoryService.deleteCategory);
 router.get('/combo', CategoryService.comboCategory);
+router.get('/category-with-slug', CategoryService.getCategoriesWithSlug);
 
 export default router;

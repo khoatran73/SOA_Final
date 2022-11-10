@@ -22,6 +22,9 @@ const checkLogin = async (req: Request, res: Response) => {
         username: 'admin',
         phoneNumber: '',
         amount: 10127,
+        district: '559',
+        province: '54',
+        ward: '22159',
     };
     if (user) {
         const isSupper = user.isSupper;
@@ -87,6 +90,9 @@ const login = async (req: Request<any, any, LoginParams>, res: Response) => {
             username: user.username,
             phoneNumber: user.phoneNumber,
             amount: user.amount,
+            province: user.province,
+            district: user.district,
+            ward: user.ward,
         },
     };
     req.session.user = result.user;

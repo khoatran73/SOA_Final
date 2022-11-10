@@ -8,28 +8,55 @@ const LoginView = React.lazy(() => import('~/component/Layout/LoginView'));
 const NotFound = React.lazy(() => import('~/component/Layout/NotFound'));
 // #endregion
 
-
 // #region home page
-const HomePage = React.lazy(() => import('~/page/home/HomePage'));
+const HomeMain = React.lazy(() => import('~/page/home/components/HomeMain'));
+const HomePageLayout = React.lazy(() => import('~/page/home/HomePageLayout'));
+const NewsView = React.lazy(() => import('~/page/home/components/news/NewsView'));
+const NewsDetail = React.lazy(() => import('~/page/home/components/news/NewsDetail'));
+const CategorySearch = React.lazy(() => import('~/page/home/components/category/CategorySearch'));
 
 // #endregion
 
 // #region admin page
 // product
 const CategoryListView = React.lazy(() => import('~/page/product/category/CategoryListView'));
+const ProductTypeListView = React.lazy(() => import('~/page/product/product-type/ProductTypeListView'));
 const ProductListView = React.lazy(() => import('~/page/product/product/ProductListView'));
-
 
 //system
 const MenuListView = React.lazy(() => import('~/page/system/menu/MenuListView'));
 const RoleListView = React.lazy(() => import('~/page/system/role/RoleListView'));
 const UserListView = React.lazy(() => import('~/page/system/user/UserListView'));
-// #endregion
+// #endregionimport ProductTypeListView from './../page/product/product-type/ProductTypeListView';
+
 
 const routeList = [
     {
         path: '/',
-        element: <HomePage />,
+        element: <HomePageLayout />,
+        children: [
+            {
+                path: '/',
+                element: <HomeMain />,
+            },
+            {
+                path: 'news',
+                children: [
+                    {
+                        path: 'create',
+                        element: <NewsView />,
+                    },
+                    {
+                        path: 'detail/:id',
+                        element: <NewsDetail />,
+                    },
+                ],
+            },
+            {
+                path: 'category/:slug',
+                element: <CategorySearch />,
+            },
+        ],
     },
     {
         path: '/admin',
@@ -49,7 +76,7 @@ const routeList = [
                     {
                         path: 'role',
                         element: (
-                           <PrivateRoute>
+                            <PrivateRoute>
                                 <RoleListView />
                             </PrivateRoute>
                         ),
@@ -76,9 +103,17 @@ const routeList = [
                         ),
                     },
                     {
+                        path: 'type',
+                        element: (
+                            <PrivateRoute>
+                                <ProductTypeListView />
+                            </PrivateRoute>
+                        ),
+                    },
+                    {
                         path: 'product',
                         element: (
-                           <PrivateRoute>
+                            <PrivateRoute>
                                 <ProductListView />
                             </PrivateRoute>
                         ),

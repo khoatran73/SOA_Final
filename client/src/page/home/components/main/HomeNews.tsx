@@ -1,22 +1,36 @@
 import React from 'react';
 import NewsInfo from './NewsInfo';
+import { NewsResponse } from '~/types/home/news';
+import { NEWS_NEWEST_API } from '../../api/api';
+import { requestApi } from '~/lib/axios';
+import { useQuery } from 'react-query';
+import ErrorView from '~/component/Layout/ErrorView';
+import Loading from '~/component/Elements/loading/Loading';
 
-interface Props {}
+const getNewsNewest = () => {
+    return requestApi<NewsResponse[]>('get', NEWS_NEWEST_API);
+};
 
-const HomeNews: React.FC<Props> = props => {
+const HomeNews: React.FC = () => {
+    const { data: requestNews, isLoading, isError } = useQuery(['GET_NEWS_NEWEST'], getNewsNewest);
+    const listNews = requestNews?.data?.result;
+
+    if (isError) return <ErrorView />;
+    if (isLoading) return <Loading />;
     return (
         <>
             <div className="uppercase font-bold mb-1">Tin đăng mới</div>
             <div className="flex flex-wrap">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-                    <div className="flex flex-col items-center justify-center w-[20%]" key={num}>
-                        <NewsInfo />
-                    </div>
-                ))}
+                {listNews?.map(news => {
+                    if (!news) return null;
+                    return (
+                        <div className="flex flex-col items-center justify-center w-[20%]" key={news?.id}>
+                            <NewsInfo news={news} />
+                        </div>
+                    );
+                })}
             </div>
-            <div className="w-full h-[32px] flex items-center justify-center bg-gray-200">
-                Xem thêm
-            </div>
+            <div className="w-full h-[32px] flex items-center justify-center bg-gray-200">Xem thêm</div>
         </>
     );
 };

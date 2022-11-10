@@ -14,6 +14,13 @@ export interface AppUser {
     orgId?: string;
     userCode?: string;
     amount?: number;
+    //
+    province?: string;
+    provinceName?: string;
+    district?: string;
+    districtName?: string;
+    ward?: string;
+    wardName?: string;
 }
 
 export interface LoginParam {

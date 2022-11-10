@@ -3,7 +3,7 @@ import slugify from 'slugify';
 import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
 import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
 import Category from '../../Models/Category';
-import { ICategory } from '../../types/Product/Category';
+import { CategoryWithSlug, ICategory } from '../../types/Product/Category';
 import { Identifier } from '../../types/shared';
 import { slugifyOpts } from '../../utils/slugify';
 import { ComboOption } from './../../types/shared/ComboOption';
@@ -40,8 +40,6 @@ const updateCategory = async (req: Request<{ id: string }, any, ICategory, any>,
         return res.json(ResponseFail('Không tìm thấy Role!'));
     }
 
-    console.log(slugify(req.body.name, slugifyOpts));
-    
     await Category.updateOne(
         { id: id },
         {
@@ -66,12 +64,19 @@ const comboCategory = async (req: Request, res: Response) => {
     return res.json(ResponseOk<ComboOption<Identifier>[]>(result))
 }
 
+const getCategoriesWithSlug = async (req: Request, res: Response) => {
+    const categories = await Category.find();
+    const result = categories.map(category => ({ id: category.id, name: category.name, slug: category.slug, imageUrl: category.imageUrl } as CategoryWithSlug))
+    return res.json(ResponseOk<CategoryWithSlug[]>(result))
+}
+
 const CategoryService = {
     getCategoryIndex,
     addCategory,
     updateCategory,
     deleteCategory,
-    comboCategory
+    comboCategory,
+    getCategoriesWithSlug
 };
 
 export default CategoryService;

@@ -1,5 +1,6 @@
 import { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip } from 'antd';
+import { ButtonHTMLType } from 'antd/lib/button/button';
 import clsx from 'clsx';
 import * as React from 'react';
 import { BaseIcon } from '~/component/Icon/BaseIcon';

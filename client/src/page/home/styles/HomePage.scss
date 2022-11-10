@@ -5,7 +5,6 @@ $main-height: calc(100vh - ($header-height + $footer-height));
 // color
 $header-bg-color: #ffba00;
 
-
 .home {
     width: 100%;
     &-header {
@@ -22,9 +21,56 @@ $header-bg-color: #ffba00;
     &-main {
         margin-top: $header-height;
         min-height: $main-height;
+        background-color: #f4f4f4;
+
+        .news-detail {
+            &-left {
+                // TODO: hide scroll
+                &::-webkit-scrollbar {
+                    width: 0px; //dọc
+                    height: 0px; //ngang
+                }
+            }
+        }
     }
 
     &-footer {
         height: $footer-height;
+    }
+}
+
+.ant-carousel {
+    .slick-arrow {
+        z-index: 9999;
+        color: red;
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+        background-color: white;
+        padding: 6px;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background-color: white;
+            color: red;
+        }
+    }
+
+    .slick-prev {
+        left: -12px;
+
+        &:before {
+            display: none;
+        }
+    }
+
+    .slick-next {
+        right: -12px;
+        &:before {
+            display: none;
+        }
     }
 }

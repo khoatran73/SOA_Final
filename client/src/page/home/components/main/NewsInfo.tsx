@@ -1,26 +1,36 @@
 import { faEllipsisVertical } from '@fortawesome/free-solid-svg-icons';
 import { Avatar, Dropdown, Image, Menu } from 'antd';
 import clsx from 'clsx';
+import moment from 'moment';
 import React from 'react';
+import { Link } from 'react-router-dom';
+import emptyImage from '~/assets/layout/empty.jpg';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
+import { NewsResponse } from '~/types/home/news';
 
-interface Props {}
+interface Props {
+    news: NewsResponse;
+}
 
 const NewsInfo: React.FC<Props> = props => {
+    const { news } = props;
     return (
-        <div className="w-full hover:shadow-xl h-[320px] flex flex-col p-3 border-t border-solid border-gray-200 relative">
+        <Link
+            to={`/news/detail/${news.id}`}
+            className="w-full hover:shadow-linear-sm h-[320px] flex flex-col p-3 relative"
+        >
             <div className="w-full rounded overflow-hidden flex items-center justify-center">
                 <Image
                     width={200}
                     height={200}
                     className="object-cover"
                     preview={false}
-                    src="https://cdn.chotot.com/V_YzePtcQjqB5_typWKQqpnLMqYI3OUK45wrqwkiZqs/preset:listing/plain/3c931c5fd0299b6a78f8465021822132-2796562283343220181.jpg"
+                    src={news?.imageUrls[0]}
+                    fallback={emptyImage}
                 />
             </div>
             <div className="line-clamp-2 h-[40px] mt-0.5" style={{ width: 'calc(100% - 16px)' }}>
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Nobis laborum vero, laudantium ea optio soluta
-                ex quos esse tempore dolorum, assumenda quia placeat cum voluptatum voluptate off
+                {news.title}
             </div>
             <Dropdown
                 className={clsx(
@@ -49,15 +59,15 @@ const NewsInfo: React.FC<Props> = props => {
             >
                 <BaseIcon icon={faEllipsisVertical} />
             </Dropdown>
-            <div className="text-red-500 text-base font-bold mt-1">25.000.000 đ</div>
+            <div className="text-red-500 text-base font-bold mt-1">{news.price?.toLocaleString()} VND</div>
             <div className="text-gray-500 text-xs line-clamp-1">
                 <Avatar size={20}>.</Avatar>
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
-                40s truoc
+                {moment(news.createdAt).fromNow()}
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
-                thành phố hồ chí minh hihi
+                {news.provinceName}
             </div>
-        </div>
+        </Link>
     );
 };
 
