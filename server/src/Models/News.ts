@@ -1,6 +1,6 @@
 import { INews } from 'Home/News';
 import { Model, model, Schema } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
+import { DefaultModelId } from '../configs';
 
 interface NewsMethod {}
 
@@ -8,7 +8,7 @@ type NewsModel = Model<INews, {}, NewsMethod>;
 
 const schema = new Schema<INews, NewsModel, NewsMethod>(
     {
-        id: { type: String, unique: true, required: true, default: uuidv4() },
+        id: { type: String, unique: true, required: true, default: DefaultModelId },
         userId: { type: String, required: true },
         categoryId: { type: String, required: true },
         title: { type: String, required: true },

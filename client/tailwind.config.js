@@ -6,7 +6,13 @@ module.exports = {
     darkMode: 'media', // or 'media' or 'class'
     theme: {
         extend: {
-            colors: {},
+            colors: {
+                'red-2': '#d0021b',
+                'green-2': '#589f39',
+                'green-5': 'rgb(241, 248, 238)',
+                'green-4': 'rgb(228, 241, 222)',
+                'gray-0': 'rgb(119, 119, 119)'
+            },
             boxShadow: {
                 'linear-xs': '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
                 'linear-sm': '0 1px 4px 0 rgba(0, 0, 0, 0.3)',
@@ -14,6 +20,9 @@ module.exports = {
             },
             backgroundColor: {
                 'gray-main': '#f4f4f4',
+                'gray-2': '#cacaca',
+                'green-5': 'rgb(241, 248, 238)',
+                'green-4': 'rgb(228, 241, 222)'
             },
         },
     },

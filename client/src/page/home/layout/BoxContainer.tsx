@@ -8,7 +8,7 @@ interface Props {
 
 const BoxContainer: React.FC<Props> = props => {
     return (
-        <div className={clsx('p-3 bg-white rounded-sm', props.className)}>
+        <div className={clsx('p-3 bg-white rounded-sm relative', props.className)}>
             {props.children}
         </div>
     );

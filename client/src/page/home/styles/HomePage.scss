@@ -1,5 +1,5 @@
 $header-height: 100px;
-$footer-height: 26px;
+$footer-height: 300px; //26px;
 $main-height: calc(100vh - ($header-height + $footer-height));
 
 // color
@@ -16,12 +16,38 @@ $header-bg-color: #ffba00;
         width: 100%;
         height: $header-height;
         background-color: $header-bg-color;
+
+        &-search {
+            .ant-input {
+                border-radius: 3px;
+                outline: none;
+                border: 1px solid transparent;
+            }
+
+            .ant-input-search-button {
+                border: none;
+                outline: none;
+                background-color: white;
+                border-radius: 3px;
+                color: #fe9a02;
+                font-size: 18px;
+                .anticon {
+                    position: relative;
+                    top: -1px;
+                }
+            }
+
+            .ant-input-group-addon {
+                background-color: white;
+                border: none;
+                outline: none;
+            }
+        }
     }
 
     &-main {
         margin-top: $header-height;
         min-height: $main-height;
-        background-color: #f4f4f4;
 
         .news-detail {
             &-left {

@@ -1,5 +1,5 @@
 import { CaretDownFilled, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons';
-import { faSignOut } from '@fortawesome/free-solid-svg-icons';
+import { faSignOut, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Avatar, Dropdown, Menu } from 'antd';
 import React from 'react';
@@ -35,7 +35,7 @@ const Header: React.FC<Props> = props => {
         <Menu>
             <Menu.Item key="userPage" onClick={() => onActionClick('userPage')}>
                 <div className="flex items-center justify-start">
-                    <FontAwesomeIcon icon={faSignOut} />
+                    <FontAwesomeIcon icon={faUser} />
                     <span className="ml-3">Trang người dùng</span>
                 </div>
             </Menu.Item>

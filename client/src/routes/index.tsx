@@ -12,12 +12,17 @@ const NotFound = React.lazy(() => import('~/component/Layout/NotFound'));
 const HomeMain = React.lazy(() => import('~/page/home/components/HomeMain'));
 const HomePageLayout = React.lazy(() => import('~/page/home/HomePageLayout'));
 const NewsView = React.lazy(() => import('~/page/home/components/news/NewsView'));
+const NewsPush = React.lazy(() => import('~/page/home/components/news/NewsPush'));
+const NewsDashBoard = React.lazy(() => import('~/page/home/components/news/NewsDashBoard'));
 const NewsDetail = React.lazy(() => import('~/page/home/components/news/NewsDetail'));
 const CategorySearch = React.lazy(() => import('~/page/home/components/category/CategorySearch'));
 
 // #endregion
 
 // #region admin page
+// admin home
+const AdminHomeListView = React.lazy(() => import('~/page/admin/AdminHomeListView'));
+
 // product
 const CategoryListView = React.lazy(() => import('~/page/product/category/CategoryListView'));
 const ProductTypeListView = React.lazy(() => import('~/page/product/product-type/ProductTypeListView'));
@@ -28,7 +33,6 @@ const MenuListView = React.lazy(() => import('~/page/system/menu/MenuListView'))
 const RoleListView = React.lazy(() => import('~/page/system/role/RoleListView'));
 const UserListView = React.lazy(() => import('~/page/system/user/UserListView'));
 // #endregionimport ProductTypeListView from './../page/product/product-type/ProductTypeListView';
-
 
 const routeList = [
     {
@@ -50,10 +54,18 @@ const routeList = [
                         path: 'detail/:id',
                         element: <NewsDetail />,
                     },
+                    {
+                        path: 'day-tin/:id',
+                        element: <NewsPush />
+                    },
+                    {path: 'dashboard',
+                        element: <NewsDashBoard />
+
+                    }
                 ],
             },
             {
-                path: 'category/:slug',
+                path: 'category',
                 element: <CategorySearch />,
             },
         ],
@@ -62,6 +74,10 @@ const routeList = [
         path: '/admin',
         element: <LayoutPage />,
         children: [
+            {
+                path: 'home',
+                element: <AdminHomeListView />,
+            },
             {
                 path: 'system',
                 children: [

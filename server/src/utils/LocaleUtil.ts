@@ -1,5 +1,5 @@
 export default class LocaleUtil {
-    static ignoreSensitive = (input: string) => {
+    static ignoreSensitive = (input: string = "") => {
         input = input.toLowerCase();
         input = input.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
         input = input.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');

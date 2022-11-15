@@ -10,7 +10,7 @@ const variants = {
     inverse: 'bg-slate-600 text-blue-600 hover:bg-white hover:text-slate hover:border-slate-500',
     danger: 'bg-red-600 text-white hover:bg-white hover:text-red-600 hover:border-red-500',
     info: 'bg-gray-400 text-white hover:bg-white hover:text-gray-600 hover:border-gray-500',
-    warning: 'bg-amber-500 text-white hover:bg-white hover:bg-red-500:text-red-600',
+    warning: 'bg-amber-500 text-white hover:bg-white hover:text-amber-600  hover:border-amber-500',
     success: 'bg-green-500 text-white hover:bg-white hover:text-green-600 hover:border-green-500',
 };
 
@@ -49,6 +49,7 @@ export const ButtonBase = React.forwardRef<HTMLButtonElement, ButtonProps>(
                     className,
                 )}
                 {...props}
+                title={undefined}
             >
                 {startIcon && <BaseIcon icon={startIcon} />}
                 {props.title && <span className="uppercase mx-1">{props.title}</span>}

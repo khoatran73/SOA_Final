@@ -1,6 +1,6 @@
 import { UploadOutlined } from '@ant-design/icons';
 import { faClose, faImage, faSave } from '@fortawesome/free-solid-svg-icons';
-import { Input, Upload } from 'antd';
+import { Input, Select, Upload } from 'antd';
 import { RcFile, UploadFile, UploadProps } from 'antd/lib/upload';
 import { Method } from 'axios';
 import _ from 'lodash';
@@ -13,7 +13,7 @@ import { UPLOAD_FILE_API } from '~/configs';
 import NotificationConstant from '~/configs/contants';
 import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
-import { Category } from '~/types/product/Category';
+import { Category, SellType, SellTypeOptions } from '~/types/product/Category';
 import FileUtil from '~/util/FileUtil';
 import NotifyUtil from '~/util/NotifyUtil';
 import { CATEGORY_CREATE_API, CATEGORY_UPDATE_API } from '../api/api';
@@ -143,6 +143,18 @@ const CategoryForm: React.FC<Props> = props => {
                         rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
                     },
                     {
+                        label: 'Kiểu bán',
+                        name: nameof.full<Category>(x => x.type),
+                        children: (
+                            <Select
+                                placeholder="Chọn kiểu bán ..."
+                                defaultValue={SellType.SellOnline}
+                                options={SellTypeOptions}
+                            />
+                        ),
+                        rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
+                    },
+                    {
                         label: 'Hình ảnh',
                         name: nameof.full<Category>(x => x.imageUrl),
                         children: (
@@ -160,7 +172,7 @@ const CategoryForm: React.FC<Props> = props => {
                                     method="post"
                                 >
                                     {/* {state.imageList.length >= 8 ? null : uploadButton} */}
-                                    {state.imageUrl ? <img src={state.imageUrl} /> : uploadButton} 
+                                    {state.imageUrl ? <img src={state.imageUrl} /> : uploadButton}
                                 </Upload>
                                 <ModalBase
                                     ref={modalRef}

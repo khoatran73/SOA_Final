@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Loading from '~/component/Elements/loading/Loading';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
 import ErrorView from '~/component/Layout/ErrorView';
@@ -16,6 +16,7 @@ import BoxContainer from '../../layout/BoxContainer';
 import CarouselLayout from '../../layout/CarouselLayout';
 import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
 import NewsInfo from '../main/NewsInfo';
+import emptyImage from '~/assets/layout/empty.jpg';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -71,7 +72,7 @@ const NewsDetail: React.FC = () => {
                 listNewsRelation: resNewRelation.data.result ?? [],
             });
         })();
-    }, [news?.categoryId, news?.id, news?.userId]);
+    }, [id, news?.categoryId, news?.id, news?.userId]);
 
     if (isError) return <ErrorView />;
     if (isLoading) return <Loading />;
@@ -87,8 +88,8 @@ const NewsDetail: React.FC = () => {
                                     link: '/',
                                 },
                                 {
-                                    title: 'Tin tức',
-                                    link: '/news', //TODO: check lai
+                                    title: 'Tìm kiếm',
+                                    link: '/category',
                                 },
                                 {
                                     title: news?.title ?? '',
@@ -98,12 +99,27 @@ const NewsDetail: React.FC = () => {
                     </div>
                     <div className="flex items-start">
                         <div className="w-2/3 overflow-y-auto max-h-screen news-detail-left">
-                            <div className="relative">
-                                <Image
-                                    preview={false}
-                                    src="https://cdn.chotot.com/CHdkkXiRPgNmkEiGEpQs-Jl4gaLzf8na4cbWqodEeVk/preset:view/plain/efd14ea47bd5471f7dcb275d78b86ad2-2797532131770972098.jpg"
-                                />
-                                <div className="absolute w-full h-8 bg-gray-200 flex items-center justify-end -bottom-[5px] pr-1">
+                            <div className="relative flex items-center justify-center bg-gray-200">
+                                <CarouselLayout
+                                    slidesToShow={1}
+                                    slidesToScroll={1}
+                                    wrapperClassName="w-[500px] h-[500px]"
+                                >
+                                    {news?.imageUrls.map(url => {
+                                        return (
+                                            <Image
+                                                width={500}
+                                                height={500}
+                                                className="object-contain bg-red-100"
+                                                key={url}
+                                                preview={false}
+                                                src={url}
+                                                fallback={emptyImage}
+                                            />
+                                        );
+                                    })}
+                                </CarouselLayout>
+                                <div className="absolute w-full h-7 bg-black opacity-70 text-white flex items-center justify-end bottom-0 pr-1">
                                     {moment(news?.createdAt).locale('vi').fromNow()}
                                 </div>
                             </div>
@@ -112,7 +128,11 @@ const NewsDetail: React.FC = () => {
                                 <div className="text-base font-bold text-red-500 mb-2">
                                     {news?.price.toLocaleString()} VND
                                 </div>
-                                <div>{news?.description}</div>
+                                <div>
+                                    {news?.description.split('\n').map((x, index) => {
+                                        return <div key={index}>{x}</div>;
+                                    })}
+                                </div>
                                 <div className="mt-2">
                                     Số điện thoại: <strong>{news?.phoneNumber}</strong>
                                 </div>
@@ -159,25 +179,27 @@ const NewsDetail: React.FC = () => {
                     </div>
                 </div>
             </BoxContainer>
-            <BoxContainer className="mt-5">
-                <div className="w-full flex items-center justify-between">
-                    <b className="text-base">
-                        Tin rao khác của <span className="uppercase">{news?.fullName}</span>
-                    </b>
-                    <div>Xem tat ca</div>
-                </div>
-                <CarouselLayout slidesToShow={5} slidesToScroll={1}>
-                    {state.listNewsOther.map(news => (
-                        <div className="flex flex-col items-center justify-center w-[20%] m-1" key={news.id}>
-                            <NewsInfo news={news}/>
-                        </div>
-                    ))}
-                </CarouselLayout>
-            </BoxContainer>
+            {state.listNewsOther.length > 0 && (
+                <BoxContainer className="mt-5">
+                    <div className="w-full flex items-center justify-between">
+                        <b className="text-base">
+                            Tin rao khác của <span className="uppercase">{news?.fullName}</span>
+                        </b>
+                        <div>Xem tat ca</div>
+                    </div>
+                    <CarouselLayout slidesToShow={5} slidesToScroll={1}>
+                        {state.listNewsOther.map(news => (
+                            <div className="flex flex-col items-center justify-center w-[20%] m-1" key={news.id}>
+                                <NewsInfo news={news} />
+                            </div>
+                        ))}
+                    </CarouselLayout>
+                </BoxContainer>
+            )}
             <BoxContainer className="mt-5">
                 <div className="w-full flex items-center justify-between">
                     <b className="text-base">Tin đăng tương tự</b>
-                    <div>Xem tat ca</div>
+                    <Link to={`/category?categorySlug=${news?.slug}`}>Xem thêm</Link>
                 </div>
                 <CarouselLayout slidesToShow={5} slidesToScroll={1}>
                     {state.listNewsRelation.map(news => (

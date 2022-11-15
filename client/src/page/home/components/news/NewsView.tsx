@@ -1,11 +1,12 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { faClose, faImage, faSave, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faImage, faSave } from '@fortawesome/free-solid-svg-icons';
 import { Input, Select, Upload, UploadFile } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import { RcFile, UploadProps } from 'antd/lib/upload';
 import _ from 'lodash';
 import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { RootState } from '~/AppStore';
 import { ButtonBase } from '~/component/Elements/Button/ButtonBase';
 import Loading from '~/component/Elements/loading/Loading';
@@ -50,6 +51,8 @@ const NewsView: React.FC = () => {
     const formRef = useRef<BaseFormRef>(null);
     const modalRef = useRef<ModalRef>(null);
     const { authUser } = useSelector((state: RootState) => state.authData);
+    const numberImageCanUpload = 5;
+    const navigate = useNavigate();
     const [state, setState] = useMergeState<State>({
         imageList: [],
         imageUrls: [],
@@ -78,12 +81,9 @@ const NewsView: React.FC = () => {
 
         if (response.data?.success) {
             NotifyUtil.success(NotificationConstant.TITLE, NotificationConstant.DESCRIPTION_CREATE_SUCCESS);
+            navigate('/news/dashboard')
             return;
         }
-    };
-
-    const onBeforeSave = () => {
-        console.log('onBeforeSave');
     };
 
     useEffect(() => {
@@ -117,9 +117,7 @@ const NewsView: React.FC = () => {
                     });
                 if (resWard.data?.success)
                     setState({
-                        wards: resWard.data?.result?.map(
-                            x => ({ value: x.code, label: x.name } as ComboOption),
-                        ),
+                        wards: resWard.data?.result?.map(x => ({ value: x.code, label: x.name } as ComboOption)),
                     });
             })
             .catch(err => console.log(err))
@@ -217,7 +215,7 @@ const NewsView: React.FC = () => {
                             onRemove={onRemove}
                             method="post"
                         >
-                            {state.imageList.length >= 8 ? null : uploadButton}
+                            {state.imageList.length >= numberImageCanUpload ? null : uploadButton}
                         </Upload>
                     </div>
                     <BaseForm
@@ -337,12 +335,6 @@ const NewsView: React.FC = () => {
                         renderBtnBottom={() => {
                             return (
                                 <div className="flex items-center justify-center w-full">
-                                    <ButtonBase
-                                        title="Xem trước"
-                                        size="md"
-                                        startIcon={faSearch}
-                                        onClick={onBeforeSave}
-                                    />
                                     <ButtonBase title="Đăng tin" startIcon={faSave} onClick={onSave} size="md" />
                                 </div>
                             );

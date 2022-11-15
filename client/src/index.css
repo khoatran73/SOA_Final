@@ -6,7 +6,7 @@
 
 body {
     margin: 0;
-    font-family: lato, helvetica, arial, verdana, sans-serif, 'FontAwesome';
+    font-family: helvetica, arial, verdana, sans-serif, 'FontAwesome';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -15,6 +15,6 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.ant-btn-primary { 
+.ant-btn-primary {
     background: #1890ff;
 }

@@ -1,9 +1,8 @@
 import { Model, model, Schema } from 'mongoose';
-import slugify from 'slugify';
-import { slugifyOpts } from '../utils/slugify';
-import { v4 as uuidv4 } from 'uuid';
 import { IProductType } from 'Product/ProductType';
-
+import slugify from 'slugify';
+import { DefaultModelId } from '../configs';
+import { slugifyOpts } from '../utils/slugify';
 interface IProductTypeMethod {
     setSlug: (name: string) => void;
 }
@@ -11,7 +10,7 @@ interface IProductTypeMethod {
 type ProductTypeModel = Model<IProductType, {}, IProductTypeMethod>;
 
 const schema = new Schema<IProductType, ProductTypeModel, IProductTypeMethod>({
-    id: { type: String, unique: true, required: true, default: uuidv4() },
+    id: { type: String, unique: true, required: true, default: DefaultModelId },
     name: { type: String, required: true },
     categoryId: { type: String, required: true },
     slug: { type: String },

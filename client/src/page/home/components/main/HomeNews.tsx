@@ -19,8 +19,8 @@ const HomeNews: React.FC = () => {
     if (isLoading) return <Loading />;
     return (
         <>
-            <div className="uppercase font-bold mb-1">Tin đăng mới</div>
-            <div className="flex flex-wrap">
+            <div className="uppercase font-bold mb-1 px-3">Tin đăng mới</div>
+            <div className="flex flex-wrap px-3 pb-3">
                 {listNews?.map(news => {
                     if (!news) return null;
                     return (
@@ -30,7 +30,7 @@ const HomeNews: React.FC = () => {
                     );
                 })}
             </div>
-            <div className="w-full h-[32px] flex items-center justify-center bg-gray-200">Xem thêm</div>
+            <div className="w-full h-10 flex items-center justify-center bg-[#f4f4f4] text-[#38699f] text-base font-bold cursor-pointer">Xem thêm</div>
         </>
     );
 };

@@ -1,8 +1,8 @@
-import { Schema, Model, model } from 'mongoose';
-import { Identifier } from '../types/shared';
-import { v4 as uuidv4 } from 'uuid';
-import crypto from 'crypto';
 import { AppUser } from 'Auth/Identity';
+import crypto from 'crypto';
+import { Model, model, Schema } from 'mongoose';
+import { DefaultModelId } from '../configs';
+import { Identifier } from '../types/shared';
 
 export interface IUser extends Pick<AppUser, 'province' | 'district' | 'ward'> {
     id?: Identifier;
@@ -24,7 +24,7 @@ interface IUserMethod {
 type UserModel = Model<IUser, {}, IUserMethod>;
 
 const schema = new Schema<IUser, UserModel, IUserMethod>({
-    id: { type: String, unique: true, required: true, default: uuidv4() },
+    id: { type: String, unique: true, required: true, default: DefaultModelId },
     username: { type: String, unique: true, required: true },
     passwordHash: { type: String, required: true },
     salt: { type: String, required: true },

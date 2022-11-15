@@ -1,8 +1,8 @@
 import { Model, model, Schema } from 'mongoose';
-import { ICategory } from '../types/Product/Category';
 import slugify from 'slugify';
+import { DefaultModelId } from '../configs';
+import { ICategory } from '../types/Product/Category';
 import { slugifyOpts } from '../utils/slugify';
-import { v4 as uuidv4 } from 'uuid';
 
 interface ICategoryMethod {
     setSlug: (name: string) => void;
@@ -11,7 +11,7 @@ interface ICategoryMethod {
 type CategoryModel = Model<ICategory, {}, ICategoryMethod>;
 
 const schema = new Schema<ICategory, CategoryModel, ICategoryMethod>({
-    id: { type: String, unique: true, required: true, default: uuidv4() },
+    id: { type: String, unique: true, required: true, default: DefaultModelId },
     code: { type: String, unique: true, required: true },
     name: { type: String, required: true },
     type: { type: String, required: true },

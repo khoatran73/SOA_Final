@@ -12,13 +12,25 @@ import PlacementService from './../Common/PlacementService';
 
 type NewsRequest = INews & Pick<AppUser, 'province' | 'district' | 'ward'>;
 
-type NewsResponse = INews & Partial<AppUser>;
+type NewsResponse = INews &
+    Partial<AppUser> & {
+        slug: string;
+    };
 
 type NewsResponseWithAddress = INews & {
     address: string;
 };
 
-type NewsSearch = Pick<INews, 'id' | 'title'> & { categoryName: string };
+type NewsSearch = NewsResponse & { categoryName: string };
+
+type FilterRequest = PaginatedListQuery & {
+    minPrice: number;
+    maxPrice: number;
+    orderBy: 'new' | 'price';
+    provinceCode: string;
+    categorySlug: string;
+    searchKey: string;
+};
 
 const addNews = async (req: Request<any, any, NewsRequest>, res: Response) => {
     //req.session user//
@@ -54,6 +66,7 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
     const id = req.params.id;
     const news = await News.findOne({ id: id });
     const user = await User.findOne({ id: news?.userId });
+    const category = await Category.findOne({ id: news?.categoryId });
     const doc = _.get({ ...news }, '_doc');
     const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
     const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
@@ -65,6 +78,7 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
         provinceName,
         districtName,
         wardName,
+        slug: category?.slug,
     };
 
     return res.json(ResponseOk<NewsResponse>(response));
@@ -148,25 +162,52 @@ const showNewsNewest = async (req: Request, res: Response) => {
     return res.json(ResponseOk<NewsResponse[]>(newsResponse));
 };
 
-const searchNews = async (req: Request<any, any, any, { searchKey: string }>, res: Response) => {
-    const searchKey = req.query.searchKey;
-    const allNews = await News.find({}).sort({ createdAt: -1 });
-    const listNews = allNews.filter(news => {
-        const titleIgnoreSensitive = LocaleUtil.ignoreSensitive(news.title);
-        return titleIgnoreSensitive.includes(searchKey);
-    });
-    const categoryIds = [...new Set(listNews.map(x => x.categoryId))];
-    const categories = await Category.find({ id: { $in: categoryIds } });
+const TenMillions = 10000000;
 
-    const newsSearches = listNews.map(news => {
+const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Response) => {
+    const { searchKey, categorySlug, maxPrice, minPrice, orderBy, provinceCode } = req.query;
+    const searchKeyIgnoreSensitive = LocaleUtil.ignoreSensitive(searchKey);
+    const allNews = await News.find({}).sort({ createdAt: -1 });
+    const categories = await Category.find();
+    const users = await User.find();
+    //
+    const category = categories.find(x => x.slug === categorySlug);
+
+    const listNews = allNews.filter(news => {
+        // search Key
+        const titleIgnoreSensitive = LocaleUtil.ignoreSensitive(news.title);
+        let predicate = titleIgnoreSensitive.includes(searchKeyIgnoreSensitive);
+        // category
+        if (category) predicate = predicate && news.categoryId === category.id;
+        // min, max
+        if (minPrice) predicate = predicate && news.price >= minPrice;
+        if (maxPrice && maxPrice < TenMillions) predicate = predicate && news.price <= maxPrice;
+        //province
+        const user = users.find(x => x.id === news.userId);
+        if (user && provinceCode && provinceCode !== 'all') predicate = predicate && user.province === provinceCode;
+
+        return predicate;
+    });
+
+    let sorted = listNews;
+    if (orderBy === 'new') sorted = _.orderBy(listNews, ['createdAt'], ['desc']);
+    else if (orderBy === 'price') sorted = _.orderBy(listNews, ['price'], ['desc']);
+
+    const newsSearches = sorted.map(news => {
+        const doc = _.get({ ...news }, '_doc');
+        const user = users.find(x => x.id === news.userId);
+        const province = PlacementService.getProvinceByCode(user?.province);
+
         return {
-            id: news.id,
-            title: news.title,
+            ...doc,
             categoryName: categories.find(x => x.id === news.categoryId)?.name,
+            provinceName: province?.name,
         } as NewsSearch;
     });
 
-    return res.json(ResponseOk<NewsSearch[]>(newsSearches));
+    const result = PaginatedListConstructor<NewsSearch>(newsSearches, req.query.offset, req.query.limit);
+
+    return res.json(ResponseOk<PaginatedList<NewsSearch>>(result));
 };
 
 const NewsService = {

@@ -6,6 +6,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import emptyImage from '~/assets/layout/empty.jpg';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
+import { VND_CHAR } from '~/configs';
 import { NewsResponse } from '~/types/home/news';
 
 interface Props {
@@ -17,7 +18,7 @@ const NewsInfo: React.FC<Props> = props => {
     return (
         <Link
             to={`/news/detail/${news.id}`}
-            className="w-full hover:shadow-linear-sm h-[320px] flex flex-col p-3 relative"
+            className="w-full hover:shadow-linear-sm h-[320px] flex flex-col p-3 relative border border-[#f4f4f4]"
         >
             <div className="w-full rounded overflow-hidden flex items-center justify-center">
                 <Image
@@ -29,39 +30,16 @@ const NewsInfo: React.FC<Props> = props => {
                     fallback={emptyImage}
                 />
             </div>
-            <div className="line-clamp-2 h-[40px] mt-0.5" style={{ width: 'calc(100% - 16px)' }}>
-                {news.title}
+            <div className="mb-2">
+                <div className="line-clamp-2 h-[40px] mt-0.5 text-[#222]" style={{ width: 'calc(100% - 16px)' }}>
+                    {news.title}
+                </div>
+                <div className="text-[#d0021b] text-base font-bold mt-1">
+                    {news.price?.toLocaleString()} {VND_CHAR}
+                </div>
             </div>
-            <Dropdown
-                className={clsx(
-                    'absolute bottom-[80px] right-[12px] w-[20px] h-[20px] p-0.5 rounded-full',
-                    ' hover:shadow cursor-pointer flex items-center justify-center',
-                )}
-                overlay={
-                    <Menu
-                        items={[
-                            {
-                                key: '1',
-                                label: '1st menu item',
-                            },
-                            {
-                                key: '2',
-                                label: '2nd menu item',
-                            },
-                            {
-                                key: '3',
-                                label: '3rd menu item',
-                            },
-                        ]}
-                    />
-                }
-                trigger={['click']}
-            >
-                <BaseIcon icon={faEllipsisVertical} />
-            </Dropdown>
-            <div className="text-red-500 text-base font-bold mt-1">{news.price?.toLocaleString()} VND</div>
-            <div className="text-gray-500 text-xs line-clamp-1">
-                <Avatar size={20}>.</Avatar>
+            <div className="text-[#9b9b9b] text-xs line-clamp-1 text-[10px]">
+                <Avatar size={20}>a</Avatar>
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
                 {moment(news.createdAt).fromNow()}
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
