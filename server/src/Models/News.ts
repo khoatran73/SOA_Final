@@ -1,4 +1,4 @@
-import { INews } from 'Home/News';
+import { INews, NewsStatus } from '../types/Home/News';
 import { Model, model, Schema } from 'mongoose';
 import { DefaultModelId } from '../configs';
 
@@ -15,6 +15,9 @@ const schema = new Schema<INews, NewsModel, NewsMethod>(
         price: { type: Number, required: true, min: 0 },
         description: { type: String, required: true, maxlength: 1500 },
         imageUrls: { type: [String] },
+        status: { type: String, default: NewsStatus.OnSell },
+        bumpImage: Object,
+        bumpPriority: Object,
     },
     { timestamps: true },
 );

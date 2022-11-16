@@ -37,7 +37,7 @@ const updateCategory = async (req: Request<{ id: string }, any, ICategory, any>,
     const category = await Category.findOne({ id: id });
 
     if (!category) {
-        return res.json(ResponseFail('Không tìm thấy Role!'));
+        return res.json(ResponseFail('Không tìm thấy danh mục!'));
     }
 
     await Category.updateOne(

@@ -1,5 +1,5 @@
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
-import { Input, Pagination, Radio, Select, Space } from 'antd';
+import { Empty, Pagination, Radio, Select, Space } from 'antd';
 import Slider from 'antd/lib/slider';
 import clsx from 'clsx';
 import React, { useEffect, useRef, useState } from 'react';
@@ -9,13 +9,15 @@ import Loading from '~/component/Elements/loading/Loading';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
 import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import { VND_CHAR } from '~/configs';
+import { EMPTY_DESCRIPTION } from '~/configs/contants';
 import { useCategorySlug } from '~/hook/useCategory';
 import { useMergeState } from '~/hook/useMergeState';
 import { useProvince } from '~/hook/useProvince';
-import { PaginatedList, requestApi } from '~/lib/axios';
+import { PaginatedList, PaginatedListQuery, requestApi } from '~/lib/axios';
 import { NewsSearch } from '~/types/home/news';
 import { ComboOption } from '~/types/shared';
 import LocaleUtil from '~/util/LocaleUtil';
+import PaginationUtil from '~/util/PaginationUtil';
 import { NEWS_SEARCH_API } from '../../api/api';
 import BoxContainer from '../../layout/BoxContainer';
 import NewsResultSearchInfo from '../news/NewsResultSearchInfo';
@@ -61,7 +63,7 @@ const CategoryFilter = (props: CategoryFilterProps) => {
     );
 };
 
-type FilterRequest = {
+type FilterRequest = Partial<PaginatedListQuery> & {
     minPrice: number;
     maxPrice: number;
     orderBy: 'new' | 'price' | string;
@@ -75,9 +77,8 @@ type FilterProps = {
     onClose: () => void;
 };
 
-const Filter = (props: FilterProps) => {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const filterState: FilterRequest = {
+const getFilterRequest = (searchParams: URLSearchParams) => {
+    return {
         minPrice: Number(searchParams.get('minPrice')),
         maxPrice: Number(searchParams.get('maxPrice') ?? TenMillions),
         orderBy: searchParams.get('orderBy') ?? 'new',
@@ -85,6 +86,11 @@ const Filter = (props: FilterProps) => {
         categorySlug: searchParams.get('categorySlug') ?? 'all',
         searchKey: searchParams.get('searchKey') ?? '',
     };
+};
+
+const Filter = (props: FilterProps) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const filterState: FilterRequest = getFilterRequest(searchParams);
     const defaultFilterState: FilterRequest = {
         minPrice: 0,
         maxPrice: TenMillions,
@@ -100,13 +106,13 @@ const Filter = (props: FilterProps) => {
     const categories = resCategory?.data?.result;
 
     const handleApply = () => {
-        setSearchParams(state as Record<string, any>);
+        setSearchParams({ ...state, page: searchParams.get('page') ?? 1 } as Record<string, any>);
         props.onClose();
     };
 
     const handleResetFilter = () => {
         setState(defaultFilterState);
-        setSearchParams(defaultFilterState as Record<string, any>);
+        setSearchParams({ ...defaultFilterState, page: 1 } as Record<string, any>);
         props.onClose();
     };
 
@@ -127,30 +133,21 @@ const Filter = (props: FilterProps) => {
                     onChange={val => setState({ categorySlug: val })}
                 />
             </div>
-            {/* <div className="mt-4">
-                <div className="font-bold mb-1">Lọc theo từ khóa</div>
-                <Input
-                    className="w-full"
-                    placeholder="Nhập từ khóa ..."
-                    value={state.searchKey}
-                    onChange={e => setState({ searchKey: e.target.value })}
-                />
-            </div> */}
             <div className="mt-4">
                 <div>
                     Giá từ{' '}
                     <b>
-                        {state.minPrice.toLocaleString()} {VND_CHAR}
+                        {LocaleUtil.toLocaleString(state.minPrice)} {VND_CHAR}
                     </b>{' '}
                     đến{' '}
                     <b>
                         {state.maxPrice === TenMillions ? (
                             <>
-                                {state.maxPrice.toLocaleString()}
+                                {LocaleUtil.toLocaleString(state.maxPrice)}
                                 {'+'}
                             </>
                         ) : (
-                            state.maxPrice.toLocaleString()
+                            LocaleUtil.toLocaleString(state.maxPrice)
                         )}{' '}
                         {VND_CHAR}
                     </b>
@@ -210,21 +207,24 @@ const Filter = (props: FilterProps) => {
     );
 };
 
+const DefaultItemsPerPage = 10;
+
 const CategorySearch: React.FC = () => {
     const modalRef = useRef<ModalRef>(null);
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [newsResult, setNewsResult] = useState<PaginatedList<NewsSearch>>();
     const [loading, setLoading] = useState<boolean>(true);
 
     const onFilter = async () => {
         setLoading(true);
+        const page = Number(searchParams.get('page') ?? 1);
+        const offset = PaginationUtil.countOffset(page, DefaultItemsPerPage);
+        const limit = PaginationUtil.countLimit(page, DefaultItemsPerPage);
+
         const request: FilterRequest = {
-            minPrice: Number(searchParams.get('minPrice')),
-            maxPrice: Number(searchParams.get('maxPrice') ?? TenMillions),
-            orderBy: searchParams.get('orderBy') ?? 'new',
-            provinceCode: searchParams.get('provinceCode') ?? 'all',
-            categorySlug: searchParams.get('categorySlug') ?? '',
-            searchKey: searchParams.get('searchKey') ?? '',
+            ...getFilterRequest(searchParams),
+            offset,
+            limit,
         };
 
         const response = await requestApi<PaginatedList<NewsSearch>>('get', NEWS_SEARCH_API, {}, { params: request });
@@ -242,22 +242,19 @@ const CategorySearch: React.FC = () => {
         <BoxContainer className="p-0 bg-transparent">
             <div className="flex">
                 <div className="flex flex-col w-[65%]" style={{ minHeight: 500 }}>
+                    <HomeBreadCrumb
+                        item={[{ title: 'Trang chủ', link: '/' }, { title: 'Tìm kiếm' }]}
+                        className="my-1 py-1"
+                    />
+                    <Card className="my-1 py-1">
+                        <CategoryFilter modalRef={modalRef} />
+                    </Card>
                     {loading ? (
                         <Loading />
                     ) : (
                         <>
-                            <HomeBreadCrumb
-                                item={[
-                                    { title: 'Trang chủ', link: '/' },
-                                    { title: 'Tìm kiếm' },
-                                ]}
-                                className="my-1 py-1"
-                            />
-                            <Card className="my-1 py-1">
-                                <CategoryFilter modalRef={modalRef} />
-                            </Card>
                             <Card className="p-0">
-                                {newsResult?.items.map(news => (
+                                {newsResult?.items.length === 0 ? <Empty description={EMPTY_DESCRIPTION} /> : newsResult?.items.map(news => (
                                     <div className="flex flex-col" key={news.id}>
                                         <NewsResultSearchInfo news={news} />
                                     </div>
@@ -267,12 +264,19 @@ const CategorySearch: React.FC = () => {
                                 <Pagination
                                     defaultCurrent={Number(newsResult?.currentPage) + 1}
                                     total={newsResult?.totalCount}
+                                    defaultPageSize={DefaultItemsPerPage}
+                                    onChange={page =>
+                                        setSearchParams({ ...getFilterRequest(searchParams), page: page } as Record<
+                                            string,
+                                            any
+                                        >)
+                                    }
                                 />
                             </Card>
                         </>
                     )}
                 </div>
-                <div className="w-[35%] bg-gray-main" />
+                <div className="w-[35%] bg-transparent" />
             </div>
 
             <ModalBase ref={modalRef} />

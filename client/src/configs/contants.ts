@@ -4,6 +4,7 @@ export const EDIT_BUTTON_TOOLTIP = 'Sửa';
 export const DELETE_BUTTON_TOOLTIP = 'Xóa';
 export const VIEW_BUTTON_TOOLTIP = 'Xem';
 export const DETAIL_BUTTON_TOOLTIP = 'Chi tiết';
+export const EMPTY_DESCRIPTION = 'Không có dữ liệu';
 
 //notify
 export default class NotificationConstant {

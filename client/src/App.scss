@@ -11,3 +11,14 @@
         }
     }
 }
+
+.ant-image-mask {
+    background-color: transparent;
+    cursor: zoom-in;
+    .ant-image-mask-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: transparent;
+    }
+}

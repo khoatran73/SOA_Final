@@ -1,10 +1,13 @@
-import { Image } from 'antd';
+import { Avatar, Image } from 'antd';
 import React from 'react';
 import { NewsSearch } from '~/types/home/news';
 import { VND_CHAR } from '~/configs';
 import moment from 'moment';
 import emptyImage from '~/assets/layout/empty.jpg';
 import { Link } from 'react-router-dom';
+import LocaleUtil from '~/util/LocaleUtil';
+import cameraImage from '~/assets/news/camera.svg';
+import clsx from 'clsx';
 
 interface Props {
     news: NewsSearch;
@@ -13,27 +16,44 @@ interface Props {
 const NewsResultSearchInfo: React.FC<Props> = props => {
     const { news } = props;
     return (
-        <Link to={`/news/detail/${news.id}`} className="p-3 cursor-pointer hover:shadow-linear-md flex h-[160px] bg-white" style={{ marginBottom: 1 }}>
-            <div className="w-[140px] h-[140px] overflow-hidden">
+        <Link
+            to={`/news/detail/${news.id}`}
+            className="p-3 cursor-pointer hover:shadow-linear-md flex h-[160px] bg-white mb-1"
+        >
+            <div className="w-[140px] h-[140px] overflow-hidden relative">
                 <Image
                     className="rounded object-cover"
                     src={news.imageUrls.length === 0 ? emptyImage : news.imageUrls[0]}
+                    height={128}
+                    width={128}
                     fallback={emptyImage}
                     preview={false}
                 />
+                <div
+                    className={clsx(
+                        'absolute w-6 h-5 flex items-center justify-center text-white ',
+                        'font-bold text-[10px] top-1 left-1',
+                    )}
+                    style={{ backgroundImage: `url(${cameraImage})` }}
+                >
+                    {news?.imageUrls.length}
+                </div>
             </div>
             <div className="ml-2 h-full flex flex-col justify-between">
                 <div>
-                    <div className="text-base">{news.title}</div>
-                    <div className="text-base font-bold text-red-500">
-                        {news.price.toLocaleString()}
-                        {' '}
-                        {VND_CHAR}
+                    <div className="text-[15px] text-[#222] line-clamp-1">{news.title}</div>
+                    <div className="text-[15px] font-bold text-[#c90927]">
+                        {LocaleUtil.toLocaleString(news.price)} {VND_CHAR}
                     </div>
+                    <div className="text-orange-500 font-bold text-md">Danh mục: {news.categoryName}</div>
                 </div>
-                <div className="flex items-center">
-                    <div className="mr-2">{news.categoryName}</div>
-                    <div className="mr-2">{moment(news.createdAt).fromNow()}</div>
+                <div className="flex items-center text-xs text-[#9b9b9b]">
+                    <div className="flex items-center ">
+                        <Avatar size={18}>a</Avatar> <span className="ml-1">{news.fullName}</span>
+                    </div>
+                    <span className="mx-1.5">·</span>
+                    <div className="">{moment(news.createdAt).fromNow()}</div>
+                    <span className="mx-1.5">·</span>
                     <div>{news.provinceName}</div>
                 </div>
             </div>

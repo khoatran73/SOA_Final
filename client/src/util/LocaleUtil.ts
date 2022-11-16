@@ -20,4 +20,6 @@ export default class LocaleUtil {
     static includesWithoutLocate = (source: string, target: string): boolean => {
         return this.ignoreSensitive(source).includes(this.ignoreSensitive(target));
     };
+
+    static toLocaleString = (number: number) => number.toLocaleString();
 }

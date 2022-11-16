@@ -1,20 +1,24 @@
-import { AppUser } from 'Auth/Identity';
+import { AppUser } from '../../types/Auth/Identity';
 import { Request, Response } from 'express';
-import { INews } from 'Home/News';
+import { INews, NewsBump } from '../../types/Home/News';
 import _ from 'lodash';
 import LocaleUtil from '../../utils/LocaleUtil';
-import { ResponseOk } from '../../common/ApiResponse';
+import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
 import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
 import News from '../../Models/News';
 import User from '../../Models/User';
 import Category from './../../Models/Category';
 import PlacementService from './../Common/PlacementService';
+import moment from 'moment';
+import DateTimeUtil from '../..//utils/DateTimeUtil';
+import { userInfo } from 'os';
 
 type NewsRequest = INews & Pick<AppUser, 'province' | 'district' | 'ward'>;
 
 type NewsResponse = INews &
     Partial<AppUser> & {
         slug: string;
+        page?: number;
     };
 
 type NewsResponseWithAddress = INews & {
@@ -144,8 +148,9 @@ const showNewsRelations = async (
     return res.json(ResponseOk<NewsResponse[]>(newsResponse));
 };
 
-const showNewsNewest = async (req: Request, res: Response) => {
-    const listNews = (await News.find().sort({ createdAt: -1 })).filter((x, index) => index < 8);
+const showNewsNewest = async (req: Request<any, any, any, { limit: number }>, res: Response) => {
+    const limit = req.query.limit;
+    const listNews = await News.find().sort({ createdAt: -1 });
     const userIds = [...new Set(listNews.map(x => x.userId))];
     const users = await User.find({ id: { $in: userIds } });
 
@@ -159,7 +164,9 @@ const showNewsNewest = async (req: Request, res: Response) => {
         return { ...doc, provinceName, districtName, wardName } as NewsResponse;
     });
 
-    return res.json(ResponseOk<NewsResponse[]>(newsResponse));
+    const result = PaginatedListConstructor<NewsResponse>(newsResponse, 0, limit); //
+
+    return res.json(ResponseOk<PaginatedList<NewsResponse>>(result));
 };
 
 const TenMillions = 10000000;
@@ -180,7 +187,7 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
         // category
         if (category) predicate = predicate && news.categoryId === category.id;
         // min, max
-        if (minPrice) predicate = predicate &&  news.price && news.price >= minPrice;
+        if (minPrice) predicate = predicate && news.price && news.price >= minPrice;
         if (maxPrice && maxPrice < TenMillions) predicate = predicate && news.price && news.price <= maxPrice;
         //province
         const user = users.find(x => x.id === news.userId);
@@ -193,13 +200,19 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
     if (orderBy === 'new') sorted = _.orderBy(listNews, ['createdAt'], ['desc']);
     else if (orderBy === 'price') sorted = _.orderBy(listNews, ['price'], ['desc']);
 
+    const priorities = sorted.filter(x => DateTimeUtil.checkExpirationDate(x.bumpPriority?.toDate));
+    const notPriorities = sorted.filter(x => !DateTimeUtil.checkExpirationDate(x.bumpPriority?.toDate));
+    sorted = priorities.concat(notPriorities);
+
     const newsSearches = sorted.map(news => {
         const doc = _.get({ ...news }, '_doc') ?? {};
         const user = users.find(x => x.id === news.userId);
+        const userDoc = _.get({ ...user }, '_doc') ?? {};
         const province = PlacementService.getProvinceByCode(user?.province);
 
         return {
             ...doc,
+            ...userDoc,
             categoryName: categories.find(x => x.id === news.categoryId)?.name,
             provinceName: province?.name,
         } as NewsSearch;
@@ -210,6 +223,101 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
     return res.json(ResponseOk<PaginatedList<NewsSearch>>(result));
 };
 
+const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>, res: Response) => {
+    const userId = req.query.userId;
+    const listNews = await News.find({ userId: userId });
+    const allNews = await News.find();
+    const user = await User.findOne({ id: userId });
+
+    const newsResponse = listNews.map(x => {
+        const doc = _.get({ ...x }, '_doc');
+        const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
+        const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
+        const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
+        const page = calculatePage(allNews, x);
+
+        return { ...doc, provinceName, districtName, wardName, page } as NewsResponse;
+    });
+
+    return res.json(ResponseOk<NewsResponse[]>(newsResponse));
+};
+
+const updateNewsBump = async (
+    req: Request<{ id: string }, any, { bumpImage: number | undefined; bumpPriority: number | undefined }, any>,
+    res: Response,
+) => {
+    const id = req.params.id;
+    const { bumpImage, bumpPriority } = req.body;
+
+    const news = await News.findOne({ id: id });
+    if (!news) {
+        return res.json(ResponseFail('Không tìm thấy tin!'));
+    }
+
+    let newBumpPriority: NewsBump | undefined = undefined;
+    let newBumpImage: NewsBump | undefined = undefined;
+    // truong hop bumpPriority
+    if (bumpPriority) {
+        const toDateLeft = news.bumpPriority?.toDate; // ngày kết thúc
+        newBumpPriority = calculateNewBump(toDateLeft, bumpPriority);
+    }
+
+    if (bumpImage) {
+        const toDateLeft = news.bumpImage?.toDate; // ngày kết thúc
+        newBumpImage = calculateNewBump(toDateLeft, bumpImage);
+    }
+
+    await News.updateOne(
+        { id: id },
+        {
+            bumpImage: !!newBumpImage ? newBumpImage : news.bumpImage,
+            bumpPriority: !!newBumpPriority ? newBumpPriority : news.bumpPriority,
+        },
+    );
+
+    return res.json(ResponseOk());
+};
+
+// #region private method
+
+const calculateNewBump = (toDateLeft?: string, day?: number) => {
+    let fromDate;
+    let toDate;
+    // const toDateLeft = news.bumpPriority.toDate; // ngày kết thúc
+    const dateNow = moment().format();
+
+    const remainMilliSeconds = DateTimeUtil.diffTwoStringDate(toDateLeft ?? '', dateNow);
+    if (remainMilliSeconds > 0) {
+        console.log('>');
+        fromDate = moment().format();
+        toDate = moment().add(remainMilliSeconds, 'ms').add(day, 'd').format();
+    } else {
+        console.log('<');
+        fromDate = moment().format();
+        toDate = moment().add(day, 'd').format();
+    }
+
+    return {
+        fromDate,
+        toDate,
+        day: day,
+    } as NewsBump;
+};
+
+const calculatePage = (allNews: INews[], news: INews) => {
+    const listNews = allNews.filter(x => x.categoryId === news.categoryId);
+    let sorted = _.orderBy(listNews, ['createdAt'], ['desc']);
+    const priorities = sorted.filter(x => DateTimeUtil.checkExpirationDate(x.bumpPriority?.toDate));
+    const notPriorities = sorted.filter(x => !DateTimeUtil.checkExpirationDate(x.bumpPriority?.toDate));
+    sorted = priorities.concat(notPriorities);
+
+    const index = sorted.findIndex(x => x.id === news.id);
+
+    return Math.floor(index / 10) + 1;
+};
+
+// #endregion
+
 const NewsService = {
     addNews,
     showNews,
@@ -218,6 +326,8 @@ const NewsService = {
     showNewsRelations,
     showNewsNewest,
     searchNews,
+    showNewsByUserId,
+    updateNewsBump,
 };
 
 export default NewsService;

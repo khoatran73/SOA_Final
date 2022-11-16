@@ -42,6 +42,7 @@ export interface BaseGridProps {
     autoGroupColumnDef?: ColDef<any>;
     groupDisplayType?: RowGroupingDisplayType;
     pagination?: boolean;
+    paginationPageSize?: number;
     children?: ReactChild; // grid tool bar
 }
 
@@ -50,7 +51,7 @@ interface GridConfig {}
 export interface BaseGridRef extends AgGridReact {}
 
 const BaseGrid = React.forwardRef<BaseGridRef, BaseGridProps>((props, ref) => {
-    const { numberRows = true, actionRows = true, actionRowsList, pagination = true } = props;
+    const { numberRows = true, actionRows = true, actionRowsList, pagination = true, paginationPageSize = 10 } = props;
 
     const customColDefs = (
         numberRows
@@ -164,6 +165,7 @@ const BaseGrid = React.forwardRef<BaseGridRef, BaseGridProps>((props, ref) => {
                         }}
                         loadingOverlayComponent={() => <Loading />}
                         pagination={pagination}
+                        paginationPageSize={paginationPageSize}
                         onGridReady={params => params.api.sizeColumnsToFit()}
                         treeData={props.treeData}
                         animateRows

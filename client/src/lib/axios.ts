@@ -6,15 +6,6 @@ import { useNotificationStore } from '../store/notifications';
 import { Identifier } from '~/types/shared';
 import NotificationConstant from '~/configs/contants';
 
-// function authRequestInterceptor(config: AxiosRequestConfig) {
-//     const token = storage.getToken();
-//     if (token) {
-//         config.headers.authorization = `${token}`;
-//     }
-//     config.headers.Accept = 'application/json';
-//     return config;
-// }
-
 export const axios = Axios.create({
     baseURL: '/',
     // headers: { Accept: 'application/json' },
@@ -95,6 +86,11 @@ export type PaginatedList<T = any> = {
     currentPage: number;
     items: T[];
 };
+
+export type PaginatedListQuery = {
+    offset: number;
+    limit: number;
+}
 
 export type ResultResponse<T = any> = Promise<AxiosResponse<ApiResponse<T>>>;
 

@@ -10,7 +10,7 @@ router.get('/other', NewsService.showNewsOthers);
 router.get('/relation', NewsService.showNewsRelations);
 router.get('/newest', NewsService.showNewsNewest);
 router.get('/search', NewsService.searchNews);
-
-
+router.get('/show-by-user', NewsService.showNewsByUserId);
+router.put('/update-bump/:id', NewsService.updateNewsBump);
 
 export default router;

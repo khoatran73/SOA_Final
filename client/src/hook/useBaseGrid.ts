@@ -1,9 +1,9 @@
 import React from 'react';
 import { BaseGridRef } from '~/component/Grid/BaseGrid';
-import { PaginatedList, requestApi } from '~/lib/axios';
+import { PaginatedList, PaginatedListQuery, requestApi } from '~/lib/axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '~/AppStore';
-import { Authorization } from '~/types/shared';
+import PaginationUtil from '~/util/PaginationUtil';
 
 export interface BaseGridResponse<TData> {
     loading: boolean;
@@ -22,16 +22,7 @@ interface State<TData> {
     data: TData[] | undefined;
 }
 
-interface PaginatedListQuery {
-    offset: number;
-    limit: number;
-}
-
-const countOffset = (pageNumber: number, limit: number) => {
-    return limit * (pageNumber - 1);
-};
-
-export function useBaseGrid<TData>({ pageSize = 25, ...props }: Props): BaseGridResponse<TData> | null {
+export function useBaseGrid<TData>({ pageSize = Number.MAX_SAFE_INTEGER, ...props }: Props): BaseGridResponse<TData> | null {
     const { authUser } = useSelector((state: RootState) => state.authData);
     const [state, setState] = React.useState<State<TData>>({
         loading: true,
@@ -45,16 +36,11 @@ export function useBaseGrid<TData>({ pageSize = 25, ...props }: Props): BaseGrid
     const fetchData = async (limit: number = pageSize, pageNumber = 1) => {
         props.gridRef?.current?.api.showLoadingOverlay();
         const query: PaginatedListQuery = {
-            offset: countOffset(pageNumber, limit),
+            offset: 0,
             limit: limit,
         };
 
-        const response = await requestApi<PaginatedList<TData>>(
-            'get',
-            props.url,
-            {},
-            { params: query, headers: { [Authorization]: authUser?.token ?? '' } },
-        );
+        const response = await requestApi<PaginatedList<TData>>('get', props.url, {}, { params: query });
 
         if (response.data?.success) {
             setState({

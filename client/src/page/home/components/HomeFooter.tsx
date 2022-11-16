@@ -61,7 +61,7 @@ const HomeFooter: React.FC = () => {
                             </div>
                         </div>
                         <div className="flex-1">
-                            <div className="font-bold mb-3 text-sm uppercase">Về Chợ tốt</div>
+                            <div className="font-bold mb-3 text-sm uppercase">Về Chợ đồ si</div>
                             <div className="flex flex-col">
                                 <div className="text-[#777] text-sm mb-3 cursor-pointer">Giới thiệu</div>
                                 <div className="text-[#777] text-sm mb-3 cursor-pointer">Tuyển dụng</div>
@@ -108,7 +108,7 @@ const HomeFooter: React.FC = () => {
                 <HomeContainer className="py-2">
                     <BoxContainer>
                         <div className="text-xs text-[#8C8C8C] text-center">
-                            CÔNG TY TNHH CHỢ TỐT - Người đại diện theo pháp luật: Nguyễn&nbsp;Trọng&nbsp;Tấn;
+                            CÔNG TY TNHH CHỢ ĐỒ SI - Người đại diện theo pháp luật: Trần&nbsp;Anh&nbsp;Khoa;
                             GPDKKD:&nbsp;0312120782&nbsp;do&nbsp;sở&nbsp;KH&nbsp;&amp;&nbsp;ĐT&nbsp;TP.HCM&nbsp;cấp&nbsp;ngày&nbsp;11/01/2013;
                             <br />
                             GPMXH: 17/GP-BTTTT do Bộ Thông tin và Truyền thông cấp&nbsp;ngày&nbsp;15/01/2019 -
@@ -117,9 +117,9 @@ const HomeFooter: React.FC = () => {
                                 Chính&nbsp;sách&nbsp;sử&nbsp;dụng
                             </span>
                             <br />
-                            Địa chỉ: Số 2 Ngô Đức Kế, Phường Bến Nghé, Quận&nbsp;1, Thành phố Hồ&nbsp;Chí&nbsp;Minh,
+                            Địa chỉ: 19 Nguyễn Hữu Thọ, Phường Tân Phong, Quận&nbsp;7, Thành phố Hồ&nbsp;Chí&nbsp;Minh,
                             Việt&nbsp;Nam;
-                            Email:&nbsp;trogiup@chodosi.vn&nbsp;-&nbsp;Tổng&nbsp;đài&nbsp;CSKH:&nbsp;19003003&nbsp;(1.000đ/phút)
+                            Email:&nbsp;trogiup@chodosi.vn&nbsp;-&nbsp;Tổng&nbsp;đài&nbsp;CSKH:&nbsp;0865997531&nbsp;(1.000đ/phút)
                         </div>
                     </BoxContainer>
                 </HomeContainer>

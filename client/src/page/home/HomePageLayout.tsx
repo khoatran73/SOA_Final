@@ -15,13 +15,12 @@ const HomePageLayout: React.FC = () => {
         <div className="home flex flex-col justify-between">
             <HomeHeader />
             <div
-                className="home-main w-full"
-                style={{
-                    backgroundImage: `url({${themeImage}})`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundAttachment: 'fixed',
-                    backgroundSize: '100%',
-                }}
+                className="home-main w-full bg-[#f4f4f4]"
+                // style={{
+                //     backgroundImage: `url(${themeImage})`,
+                //     backgroundRepeat: 'no-repeat',
+                //     backgroundSize: 'cover',
+                // }}
             >
                 <HomeContainer>
                     <Outlet />

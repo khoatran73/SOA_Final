@@ -26,6 +26,7 @@ import NewsInfo from '../main/NewsInfo';
 import emptyImage from '~/assets/layout/empty.jpg';
 import { GET_CHAT_DATA_API } from '~/contexts/Socket/Type';
 import _ from 'lodash';
+import LocaleUtil from '~/util/LocaleUtil';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -144,34 +145,40 @@ const NewsDetail: React.FC = () => {
                     </div>
                     <div className="flex items-start">
                         <div className="w-2/3 overflow-y-auto max-h-screen news-detail-left">
-                            <div className="relative flex items-center justify-center bg-gray-200">
+                            <div className="relative flex items-center justify-center bg-[#eee]">
                                 <CarouselLayout
                                     slidesToShow={1}
                                     slidesToScroll={1}
-                                    wrapperClassName="w-[500px] h-[500px]"
+                                    infinite
+                                    wrapperClassName="w-[580px] h-[580px]"
                                 >
                                     {news?.imageUrls.map(url => {
                                         return (
                                             <Image
-                                                width={500}
-                                                height={500}
-                                                className="object-contain bg-red-100"
+                                                width={580}
+                                                height={580}
+                                                className="object-contain"
                                                 key={url}
-                                                preview={false}
+                                                // preview={false}
                                                 src={url}
                                                 fallback={emptyImage}
                                             />
                                         );
                                     })}
                                 </CarouselLayout>
-                                <div className="absolute w-full h-7 bg-black opacity-70 text-white flex items-center justify-end bottom-0 pr-1">
+                                <div
+                                    className={clsx(
+                                        'absolute w-full h-7 bg-black opacity-80 text-white',
+                                        ' flex items-center justify-end bottom-0 pr-1 text-sm select-none',
+                                    )}
+                                >
                                     {moment(news?.createdAt).locale('vi').fromNow()}
                                 </div>
                             </div>
                             <div>
                                 <div className="text-base font-bold mt-4 mb-2">{news?.title}</div>
                                 <div className="text-base font-bold text-red-500 mb-2">
-                                    {news?.price.toLocaleString()} VND
+                                    {LocaleUtil.toLocaleString(news?.price ?? 0)} VND
                                 </div>
                                 <div>
                                     {news?.description.split('\n').map((x, index) => {

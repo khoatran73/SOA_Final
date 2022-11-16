@@ -265,7 +265,7 @@ const NewsView: React.FC = () => {
                                             Đối với nhà hàng, quán ăn:
                                             - Giờ mở cửa, đóng cửa
                                             - Dịch vụ giao hàng, thanh toán (nếu có)
-                                            Chấp nhận thanh toán/ vận chuyển qua Chợ Tốt
+                                            Chấp nhận thanh toán/ vận chuyển qua Chợ Đồ Si
                                         "
                                         onChange={e =>
                                             setState({

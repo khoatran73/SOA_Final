@@ -11,7 +11,8 @@ module.exports = {
                 'green-2': '#589f39',
                 'green-5': 'rgb(241, 248, 238)',
                 'green-4': 'rgb(228, 241, 222)',
-                'gray-0': 'rgb(119, 119, 119)'
+                'gray-0': 'rgb(119, 119, 119)',
+                'gray-5': '#f8f8f8',
             },
             boxShadow: {
                 'linear-xs': '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
@@ -21,8 +22,10 @@ module.exports = {
             backgroundColor: {
                 'gray-main': '#f4f4f4',
                 'gray-2': '#cacaca',
+                'gray-5': '#f8f8f8',
+                'green-2': '#589f39',
+                'green-4': 'rgb(228, 241, 222)',
                 'green-5': 'rgb(241, 248, 238)',
-                'green-4': 'rgb(228, 241, 222)'
             },
         },
     },

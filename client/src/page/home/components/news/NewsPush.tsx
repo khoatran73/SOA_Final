@@ -1,14 +1,21 @@
 import { Image } from 'antd';
 import clsx from 'clsx';
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import bumpArrowIcon from '~/assets/news/bump-arrow.svg';
 import bumpFlashIcon from '~/assets/news/bump-flash.svg';
 import bumpImageIcon from '~/assets/news/bump-image.svg';
-import bumpPriorityIcon from '~/assets/news/bump-priority.svg';
 import newServiceIcon from '~/assets/news/new-service.svg';
+import tickIcon from '~/assets/news/tick.svg';
 import { VND_CHAR } from '~/configs';
+import NotificationConstant from '~/configs/contants';
+import { useNewsDetail } from '~/hook/useNewsDetail';
+import { requestApi } from '~/lib/axios';
+import LocaleUtil from '~/util/LocaleUtil';
+import NotifyUtil from '~/util/NotifyUtil';
 import BoxContainer from '../../layout/BoxContainer';
+import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
+import { NEWS_UPDATE_BUMP_API } from './../../api/api';
 
 type CardProps = {
     children: React.ReactNode;
@@ -19,37 +26,110 @@ const Card = (props: CardProps) => {
     return <div className={clsx('rounded-sm p-3 border-b px-6', props.className)}>{props.children}</div>;
 };
 
-type State = {
-    bumpService?: number;
-    bumpImage?: number;
-    bumpPriority?: number;
+const calculateOriginalPrice = (priceOneDay: number, day: number) => {
+    return priceOneDay * day;
 };
+
+const calculateDiscountPrice = (priceOneDay: number, day: number, discount: number) => {
+    const originPrice = calculateOriginalPrice(priceOneDay, day);
+    return originPrice * (1 - discount);
+};
+
+// default
+const BumpPriorityDefaultPerDay = 5000;
+const ThreeDaysDiscount = 0.05;
+const ThreeNumber = 3;
+const SevenDayDiscount = 0.1;
+const SevenNumber = 7;
+// count
+const BumpPriorityPerThreeDay = calculateOriginalPrice(BumpPriorityDefaultPerDay, ThreeNumber);
+const BumpPriorityPerThreeDayDiscount = calculateDiscountPrice(
+    BumpPriorityDefaultPerDay,
+    ThreeNumber,
+    ThreeDaysDiscount,
+);
+const BumpPriorityPerSevenDay = calculateOriginalPrice(BumpPriorityDefaultPerDay, SevenNumber);
+const BumpPriorityPerSevenDayDiscount = calculateDiscountPrice(
+    BumpPriorityDefaultPerDay,
+    SevenNumber,
+    SevenDayDiscount,
+);
+// image
+const BumpImagePerSevenDay = 10000;
 
 const NewsPush: React.FC = () => {
     const { id } = useParams(); //news id
+    const { data: responseNews, isLoading } = useNewsDetail(id);
+    const news = responseNews?.data?.result;
+    const [bumpPriority, setBumpPriority] = useState<number | undefined>();
+    const [bumpImage, setBumpImage] = useState<number | undefined>();
+    const navigate = useNavigate();
+
     const discountClassName =
         'inline-flex h-5 items-center justify-center rounded bg-red-2 px-0.5 text-xs font-bold text-white';
     const smallCardClassName = clsx(
         'min-h-[72px] min-w-[116px] flex-1 cursor-pointer select-none rounded border px-3 pt-4 pb-2 ',
-        'md:min-h-[88px] md:px-[15px] md:py-3 hover:border-green-4 hover:bg-green-5',
+        'md:min-h-[88px] md:px-[15px] md:py-3 hover:border-green-4 hover:bg-green-5 relative',
     );
+
+    const handleBumpPriority = (day: number) => {
+        // click 2 cái => remove
+        if (bumpPriority && bumpPriority === day) {
+            setBumpPriority(undefined);
+            return;
+        }
+
+        setBumpPriority(day);
+        return;
+    };
+
+    const handleBumpImage = (day: number = SevenNumber) => {
+        if (bumpImage) {
+            setBumpImage(undefined);
+            return;
+        }
+
+        setBumpImage(day);
+    };
+
+    const handlePayment = async () => {
+        if (!bumpImage && !bumpPriority) return;
+
+        const body = {
+            bumpImage,
+            bumpPriority,
+        };
+
+        const response = await requestApi('put', NEWS_UPDATE_BUMP_API + '/' + id, body);
+        if (response.data.success) {
+            NotifyUtil.success(NotificationConstant.TITLE, NotificationConstant.DESCRIPTION_UPDATE_SUCCESS);
+        }
+    };
 
     return (
         <BoxContainer className="px-0">
             <div>
-                <Card>Breadcrumb</Card>
+                <Card className="pt-0">
+                    <HomeBreadCrumb
+                        item={[
+                            { title: 'Trang chủ', link: '/' },
+                            { title: 'Quản lý tin', link: '/news/dashboard' },
+                            { title: 'Đẩy tin' },
+                        ]}
+                        className="p-0"
+                        style={{ margin: 0 }}
+                    />
+                </Card>
                 <Card>
                     <div className="flex gap-4">
-                        <div className="relative h-[108px] w-[108px] flex-shrink-0 bg-[url('https://static.chotot.com/storage/default_images/c2c_ad_image.jpg')] bg-cover bg-center">
-                            <img
-                                alt=" "
-                                className="h-full w-full object-cover"
-                                src="https://cdn.chotot.com/49wTzr3YqVXeNWW-kuIjSnLSPQ6ksQrTH7LJHU9SEYg/preset:listing/plain/501826f2a855c31732472d5eaed447fb-2796999207917424547.jpg"
-                            />
+                        <div className="relative h-[108px] w-[108px] flex-shrink-0">
+                            <img alt=" " className="h-full w-full object-cover" src={news?.imageUrls[0]} />
                         </div>
                         <div className="flex-1">
-                            <div className="h-5 max-w-[50%] truncate">Tôi muốn bán bánh kẹo</div>
-                            <div className="mt-1.5 font-bold text-red-2">230.002 đ</div>
+                            <div className="h-5 max-w-[50%] truncate">{news?.title}</div>
+                            <div className="mt-1.5 font-bold text-red-2">
+                                {LocaleUtil.toLocaleString(news?.price ?? 0)} {VND_CHAR}
+                            </div>
                         </div>
                     </div>
                 </Card>
@@ -57,41 +137,83 @@ const NewsPush: React.FC = () => {
                     <>
                         <div className="my-2 font-bold">Đẩy tin ngay</div>
                         <div className="flex w-1/2 no-scrollbar relative flex-nowrap justify-between gap-2 rounded mt-4">
-                            <div className={smallCardClassName}>
+                            <div
+                                className={clsx(
+                                    smallCardClassName,
+                                    bumpPriority === SevenNumber
+                                        ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
+                                        : '',
+                                )}
+                                onClick={() => handleBumpPriority(SevenNumber)}
+                            >
                                 <div className="flex items-center justify-between">
-                                    <div>7 ngày</div>
+                                    <div>{SevenNumber} ngày</div>
                                     <div>
                                         <Image src={bumpArrowIcon} preview={false} />
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <div className="text-xs font-bold text-green-2">32.000 {VND_CHAR}</div>
-                                        <div className="text-xs italic text-gray-0 line-through">35.000 {VND_CHAR}</div>
+                                        <div className="text-xs font-bold text-green-2">
+                                            {LocaleUtil.toLocaleString(BumpPriorityPerSevenDayDiscount)} {VND_CHAR}
+                                        </div>
+                                        <div className="text-xs italic text-gray-0 line-through">
+                                            {LocaleUtil.toLocaleString(BumpPriorityPerSevenDay)} {VND_CHAR}
+                                        </div>
                                     </div>
                                     <div>
-                                        <span className={discountClassName}>-10%</span>
+                                        <span className={discountClassName}>-{SevenDayDiscount * 100}%</span>
                                     </div>
                                 </div>
+                                {bumpPriority === SevenNumber && (
+                                    <div className="absolute -top-2 -right-2">
+                                        <img src={tickIcon} width={20} height={20} alt="" />
+                                    </div>
+                                )}
                             </div>
-                            <div className={smallCardClassName}>
+                            <div
+                                className={clsx(
+                                    smallCardClassName,
+                                    bumpPriority === ThreeNumber
+                                        ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
+                                        : '',
+                                )}
+                                onClick={() => handleBumpPriority(ThreeNumber)}
+                            >
                                 <div className="flex items-center justify-between">
-                                    <div>3 ngày</div>
+                                    <div>{ThreeNumber} ngày</div>
                                     <div>
                                         <Image src={bumpArrowIcon} preview={false} />
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <div className="text-xs font-bold text-green-2">14.000 {VND_CHAR}</div>
-                                        <div className="text-xs italic text-gray-0 line-through">15.000 {VND_CHAR}</div>
+                                        <div className="text-xs font-bold text-green-2">
+                                            {LocaleUtil.toLocaleString(BumpPriorityPerThreeDayDiscount)} {VND_CHAR}
+                                        </div>
+                                        <div className="text-xs italic text-gray-0 line-through">
+                                            {LocaleUtil.toLocaleString(BumpPriorityPerThreeDay)} {VND_CHAR}
+                                        </div>
                                     </div>
                                     <div>
-                                        <span className={discountClassName}>-5%</span>
+                                        <span className={discountClassName}>-{ThreeDaysDiscount * 100}%</span>
                                     </div>
                                 </div>
+                                {bumpPriority === ThreeNumber && (
+                                    <div className="absolute -top-2 -right-2">
+                                        <img src={tickIcon} width={20} height={20} alt="" />
+                                    </div>
+                                )}
                             </div>
-                            <div className={smallCardClassName}>
+                            <div
+                                className={clsx(
+                                    smallCardClassName,
+                                    bumpPriority === 1
+                                        ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
+                                        : '',
+                                )}
+                                onClick={() => handleBumpPriority(1)}
+                            >
                                 <div className="flex items-center justify-between">
                                     <div>1 ngày</div>
                                     <div>
@@ -100,67 +222,59 @@ const NewsPush: React.FC = () => {
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <div className="text-xs font-bold text-green-2">5.000 {VND_CHAR}</div>
+                                        <div className="text-xs font-bold text-green-2">
+                                            {LocaleUtil.toLocaleString(BumpPriorityDefaultPerDay)} {VND_CHAR}
+                                        </div>
                                     </div>
                                 </div>
+                                {bumpPriority === 1 && (
+                                    <div className="absolute -top-2 -right-2">
+                                        <img src={tickIcon} width={20} height={20} alt="" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="flex w-1/2 rounded mt-4">
                             <div
                                 className={clsx(
-                                    'border-[#e8e8e8] hover:border-green-4 hover:bg-green-5 relative flex',
+                                    'hover:border-green-4 hover:bg-green-5 relative flex',
                                     'min-h-[101px] cursor-pointer flex-col rounded border p-3 w-full',
+                                    bumpImage ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2' : '',
                                 )}
+                                onClick={() => handleBumpImage(SevenNumber)}
                             >
-                                <>
+                                <div>
+                                    <div className="flex justify-between">
+                                        <div className="capitalize">Tin Nổi Bật (Nhiều hình ảnh)</div>
+                                        <img alt="icon" className="h-6" src={bumpImageIcon} />
+                                    </div>
+                                    <div className="mt-1 text-xs font-bold text-green-2">
+                                        {LocaleUtil.toLocaleString(BumpImagePerSevenDay)} {VND_CHAR} / {SevenNumber}{' '}
+                                        ngày
+                                    </div>
+                                </div>
+                                <div className="flex-1" />
+                                <div className="text-[10px] opacity-50">
                                     <div>
-                                        <div className="flex justify-between">
-                                            <div className="capitalize">Tin Nổi Bật (Nhiều hình ảnh)</div>
-                                            <img alt="icon" className="h-6" src={bumpImageIcon} />
-                                        </div>
-                                        <div className="mt-1 text-xs font-bold text-green-2">10.000 đ / 7 ngày</div>
+                                        <span className="text-red-2">*</span>Gấp đôi khả năng thu hút khách hàng
                                     </div>
-                                    <div className="flex-1" />
-                                    <div className="text-[10px] opacity-50">
-                                        <div>
-                                            <span className="text-red-2">*</span>Gấp đôi khả năng thu hút khách hàng
-                                        </div>
-                                        <div>
-                                            <span className="text-red-2">*</span>Gấp đôi kích thước tin đăng với thêm 5
-                                            hình ảnh hiển thị
-                                        </div>
+                                    <div>
+                                        <span className="text-red-2">*</span>Gấp đôi kích thước tin đăng với thêm 5 hình
+                                        ảnh hiển thị
                                     </div>
-                                    <img
-                                        alt="new-service"
-                                        className="absolute -left-[16px] -top-[20px]"
-                                        height="50"
-                                        src={newServiceIcon}
-                                        width="110"
-                                    />
-                                </>
-                            </div>
-                        </div>
-                        <div className="my-2 font-bold">Các tiện ích nâng cao</div>
-                        <div className="flex w-1/2 rounded mt-4">
-                            <div
-                                className={clsx(
-                                    'border-[#e8e8e8] hover:border-green-4 hover:bg-green-5 relative flex',
-                                    'min-h-[101px] cursor-pointer flex-col rounded border p-3 w-full',
+                                </div>
+                                <img
+                                    alt="new-service"
+                                    className="absolute -left-[16px] -top-[20px]"
+                                    height="50"
+                                    src={newServiceIcon}
+                                    width="110"
+                                />
+                                {bumpImage && (
+                                    <div className="absolute -top-2 -right-2">
+                                        <img src={tickIcon} width={20} height={20} alt="" />
+                                    </div>
                                 )}
-                            >
-                                <>
-                                    <div>
-                                        <div className="flex justify-between">
-                                            <div className="capitalize">Tin Ưu Tiên</div>
-                                            <img alt="icon" className="h-6" src={bumpPriorityIcon} />
-                                        </div>
-                                        <div className="mt-1 text-xs font-bold text-green-2">20.000 đ / ngày</div>
-                                    </div>
-                                    <div className="flex-1" />
-                                    <div className="text-[10px] opacity-50">
-                                        Tin xuất hiện ở 1-5 vị trí đầu tiên của trang
-                                    </div>
-                                </>
                             </div>
                         </div>
                     </>
@@ -173,10 +287,22 @@ const NewsPush: React.FC = () => {
                         'flex-col bg-white pb-5 pt-3 md:h-[64px] md:max-w-full md:flex-row md:py-3 md:px-3 px-3',
                     )}
                 >
-                    <button className="h-10 flex-1 rounded bg-gray-2 text-xs font-bold uppercase text-white w-1/2 mr-1">
+                    <button
+                        className={clsx(
+                            'h-10 flex-1 rounded bg-gray-2 text-xs font-bold uppercase text-white w-1/2 mr-1',
+                            bumpPriority || bumpImage ? 'bg-green-2' : '',
+                        )}
+                        onClick={handlePayment}
+                    >
                         THANH TOÁN
                     </button>
-                    <div className="flex h-10 flex-1 cursor-pointer items-center justify-center rounded border text-xs uppercase hover:bg-gray-5 w-[calc(50%-10px)]">
+                    <div
+                        className={clsx(
+                            'flex h-10 flex-1 cursor-pointer items-center justify-center hover:bg-gray-5',
+                            'rounded border text-xs uppercase hover:bg-gray-5 w-[calc(50%-10px)]',
+                        )}
+                        onClick={() => navigate(-1)}
+                    >
                         QUAY LẠI
                     </div>
                 </div>

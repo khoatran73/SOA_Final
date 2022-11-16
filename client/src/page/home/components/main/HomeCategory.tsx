@@ -14,7 +14,7 @@ const HomeCategory: React.FC = () => {
     if (isLoading) return <Loading />;
     return (
         <>
-            <div className="uppercase font-bold mb-1">Danh mục</div>
+            <div className="uppercase font-bold mb-1 text-[#222]">Danh mục</div>
             <div className="flex flex-wrap">
                 {categories?.map(category => (
                     <Link
@@ -22,8 +22,8 @@ const HomeCategory: React.FC = () => {
                         className="flex flex-col items-center justify-center my-1.5 w-[12.5%]"
                         key={category.id}
                     >
-                        <Image width={84} src={category?.imageUrl} preview={false} fallback={emptyImage} />
-                        <div className="mt-1">{category.name}</div>
+                        <Image width={84} height={84} src={category?.imageUrl} preview={false} fallback={emptyImage} />
+                        <div className="mt-1 text-[#222] text-sm">{category.name}</div>
                     </Link>
                 ))}
             </div>
