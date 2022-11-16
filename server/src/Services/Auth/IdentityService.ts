@@ -99,6 +99,25 @@ const login = async (req: Request<any, any, LoginParams>, res: Response) => {
 
     return res.json(ResponseOk<AuthUser>(result));
 };
+const getUser = async (req: Request, res: Response) => {
+    const id = req.query.id;
+    const user = await User.findOne({ id: id });
+    if (!Boolean(user)) return res.json(ResponseFail('User not found'));
+    const result = {
+        user: {
+            email: user?.emailAddress,
+            fullName: user?.fullName,
+            id: user?.id,
+            username: user?.username,
+            phoneNumber: user?.phoneNumber,
+            amount: user?.amount,
+            province: user?.province,
+            district: user?.district,
+            ward: user?.ward,
+        },
+    };
+    return res.json(ResponseOk(result));
+}
 
 const logout = (req: Request, res: Response) => {
     if (req.session.user) delete req.session.user;
@@ -110,6 +129,7 @@ const IdentityService = {
     login,
     addUser,
     logout,
+    getUser
 };
 
 export default IdentityService;

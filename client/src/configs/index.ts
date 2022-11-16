@@ -4,6 +4,7 @@ export const APP_API_PATH = process.env.REACT_APP_API_URL as string;
 export const API_CHECK_LOGIN = APP_API_PATH + '/identity/check-login';
 export const API_LOGIN = APP_API_PATH + '/identity/login';
 export const API_LOGOUT = APP_API_PATH + '/identity/logout';
+export const API_GET_USER = APP_API_PATH + '/identity/get-user';
 //layout
 
 export const API_LAYOUT = APP_API_PATH + '/menu/layout';

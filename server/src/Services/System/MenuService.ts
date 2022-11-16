@@ -14,7 +14,7 @@ const getMenuIndex = async (req: Request<any, any, any, PaginatedListQuery>, res
         .sort((a, b) => a.level - b.level)
         .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
         .map(menu => {
-            const doc = _.get({ ...menu }, '_doc');
+            const doc = _.get({ ...menu }, '_doc') ?? {};
             return { ...doc, group: buildTreeGroup(menu.path, menus) } as IMenu;
         });
 

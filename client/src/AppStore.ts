@@ -4,11 +4,13 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { authSlice } from './store/authSlice';
+import { chatSlice } from './store/chatSlice';
 import { layoutSlice } from './store/layoutSlice';
 
 const rootReducer = combineReducers({
     authData: authSlice.reducer,
     layout: layoutSlice.reducer,
+    chat: chatSlice.reducer
 });
 
 const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunkMiddleware)));

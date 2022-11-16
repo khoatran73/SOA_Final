@@ -28,6 +28,7 @@
         "mongoose": "^6.6.5",
         "multer": "^1.4.5-lts.1",
         "slugify": "^1.6.5",
+        "socket.io": "^4.4.1",
         "sub-vn": "^0.0.2",
         "swagger-ui-express": "^4.5.0",
         "uuid": "^9.0.0",

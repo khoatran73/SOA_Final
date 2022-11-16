@@ -67,18 +67,18 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
     const news = await News.findOne({ id: id });
     const user = await User.findOne({ id: news?.userId });
     const category = await Category.findOne({ id: news?.categoryId });
-    const doc = _.get({ ...news }, '_doc');
+    const doc = _.get({ ...news }, '_doc') ?? {};
     const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
     const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
     const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
-    const userDoc = _.get({ ...user }, '_doc');
+    const userDoc = _.get({ ...user }, '_doc') ?? {};
     const response: NewsResponse = {
         ...userDoc,
         ...doc,
         provinceName,
         districtName,
         wardName,
-        slug: category?.slug,
+        slug: category?.slug ?? '',
     };
 
     return res.json(ResponseOk<NewsResponse>(response));
@@ -92,7 +92,7 @@ const showNewsByCategorySlug = async (req: Request<{ slug: string }, any, any, P
     const userIds = [...new Set(news.map(x => x.userId))];
     const users = await User.find({ id: { $in: userIds } });
     const newsResponse = news.map(x => {
-        const doc = _.get({ ...x }, '_doc');
+        const doc = _.get({ ...x }, '_doc') ?? {};
         const user = users.find(y => y.id === x.userId);
         const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
         const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
@@ -111,7 +111,7 @@ const showNewsOthers = async (req: Request<any, any, any, { newsId: string; user
     const user = await User.findOne({ id: userId });
 
     const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc');
+        const doc = _.get({ ...x }, '_doc') ?? {};
         const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
         const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
         const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
@@ -132,7 +132,7 @@ const showNewsRelations = async (
     const users = await User.find({ id: { $in: userIds } });
 
     const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc');
+        const doc = _.get({ ...x }, '_doc') ?? {};
         const user = users.find(y => y.id === x.userId);
         const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
         const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
@@ -150,7 +150,7 @@ const showNewsNewest = async (req: Request, res: Response) => {
     const users = await User.find({ id: { $in: userIds } });
 
     const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc');
+        const doc = _.get({ ...x }, '_doc') ?? {};
         const user = users.find(y => y.id === x.userId);
         const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
         const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
@@ -176,12 +176,12 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
     const listNews = allNews.filter(news => {
         // search Key
         const titleIgnoreSensitive = LocaleUtil.ignoreSensitive(news.title);
-        let predicate = titleIgnoreSensitive.includes(searchKeyIgnoreSensitive);
+        let predicate: any = titleIgnoreSensitive.includes(searchKeyIgnoreSensitive);
         // category
         if (category) predicate = predicate && news.categoryId === category.id;
         // min, max
-        if (minPrice) predicate = predicate && news.price >= minPrice;
-        if (maxPrice && maxPrice < TenMillions) predicate = predicate && news.price <= maxPrice;
+        if (minPrice) predicate = predicate &&  news.price && news.price >= minPrice;
+        if (maxPrice && maxPrice < TenMillions) predicate = predicate && news.price && news.price <= maxPrice;
         //province
         const user = users.find(x => x.id === news.userId);
         if (user && provinceCode && provinceCode !== 'all') predicate = predicate && user.province === provinceCode;
@@ -194,7 +194,7 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
     else if (orderBy === 'price') sorted = _.orderBy(listNews, ['price'], ['desc']);
 
     const newsSearches = sorted.map(news => {
-        const doc = _.get({ ...news }, '_doc');
+        const doc = _.get({ ...news }, '_doc') ?? {};
         const user = users.find(x => x.id === news.userId);
         const province = PlacementService.getProvinceByCode(user?.province);
 

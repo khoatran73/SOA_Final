@@ -14,7 +14,7 @@ const getProductTypeIndex = async (req: Request<any, any, any, PaginatedListQuer
     const types = await ProductType.find({});
     const categories = await Category.find({})
     const response = types.map(type => {
-        const doc = _.get({ ...type }, '_doc');
+        const doc = _.get({ ...type }, '_doc') ?? {};
         return {
             ...doc,
             categoryName: categories.find(category => category.id === type.categoryId)?.name,

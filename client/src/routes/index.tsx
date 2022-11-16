@@ -1,5 +1,6 @@
 import React from 'react';
 import { matchRoutes, RouteMatch, RouteObject, useRoutes } from 'react-router-dom';
+import ChatView from '~/page/home/components/chat/ChatView';
 import PrivateRoute from './PrivateRoute';
 
 // #region layout
@@ -67,6 +68,10 @@ const routeList = [
             {
                 path: 'category',
                 element: <CategorySearch />,
+            },
+            {
+                path: 'chat',
+                element: <ChatView />,
             },
         ],
     },

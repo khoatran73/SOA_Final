@@ -5,10 +5,17 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '~/AppStore';
+import ChatBox from '~/component/Elements/ChatBox/ChatBox';
+
 import Loading from '~/component/Elements/loading/Loading';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
 import ErrorView from '~/component/Layout/ErrorView';
+import { useSocket } from '~/contexts/Socket/Context';
+import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
+import { chatSlice, IMessage } from '~/store/chatSlice';
 import { NewsResponse } from '~/types/home/news';
 import { Identifier } from '~/types/shared';
 import { NEWS_DETAIL_API, NEWS_OTHER_API, NEWS_RELATION_API } from '../../api/api';
@@ -17,6 +24,8 @@ import CarouselLayout from '../../layout/CarouselLayout';
 import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
 import NewsInfo from '../main/NewsInfo';
 import emptyImage from '~/assets/layout/empty.jpg';
+import { GET_CHAT_DATA_API } from '~/contexts/Socket/Type';
+import _ from 'lodash';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -53,13 +62,18 @@ const getNewsRelation = (newsId?: Identifier, userId?: Identifier, categoryId?: 
 type State = {
     listNewsOther: NewsResponse[];
     listNewsRelation: NewsResponse[];
+    isChatBox?: boolean;
 };
 
 const NewsDetail: React.FC = () => {
+    const { isShow } = useSelector((state: RootState) => state.chat);
+    const { authUser } = useSelector((state: RootState) => state.authData);
+    const { setShowChat, sendMessage } = chatSlice.actions;
+    const dispatch = useDispatch();
     const { id } = useParams();
     const { data: requestNews, isLoading, isError } = useQuery([`GET_NEWS_DETAIL_${id}`], () => getNewsDetail(id));
     const news = requestNews?.data?.result;
-    const [state, setState] = useState<State>({
+    const [state, setState] = useMergeState<State>({
         listNewsOther: [],
         listNewsRelation: [],
     });
@@ -74,6 +88,37 @@ const NewsDetail: React.FC = () => {
         })();
     }, [id, news?.categoryId, news?.id, news?.userId]);
 
+    const chatMessage = async () => {
+        const chatMessage = await requestApi(
+            'get',
+            GET_CHAT_DATA_API,
+            { users: [authUser?.user?.id ?? '', news?.userId.toString() ?? ''] },
+            {},
+        );
+
+        if (chatMessage.data?.success) {
+            console.log([authUser?.user?.id ?? '', news?.userId.toString() ?? ''])
+            const messageList: IMessage[] = _.get(chatMessage.data, 'result.message', []);
+            const roomId = _.get(chatMessage.data, 'result.roomId', '');
+            dispatch(setShowChat({ isShow: !isShow, userChatId: news?.userId.toString() ?? '' }));
+            dispatch(
+                sendMessage({
+                    roomId,
+                    users: [authUser?.user?.id ?? '', news?.userId.toString() ?? ''],
+                    message: messageList,
+                }),
+            );
+        } else {
+            console.log(2)
+            dispatch(setShowChat({ isShow: !isShow, userChatId: news?.userId.toString() ?? '' }));
+            dispatch(
+                sendMessage({
+                    roomId: Math.random().toString().substring(10),
+                    users: [authUser?.user?.id ?? '', news?.userId.toString() ?? ''],
+                }),
+            );
+        }
+    };
     if (isError) return <ErrorView />;
     if (isLoading) return <Loading />;
     return (
@@ -170,6 +215,7 @@ const NewsDetail: React.FC = () => {
                                         'flex items-center justify-between rounded-lg py-2 px-4 border border-green-700 text-green-700 mt-5',
                                         'cursor-pointer hover:bg-gray-100 duration-150',
                                     )}
+                                    onClick={chatMessage}
                                 >
                                     <BaseIcon icon={faMessage} size="lg" />
                                     <div className="font-bold text-base ml-3 uppercase">chat voi nguoi ban</div>

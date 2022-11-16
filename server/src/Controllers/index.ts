@@ -3,6 +3,7 @@ import Authenticate from '../MiddleWares/Authenticate';
 import IdentityController from './Auth/IdentityController';
 import CommonController from './Common/CommonController';
 import PlacementController from './Common/PlacementController';
+import ChatController from './Home/ChatController';
 import NewsController from './Home/NewsController';
 import CategoryController from './Product/CategoryController';
 import ProductTypeController from './Product/ProductTypeController';
@@ -19,6 +20,7 @@ const route = (app: Application) => {
     app.use('/api/product/type', Authenticate, ProductTypeController);
     // home
     app.use('/api/home/news', Authenticate, NewsController);
+    app.use('/api/chat', Authenticate, ChatController);
     
 };
 
