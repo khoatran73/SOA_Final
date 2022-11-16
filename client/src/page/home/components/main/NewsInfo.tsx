@@ -1,12 +1,12 @@
 import { Avatar, Image } from 'antd';
 import clsx from 'clsx';
-import moment from 'moment';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import emptyImage from '~/assets/layout/empty.jpg';
 import cameraImage from '~/assets/news/camera.svg';
 import { VND_CHAR } from '~/configs';
 import { NewsResponse } from '~/types/home/news';
+import DateTimeUtil from '~/util/DateTimeUtil';
 import LocaleUtil from '~/util/LocaleUtil';
 
 interface Props {
@@ -50,7 +50,7 @@ const NewsInfo: React.FC<Props> = props => {
             <div className="text-[#9b9b9b] text-xs line-clamp-1 text-[10px]">
                 <Avatar size={20}>a</Avatar>
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
-                {moment(news.createdAt).fromNow()}
+                {DateTimeUtil.fromNow(news?.createdAt)}
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
                 {news.provinceName}
             </div>

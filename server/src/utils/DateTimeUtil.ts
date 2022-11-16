@@ -29,6 +29,10 @@ type _quarter = 'quarter' | 'quarters' | 'Q';
 type Diff = Base | _quarter;
 
 export default class DateTimeUtil {
+    static DmyFormat = 'DD/MM/YYYY';
+    static DmyHmsFormat = 'DD/MM/YYYY HH:mm:ss';
+    static HmsDmyFormat = 'HH:mm:ss DD/MM/YYYY';
+    
     static diffTwoStringDate = (source: string, target: string, diff: Diff = 'ms') => {
         const sourceDate = moment(source);
         const targetDate = moment(target);

@@ -37,7 +37,7 @@ const HomeNews: React.FC = () => {
                     })
                 )}
             </div>
-            {totalCount > limit && (
+            {totalCount > limit ? (
                 <div
                     className={clsx(
                         'w-full h-10 flex items-center justify-center bg-[#f4f4f4]',
@@ -46,6 +46,15 @@ const HomeNews: React.FC = () => {
                     onClick={() => setLimit(prev => prev + DefaultLimitNewsNewest)}
                 >
                     Xem thêm
+                </div>
+            ) : (
+                <div
+                    className={clsx(
+                        'w-full h-10 flex items-center justify-center bg-[#f4f4f4]',
+                        'text-[#9b9b9b] text-base font-bold',
+                    )}
+                >
+                    Không còn tin nào khác
                 </div>
             )}
         </>

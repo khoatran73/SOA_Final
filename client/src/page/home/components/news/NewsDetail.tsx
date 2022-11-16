@@ -1,32 +1,30 @@
 import { faLocationPin, faMessage, faPhoneAlt } from '@fortawesome/free-solid-svg-icons';
 import { Avatar, Image } from 'antd';
 import clsx from 'clsx';
-import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from 'react-query';
-import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useParams } from 'react-router-dom';
 import { RootState } from '~/AppStore';
-import ChatBox from '~/component/Elements/ChatBox/ChatBox';
 
+import _ from 'lodash';
+import emptyImage from '~/assets/layout/empty.jpg';
 import Loading from '~/component/Elements/loading/Loading';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
 import ErrorView from '~/component/Layout/ErrorView';
-import { useSocket } from '~/contexts/Socket/Context';
+import { GET_CHAT_DATA_API } from '~/contexts/Socket/Type';
 import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
 import { chatSlice, IMessage } from '~/store/chatSlice';
 import { NewsResponse } from '~/types/home/news';
 import { Identifier } from '~/types/shared';
+import DateTimeUtil from '~/util/DateTimeUtil';
+import LocaleUtil from '~/util/LocaleUtil';
 import { NEWS_DETAIL_API, NEWS_OTHER_API, NEWS_RELATION_API } from '../../api/api';
 import BoxContainer from '../../layout/BoxContainer';
 import CarouselLayout from '../../layout/CarouselLayout';
 import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
 import NewsInfo from '../main/NewsInfo';
-import emptyImage from '~/assets/layout/empty.jpg';
-import { GET_CHAT_DATA_API } from '~/contexts/Socket/Type';
-import _ from 'lodash';
-import LocaleUtil from '~/util/LocaleUtil';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -172,7 +170,7 @@ const NewsDetail: React.FC = () => {
                                         ' flex items-center justify-end bottom-0 pr-1 text-sm select-none',
                                     )}
                                 >
-                                    {moment(news?.createdAt).locale('vi').fromNow()}
+                                    {DateTimeUtil.fromNow(news?.createdAt)}
                                 </div>
                             </div>
                             <div>

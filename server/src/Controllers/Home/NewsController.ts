@@ -12,5 +12,7 @@ router.get('/newest', NewsService.showNewsNewest);
 router.get('/search', NewsService.searchNews);
 router.get('/show-by-user', NewsService.showNewsByUserId);
 router.put('/update-bump/:id', NewsService.updateNewsBump);
+router.put('/hide/:id', NewsService.hideNews);
+
 
 export default router;

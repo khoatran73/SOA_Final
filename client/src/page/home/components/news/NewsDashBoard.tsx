@@ -1,37 +1,134 @@
-import { faChartColumn, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { Avatar, Tabs } from 'antd';
+import { faChartColumn, faEyeSlash, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { Avatar, Tabs, Tooltip } from 'antd';
 import clsx from 'clsx';
-import moment from 'moment';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { RootState } from '~/AppStore';
 import cameraImage from '~/assets/news/camera.svg';
+import coinIcon from '~/assets/news/coin.svg';
 import sellIcon from '~/assets/news/ic-sell-faster.svg';
 import pageIndicatorImage from '~/assets/news/page-indicator.svg';
 import pageNumberTooltipImage from '~/assets/news/page-number-tooltip.svg';
-import coinIcon from '~/assets/news/coin.svg';
 import pageSliderImage from '~/assets/news/page-slider.svg';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
+import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import { VND_CHAR } from '~/configs';
+import NotificationConstant from '~/configs/contants';
 import { requestApi } from '~/lib/axios';
-import { NewsResponse, NewsStatus } from '~/types/home/news';
+import { NewsSearch, NewsStatus } from '~/types/home/news';
 import DateTimeUtil from '~/util/DateTimeUtil';
-import { NEWS_BY_USER_ID_API } from '../../api/api';
+import LocaleUtil from '~/util/LocaleUtil';
+import NotifyUtil from '~/util/NotifyUtil';
+import { NEWS_BY_USER_ID_API, NEWS_HIDE_API } from '../../api/api';
 import BoxContainer from '../../layout/BoxContainer';
 import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
-import LocaleUtil from '~/util/LocaleUtil';
+
+const isOnSell = (status?: NewsStatus) => status === NewsStatus.OnSell;
 
 const getNewsByUserId = (userId?: string) => {
-    return requestApi<NewsResponse[]>('get', NEWS_BY_USER_ID_API, {}, { params: { userId } });
+    return requestApi<NewsSearch[]>('get', NEWS_BY_USER_ID_API, {}, { params: { userId } });
 };
 
-const NewsItem = ({ news }: { news: NewsResponse }) => {
+const StatisticNews = ({ news }: { news: NewsSearch }) => {
+    return (
+        <div className="-mx-[14px] -my-1">
+            <div className="text-[15px] font-bold text-[#222] mb-2">
+                Vị trí tin đăng{' '}
+                <Tooltip title="Cho biết tin đăng của bạn đang nằm ở trang nào của khu vực và chuyên mục đang hiển thị">
+                    <BaseIcon icon={faQuestionCircle} />
+                </Tooltip>
+            </div>
+            <div>
+                <div>
+                    <div className="w-full">
+                        <div
+                            className="w-[100px] h-[45px] text-[11px] rounded relative duration-500 ease-in-out flex justify-center"
+                            style={{
+                                left: `${((440 - 35) * Number(news.page)) / 100}px`,
+                                background: `url(${pageNumberTooltipImage})`,
+                                color: 'rgb(202, 206, 1)',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundSize: 'cover',
+                            }}
+                        >
+                            <span className="relative top-[9px]">Trang {news.page}</span>
+                        </div>
+                    </div>
+                    <div className="w-full">
+                        <img src={pageSliderImage} width={'100%'} height={16} />
+                    </div>
+                    <div className="w-full flex justify-between items-center mt-1.5">
+                        <div className="flex-1 flex items-center">
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#589f39]" />
+                            <span className="text-[9px] text-[#333] ml-1.5">Trang đầu</span>
+                        </div>
+                        <div className="flex-1 justify-self-end flex justify-end">
+                            <span className="text-[9px] text-[#333] mr-1.5">Trang cuối</span>
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#d0021b]" />
+                        </div>
+                    </div>
+                </div>
+                <div className="mt-2 text-xs text-[#333]">
+                    Tin đăng đang ở <b>trang {news.page}</b>, trong mục <b>{news.categoryName}</b>
+                </div>
+                <div className="bg-[#f4f4f4] text-xs flex px-3 py-1.5 rounded mt-2 justify-between items-center">
+                    <div>Đẩy tin ngay để tin lên trang đầu và bán nhanh hơn</div>
+                    <Link
+                        to={`/news/day-tin/${news.id}`}
+                        className="px-6 py-1.5 rounded text-green-2 border border-green-2 bg-green-4 hover:text-green-2"
+                    >
+                        Đẩy tin
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+type NewsItemProps = {
+    news: NewsSearch;
+    modalRef: React.RefObject<ModalRef>;
+    setReSend: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const NewsItem = (props: NewsItemProps) => {
+    const { news, modalRef, setReSend } = props;
+    const navigate = useNavigate();
+    const handleShowDetail = () => {
+        if (!isOnSell(news.status)) {
+            NotifyUtil.warn(NotificationConstant.TITLE, 'Tin này đã ẩn!');
+            return;
+        }
+
+        navigate(`/news/detail/${news.id}`);
+    };
+
+    const handleHideNews = async () => {
+        const resultConfirm = await NotifyUtil.confirmDialog(
+            `Ẩn tin ${news.title}`,
+            'Khi bạn đã bán được hàng, hoặc không muốn tin xuất hiện trên Chợ đồ si, hãy chọn "Ẩn tin".',
+        );
+
+        if (!resultConfirm.isConfirmed) return;
+
+        const response = await requestApi('put', NEWS_HIDE_API + '/' + news.id);
+        if (response.data.success) {
+            setReSend(prev => !prev);
+            NotifyUtil.success(NotificationConstant.TITLE, 'Ẩn tin thành công!');
+        }
+
+        return;
+    };
+
+    const handleStatistic = () => {
+        modalRef.current?.onOpen(<StatisticNews news={news} />, 'Thống kê tin đăng', '30%', faChartColumn);
+    };
     return (
         <div className="mb-2 px-3 py-2 z-10 bg-white relative rounded-[1px]" style={{ height: '100%' }}>
-            <div className="flex">
-                <div className="relative overflow-hidden cursor-pointer w-[110px] min-w[110px] h-[71px] rounded">
+            <div className="flex mb-4">
+                <div className="relative overflow-hidden w-[110px] min-w[110px] h-[71px] rounded">
                     <img src={news.imageUrls[0]} alt="" width={110} height={70} className="object-contain" />
                     <div
                         className={clsx(
@@ -43,15 +140,15 @@ const NewsItem = ({ news }: { news: NewsResponse }) => {
                         {news?.imageUrls.length}
                     </div>
                 </div>
-                <div className="flex min-w-0 ml-2.5 justify-between cursor-pointer flex-1 w-full h-[75px]">
+                <div className="flex min-w-0 ml-2.5 justify-between flex-1 w-full h-[75px]">
                     <div className="w-full h-full ">
                         <div className="flex">
-                            <Link
-                                to={`/news/detail/${news.id}`}
-                                className="text-[#1e1e1e] hover:text-[#1e1e1e] pr-2.5 whitespace-nowrap overflow-hidden block text-[15px]"
+                            <div
+                                onClick={handleShowDetail}
+                                className="text-[#1e1e1e] hover:text-[#1e1e1e] cursor-pointer pr-2.5 whitespace-nowrap overflow-hidden block text-[15px]"
                             >
                                 {news.title}
-                            </Link>
+                            </div>
                         </div>
                         <div className="flex flex-wrap h-full">
                             <div className="float-left w-[40%] relative ">
@@ -64,94 +161,102 @@ const NewsItem = ({ news }: { news: NewsResponse }) => {
                                 </div>
                                 <div className="flex h-[25px] text-[13px] text-black justify-between">
                                     <span className="text-black text-[13px] opacity-70 self-end">
-                                        {moment(news.createdAt).format(DateTimeUtil.HmsDmyFormat)}
+                                        {DateTimeUtil.fromNow(news.createdAt)}
                                     </span>
                                 </div>
                             </div>
-                            <div className="relative float-left w-[60%] h-[87%]">
-                                <div className="bg-white absolute bottom-[30%] right-[53%] py-0 px-2.5 text-center">
-                                    <div className="relative h-[26px] ">
-                                        <div
-                                            className="w-[68px] h-[29px] text-[11px] rounded relative duration-500 ease-in-out"
-                                            style={{
-                                                left: `${148 * Number(news.page) / 100}%`,
-                                                color: 'rgb(202, 206, 1)',
-                                                backgroundPosition: '50%',
-                                                backgroundSize: '68px 29px',
-                                                backgroundRepeat: 'no-repeat',
-                                                background: `url(${pageNumberTooltipImage})`,
-                                            }}
-                                        >
-                                            <span className="relative top-[3px]">Trang {news.page}</span>
+                            {isOnSell(news.status) && (
+                                <div className="relative float-left w-[60%] h-[87%]">
+                                    <div className="bg-white absolute bottom-[30%] right-[53%] py-0 px-2.5 text-center">
+                                        <div className="relative h-[26px] ">
+                                            <div
+                                                className="w-[68px] h-[29px] text-[11px] rounded relative duration-500 ease-in-out"
+                                                style={{
+                                                    left: `${((148 - 18) * Number(news.page)) / 100}px`,
+                                                    color: 'rgb(202, 206, 1)',
+                                                    backgroundPosition: '50%',
+                                                    backgroundSize: '68px 29px',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    background: `url(${pageNumberTooltipImage})`,
+                                                }}
+                                            >
+                                                <span className="relative top-[3px]">Trang {news.page}</span>
+                                            </div>
+                                            <div
+                                                className="w-[18px] h-[18px] absolute bottom-[-26px] duration-500 ease-in-out"
+                                                style={{
+                                                    left: `${((148 - 18) * Number(news.page)) / 100}px`,
+                                                    color: 'rgb(202, 206, 1)',
+                                                    backgroundPosition: '50%',
+                                                    backgroundSize: '18px 18px',
+                                                    backgroundRepeat: 'no-repeat',
+                                                    background: `url(${pageIndicatorImage})`,
+                                                }}
+                                            />
                                         </div>
                                         <div
-                                            className="w-[18px] h-[18px] absolute bottom-[-26px] duration-500 ease-in-out"
+                                            className={`h-[4px] w-[${148}px] mt-[15px]`}
                                             style={{
-                                                left: `${148 * Number(news.page) / 100}%`,
-                                                color: 'rgb(202, 206, 1)',
-                                                backgroundPosition: '50%',
-                                                backgroundSize: '18px 18px',
                                                 backgroundRepeat: 'no-repeat',
-                                                background: `url(${pageIndicatorImage})`,
+                                                background: `url(${pageSliderImage})`,
                                             }}
                                         />
                                     </div>
-                                    <div
-                                        className={`h-[5px] w-[${148}px] mt-[15px]`}
-                                        style={{
-                                            backgroundRepeat: 'no-repeat',
-                                            background: `url(${pageSliderImage})`,
-                                        }}
-                                    />
+                                    <div className="absolute w-1/2 bottom-[22%] right-0 flex self-end justify-between flex-col">
+                                        <Link
+                                            to={`/news/day-tin/${news.id}`}
+                                            className={clsx(
+                                                'border border-[#589f39] text-[#589f39] hover:text-[#589f39] bg-[rgba(117,189,79,.1)]',
+                                                ' h-8 text-[15px] w-[146px] p-1 flex items-center',
+                                            )}
+                                        >
+                                            <img className="mr-2" src={sellIcon} />
+                                            Bán nhanh hơn
+                                        </Link>
+                                    </div>
                                 </div>
-                                <div className="absolute w-1/2 bottom-[22%] right-0 flex self-end justify-between flex-col">
-                                    <Link
-                                        to={`/news/day-tin/${news.id}`}
-                                        className={clsx(
-                                            'border border-[#589f39] text-[#589f39] hover:text-[#589f39] bg-[rgba(117,189,79,.1)]',
-                                            ' h-8 text-[15px] w-[146px] p-1 flex items-center',
-                                        )}
-                                    >
-                                        <img className="mr-2" src={sellIcon} />
-                                        Bán nhanh hơn
-                                    </Link>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
-            <div className="w-full flex justify-between mt-4 border border-[#f4f4f4]">
-                <div
-                    className={clsx(
-                        'text-[#38699f] text-[15px] flex-1 py-2 border-r border-[#f4f4f4]',
-                        'flex items-center justify-center',
-                    )}
-                >
-                    <div className="cursor-pointer select-none">
-                        <BaseIcon icon={faEyeSlash} className="mr-1" size="sm" />
-                        Đã bán / Ẩn tin
+            {isOnSell(news.status) && (
+                <div className="w-full flex justify-between border border-[#f4f4f4]">
+                    <div
+                        className={clsx(
+                            'text-[#38699f] text-[15px] flex-1 py-2 border-r border-[#f4f4f4]',
+                            'flex items-center justify-center cursor-pointer',
+                        )}
+                        onClick={handleHideNews}
+                    >
+                        <div className=" select-none">
+                            <BaseIcon icon={faEyeSlash} className="mr-1" size="sm" />
+                            Đã bán / Ẩn tin
+                        </div>
+                    </div>
+                    <div
+                        className={clsx(
+                            'text-[#38699f] text-[15px] flex-1 py-2 border-l border-[#f4f4f4]',
+                            'flex items-center justify-center cursor-pointer',
+                        )}
+                        onClick={handleStatistic}
+                    >
+                        <div className="select-none">
+                            <BaseIcon icon={faChartColumn} className="mr-1" size="sm" />
+                            Xem thống kê
+                        </div>
                     </div>
                 </div>
-                <div
-                    className={clsx(
-                        'text-[#38699f] text-[15px] flex-1 py-2 border-l border-[#f4f4f4]',
-                        'flex items-center justify-center',
-                    )}
-                >
-                    <div className="cursor-pointer select-none">
-                        <BaseIcon icon={faChartColumn} className="mr-1" size="sm" />
-                        Xem thống kê
-                    </div>
-                </div>
-            </div>
+            )}
         </div>
     );
 };
 
 const NewsDashboard: React.FC = () => {
+    const modalRef = useRef<ModalRef>(null);
     const { authUser } = useSelector((state: RootState) => state.authData);
-    const { data: requestNews, isLoading } = useQuery(['GET_NEWS_DETAIL_BY_USER_ID'], () =>
+    const [reSend, setReSend] = useState<boolean>(false);
+    const { data: requestNews, isLoading } = useQuery(['GET_NEWS_DETAIL_BY_USER_ID', reSend], () =>
         getNewsByUserId(authUser?.user.id),
     );
     const listNews = requestNews?.data?.result ?? [];
@@ -219,7 +324,7 @@ const NewsDashboard: React.FC = () => {
                                     {listNewsOnSell.map(news => {
                                         return (
                                             <div key={news.id}>
-                                                <NewsItem news={news} />
+                                                <NewsItem news={news} modalRef={modalRef} setReSend={setReSend} />
                                             </div>
                                         );
                                     })}
@@ -229,7 +334,7 @@ const NewsDashboard: React.FC = () => {
                                         if (news.status !== NewsStatus.Sold) return null;
                                         return (
                                             <div key={news.id}>
-                                                <NewsItem news={news} />
+                                                <NewsItem news={news} modalRef={modalRef} setReSend={setReSend} />
                                             </div>
                                         );
                                     })}
@@ -326,6 +431,7 @@ const NewsDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <ModalBase ref={modalRef} />
         </BoxContainer>
     );
 };

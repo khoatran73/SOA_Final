@@ -1,6 +1,6 @@
 import { AppUser } from '../../types/Auth/Identity';
 import { Request, Response } from 'express';
-import { INews, NewsBump } from '../../types/Home/News';
+import { INews, NewsBump, NewsStatus } from '../../types/Home/News';
 import _ from 'lodash';
 import LocaleUtil from '../../utils/LocaleUtil';
 import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
@@ -228,6 +228,7 @@ const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>,
     const listNews = await News.find({ userId: userId });
     const allNews = await News.find();
     const user = await User.findOne({ id: userId });
+    const categories = await Category.find();
 
     const newsResponse = listNews.map(x => {
         const doc = _.get({ ...x }, '_doc');
@@ -235,11 +236,12 @@ const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>,
         const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
         const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
         const page = calculatePage(allNews, x);
+        const category = categories.find(y => y.id === x.categoryId)
 
-        return { ...doc, provinceName, districtName, wardName, page } as NewsResponse;
+        return { ...doc, provinceName, districtName, wardName, page, categoryName: category?.name } as NewsSearch;
     });
 
-    return res.json(ResponseOk<NewsResponse[]>(newsResponse));
+    return res.json(ResponseOk<NewsSearch[]>(newsResponse));
 };
 
 const updateNewsBump = async (
@@ -272,6 +274,23 @@ const updateNewsBump = async (
         {
             bumpImage: !!newBumpImage ? newBumpImage : news.bumpImage,
             bumpPriority: !!newBumpPriority ? newBumpPriority : news.bumpPriority,
+        },
+    );
+
+    return res.json(ResponseOk());
+};
+
+const hideNews = async (req: Request<{ id: string }, any, any, any>, res: Response) => {
+    const id = req.params.id;
+    const news = await News.findOne({ id: id });
+    if (!news) {
+        return res.json(ResponseFail('Không tìm thấy tin!'));
+    }
+
+    await News.updateOne(
+        { id: id },
+        {
+            status: NewsStatus.Sold,
         },
     );
 
@@ -328,6 +347,7 @@ const NewsService = {
     searchNews,
     showNewsByUserId,
     updateNewsBump,
+    hideNews
 };
 
 export default NewsService;

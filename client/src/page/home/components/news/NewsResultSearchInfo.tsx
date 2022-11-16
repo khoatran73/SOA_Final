@@ -1,13 +1,13 @@
 import { Avatar, Image } from 'antd';
-import React from 'react';
-import { NewsSearch } from '~/types/home/news';
-import { VND_CHAR } from '~/configs';
-import moment from 'moment';
-import emptyImage from '~/assets/layout/empty.jpg';
-import { Link } from 'react-router-dom';
-import LocaleUtil from '~/util/LocaleUtil';
-import cameraImage from '~/assets/news/camera.svg';
 import clsx from 'clsx';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import emptyImage from '~/assets/layout/empty.jpg';
+import cameraImage from '~/assets/news/camera.svg';
+import { VND_CHAR } from '~/configs';
+import { NewsSearch } from '~/types/home/news';
+import DateTimeUtil from '~/util/DateTimeUtil';
+import LocaleUtil from '~/util/LocaleUtil';
 
 interface Props {
     news: NewsSearch;
@@ -52,7 +52,7 @@ const NewsResultSearchInfo: React.FC<Props> = props => {
                         <Avatar size={18}>a</Avatar> <span className="ml-1">{news.fullName}</span>
                     </div>
                     <span className="mx-1.5">·</span>
-                    <div className="">{moment(news.createdAt).fromNow()}</div>
+                    <div className="">{DateTimeUtil.fromNow(news?.createdAt)}</div>
                     <span className="mx-1.5">·</span>
                     <div>{news.provinceName}</div>
                 </div>
