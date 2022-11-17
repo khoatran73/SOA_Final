@@ -231,7 +231,7 @@ const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>,
     const categories = await Category.find();
 
     const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc');
+        const doc = _.get({ ...x }, '_doc') ?? {};
         const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
         const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
         const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;

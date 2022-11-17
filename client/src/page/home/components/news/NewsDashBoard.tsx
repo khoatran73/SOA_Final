@@ -354,10 +354,10 @@ const NewsDashboard: React.FC = () => {
                                 <span className="text-lg">0</span>
                             </div>
                         </div>
-                        <div className="w-full float-left relative bg-[#dfdfdf]">
+                        {/* <div className="w-full float-left relative bg-[#dfdfdf]">
                             <span className="block text-center py-[5px]">Các gói nạp</span>
-                        </div>
-                        <div className="">
+                        </div> */}
+                        {/* <div className="">
                             <ul className="_1902iE8tRDmhuAmwmwcuOe">
                                 <li>
                                     <i>109198</i>
@@ -416,17 +416,17 @@ const NewsDashboard: React.FC = () => {
                                     </label>
                                 </li>
                             </ul>
-                        </div>
+                        </div> */}
                         <div className="w-full">
-                            <a
-                                href="/dashboard/balances"
+                            <Link
+                                to="/dashboard/balances"
                                 className={clsx(
                                     'm-auto w-full h-[30px] text-white bg-[#5a9e3f] uppercase',
                                     'text-[13px] font-bold flex items-center justify-center rounded',
                                 )}
                             >
                                 Nạp Ngay
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>
