@@ -2,6 +2,7 @@ import React from 'react';
 import { matchRoutes, RouteMatch, RouteObject, useRoutes } from 'react-router-dom';
 import ChatView from '~/page/home/components/chat/ChatView';
 import DepositCoins from '~/page/home/components/dashboard/Depositcoins';
+import TransactionHistory from '~/page/home/components/dashboard/TransactionHistory';
 import PrivateRoute from './PrivateRoute';
 
 // #region layout
@@ -84,6 +85,10 @@ const routeList = [
                         path: 'balances',
                         element: <DepositCoins />,
                     },
+                    {
+                        path: 'history',
+                        element: <TransactionHistory />,
+                    }
                 ],
             },
         ],

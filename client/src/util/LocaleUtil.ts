@@ -29,6 +29,6 @@ export default class LocaleUtil {
         const value = Number(number);
         const prefix = value < 0 ? 'Âm ' : ''
         const abs = Math.abs(value)
-        return capitalize(prefix + readNumber(abs));
+        return capitalize(prefix + readNumber(abs)); 
     };
 }

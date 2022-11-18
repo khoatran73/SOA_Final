@@ -11,6 +11,7 @@ export const API_LAYOUT = APP_API_PATH + '/menu/layout';
 
 // common api
 export const COMBO_USER_WITH_KEY_API = APP_API_PATH + '/common/combo-user-with-key';
+export const TRANSACTION_HISTORY_API = APP_API_PATH + '/history/get-all';
 
 // upload file
 export const UPLOAD_FILE_API = APP_API_PATH + '/common/upload-file';

@@ -2,6 +2,7 @@ import paypal from 'paypal-rest-sdk';
 import { Request, Response } from 'express';
 import { ResponseOk } from '../../common/ApiResponse';
 import User from '../../Models/User';
+import TransactionHistory from '../../Models/TransactionHistory';
 paypal.configure({
     mode: 'sandbox', //sandbox or live
     client_id: 'AYQJggj5ZcwxUGY91V-K7RDDeDN2SVJvLF-YNaxJB_gXgn9wx2HUI6AoYsMCkl2qoDVEaPOm2YQ-_XWl',
@@ -73,14 +74,24 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
         ],
     };
     const paymentId = req.query.paymentId as string;
-    paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+    paypal.payment.execute(paymentId, execute_payment_json,  async (error, payment) =>{
         if (error) {
             console.log(error.response);
             throw error;
+        }else{
+            await User.findOneAndUpdate({id:userId}, { $inc: { amount: coin } });
+            const history = {
+                userId: userId,
+                content: {
+                    method: payment.payer.payment_method,
+                    currency: payment.transactions[0].amount.currency,
+                    total: payment.transactions[0].amount.total,
+                    title: payment.transactions[0]?.item_list?.items[0].name,
+                }
+            }
+            await TransactionHistory.create(history);
         }
     });
-    await User.findOneAndUpdate({id:userId}, { $inc: { amount: coin } });
-    console.log(paypal.payment)
     res.redirect('http://localhost:3000/dashboard/balances');
 };
 

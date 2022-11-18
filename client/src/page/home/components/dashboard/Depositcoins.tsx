@@ -11,10 +11,11 @@ import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
 import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import BuyCoinModel from './components/BuyCoinModel';
 import { RootState } from '~/AppStore';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { AuthUser } from '~/types/ums/AuthUser';
 import { requestApi } from '~/lib/axios';
 import { API_GET_USER } from '~/configs';
+import { authSlice } from '~/store/authSlice';
 const OptionCoins = (props: any) => {
     return (
         <div className="w-[80%] h-[70px] mx-auto flex py-2 px-3 relative cursor-pointer border border-[#ebeaea] mt-2">
@@ -35,13 +36,17 @@ const DepositCoins: React.FC = () => {
     const listCoins = [8000000, 5000000, 3000000, 1500000, 1000000, 500000, 100000, 50000, 20000];
     const modalRef = useRef<ModalRef>(null);
     const { authUser } = useSelector((state: RootState) => state.authData);
+    const dispatch = useDispatch()
+    const {setAuthData} = authSlice.actions;
     const [user, setUser] = useState<AuthUser>();
     useEffect(() => {
         const userId = authUser?.user.id;
         requestApi('get', API_GET_USER, { id: userId }).then(res => {
             setUser(res.data.result);
+            dispatch(setAuthData(res.data.result));
         });
-    }, [user]);
+    }, []);
+
     const handleBuyCoin = (item: number) => {
         modalRef.current?.onOpen(
             <BuyCoinModel

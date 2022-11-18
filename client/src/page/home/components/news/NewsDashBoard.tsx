@@ -365,7 +365,7 @@ const NewsDashboard: React.FC = () => {
                             </div>
                             <div className="text-[12px] font-semibold w-[calc(100% - 60px)] text-left float-right mt-2.5 ml-2.5">
                                 <p>Tài khoản Đồng Tốt</p>
-                                <span className="text-lg">0</span>
+                                <span className="text-lg">{LocaleUtil.toLocaleString(authUser?.user.amount ?? 0)}</span>
                             </div>
                         </div>
                         {/* <div className="w-full float-left relative bg-[#dfdfdf]">
