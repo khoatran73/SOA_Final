@@ -103,7 +103,11 @@ const NewsPush: React.FC = () => {
         const response = await requestApi('put', NEWS_UPDATE_BUMP_API + '/' + id, body);
         if (response.data.success) {
             NotifyUtil.success(NotificationConstant.TITLE, NotificationConstant.DESCRIPTION_UPDATE_SUCCESS);
+            navigate(-1)
+            return;
         }
+
+        NotifyUtil.error(NotificationConstant.TITLE, response.data.message ?? NotificationConstant.SERVER_ERROR);
     };
 
     return (
@@ -234,49 +238,52 @@ const NewsPush: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="flex w-1/2 rounded mt-4">
-                            <div
-                                className={clsx(
-                                    'hover:border-green-4 hover:bg-green-5 relative flex',
-                                    'min-h-[101px] cursor-pointer flex-col rounded border p-3 w-full',
-                                    bumpImage ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2' : '',
-                                )}
-                                onClick={() => handleBumpImage(SevenNumber)}
-                            >
-                                <div>
-                                    <div className="flex justify-between">
-                                        <div className="capitalize">Tin Nổi Bật (Nhiều hình ảnh)</div>
-                                        <img alt="icon" className="h-6" src={bumpImageIcon} />
-                                    </div>
-                                    <div className="mt-1 text-xs font-bold text-green-2">
-                                        {LocaleUtil.toLocaleString(BumpImagePerSevenDay)} {VND_CHAR} / {SevenNumber}{' '}
-                                        ngày
-                                    </div>
-                                </div>
-                                <div className="flex-1" />
-                                <div className="text-[10px] opacity-50">
+                        {!news?.bumpImage && (
+                            <div className="flex w-1/2 rounded mt-4">
+                                <div
+                                    className={clsx(
+                                        'hover:border-green-4 hover:bg-green-5 relative flex',
+                                        'min-h-[101px] cursor-pointer flex-col rounded border p-3 w-full',
+                                        bumpImage
+                                            ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
+                                            : '',
+                                    )}
+                                    onClick={() => handleBumpImage(100000)} //vinh vien
+                                >
                                     <div>
-                                        <span className="text-red-2">*</span>Gấp đôi khả năng thu hút khách hàng
+                                        <div className="flex justify-between">
+                                            <div className="capitalize">Tin Nổi Bật (Nhiều hình ảnh)</div>
+                                            <img alt="icon" className="h-6" src={bumpImageIcon} />
+                                        </div>
+                                        <div className="mt-1 text-xs font-bold text-green-2">
+                                            {LocaleUtil.toLocaleString(BumpImagePerSevenDay)} {VND_CHAR} / Vĩnh viễn
+                                        </div>
                                     </div>
-                                    <div>
-                                        <span className="text-red-2">*</span>Gấp đôi kích thước tin đăng với thêm 5 hình
-                                        ảnh hiển thị
+                                    <div className="flex-1" />
+                                    <div className="text-[10px] opacity-50">
+                                        <div>
+                                            <span className="text-red-2">*</span>Gấp đôi khả năng thu hút khách hàng
+                                        </div>
+                                        <div>
+                                            <span className="text-red-2">*</span>Gấp đôi kích thước tin đăng với thêm 5
+                                            hình ảnh hiển thị
+                                        </div>
                                     </div>
+                                    <img
+                                        alt="new-service"
+                                        className="absolute -left-[16px] -top-[20px]"
+                                        height="50"
+                                        src={newServiceIcon}
+                                        width="110"
+                                    />
+                                    {bumpImage && (
+                                        <div className="absolute -top-2 -right-2">
+                                            <img src={tickIcon} width={20} height={20} alt="" />
+                                        </div>
+                                    )}
                                 </div>
-                                <img
-                                    alt="new-service"
-                                    className="absolute -left-[16px] -top-[20px]"
-                                    height="50"
-                                    src={newServiceIcon}
-                                    width="110"
-                                />
-                                {bumpImage && (
-                                    <div className="absolute -top-2 -right-2">
-                                        <img src={tickIcon} width={20} height={20} alt="" />
-                                    </div>
-                                )}
                             </div>
-                        </div>
+                        )}
                     </>
                 </Card>
             </div>

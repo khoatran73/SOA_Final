@@ -2,6 +2,7 @@ import { APP_API_PATH } from '~/configs';
 const HOME_PATH = APP_API_PATH + '/home';
 
 export const NEWS_CREATE_API = HOME_PATH + '/news/create';
+export const NEWS_UPDATE_API = HOME_PATH + '/news/update';
 export const NEWS_DETAIL_API = HOME_PATH + '/news/show';
 export const NEWS_WITH_SLUG_API = HOME_PATH + '/news/category';
 export const NEWS_OTHER_API = HOME_PATH + '/news/other';

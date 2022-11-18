@@ -1,3 +1,5 @@
+import capitalize from 'capitalize';
+import readNumber from 'read-vn-number';
 export default class LocaleUtil {
     static ignoreSensitive = (input: string) => {
         input = input.toLowerCase();
@@ -22,4 +24,11 @@ export default class LocaleUtil {
     };
 
     static toLocaleString = (number: number) => number.toLocaleString();
+
+    static numberToText = (number: string | number) => {
+        const value = Number(number);
+        const prefix = value < 0 ? 'Âm ' : ''
+        const abs = Math.abs(value)
+        return capitalize(prefix + readNumber(abs));
+    };
 }

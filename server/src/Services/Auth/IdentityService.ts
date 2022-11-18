@@ -14,18 +14,6 @@ declare module 'express-session' {
 
 const checkLogin = async (req: Request, res: Response) => {
     const user = req.session.user;
-    // const user = {
-    //     email: '',
-    //     fullName: 'Quản trị viên hệ thống',
-    //     id: 'a35002f3-c2bd-4949-a76f-9702e360feb7',
-    //     isSupper: true,
-    //     username: 'admin',
-    //     phoneNumber: '',
-    //     amount: 10127,
-    //     district: '559',
-    //     province: '54',
-    //     ward: '22159',
-    // };
     if (user) {
         const isSupper = user.isSupper;
         const userRoles = await UserRole.find({ userId: user.id });

@@ -70,8 +70,17 @@ const StatisticNews = ({ news }: { news: NewsSearch }) => {
                         </div>
                     </div>
                 </div>
-                <div className="mt-2 text-xs text-[#333]">
-                    Tin đăng đang ở <b>trang {news.page}</b>, trong mục <b>{news.categoryName}</b>
+                <div className="mt-2 ">
+                    <div className="text-xs text-[#333]">
+                        Tin <b>{news.title}</b> đang xuất hiện ở <b>vị trí thứ {news.index}</b> <b>trang {news.page}</b>
+                        , trong mục <b>{news.categoryName}</b>
+                    </div>
+                    <Link
+                        to={`/category?categorySlug=${news.slug}&page=${news.page}`}
+                        className="text-[#38699f] text-xs italic hover:text-[#38699f] hover:underline relative -top-0.5"
+                    >
+                        Chi tiết
+                    </Link>
                 </div>
                 <div className="bg-[#f4f4f4] text-xs flex px-3 py-1.5 rounded mt-2 justify-between items-center">
                     <div>Đẩy tin ngay để tin lên trang đầu và bán nhanh hơn</div>
@@ -118,6 +127,8 @@ const NewsItem = (props: NewsItemProps) => {
             setReSend(prev => !prev);
             NotifyUtil.success(NotificationConstant.TITLE, 'Ẩn tin thành công!');
         }
+
+        NotifyUtil.error(NotificationConstant.TITLE, response.data.message ?? NotificationConstant.SERVER_ERROR);
 
         return;
     };
@@ -167,7 +178,10 @@ const NewsItem = (props: NewsItemProps) => {
                             </div>
                             {isOnSell(news.status) && (
                                 <div className="relative float-left w-[60%] h-[87%]">
-                                    <div className="bg-white absolute bottom-[30%] right-[53%] py-0 px-2.5 text-center">
+                                    <Link
+                                        to={`/category?categorySlug=${news.slug}&page=${news.page}`}
+                                        className="bg-white absolute bottom-[30%] right-[53%] py-0 px-2.5 text-center"
+                                    >
                                         <div className="relative h-[26px] ">
                                             <div
                                                 className="w-[68px] h-[29px] text-[11px] rounded relative duration-500 ease-in-out"
@@ -201,7 +215,7 @@ const NewsItem = (props: NewsItemProps) => {
                                                 background: `url(${pageSliderImage})`,
                                             }}
                                         />
-                                    </div>
+                                    </Link>
                                     <div className="absolute w-1/2 bottom-[22%] right-0 flex self-end justify-between flex-col">
                                         <Link
                                             to={`/news/day-tin/${news.id}`}

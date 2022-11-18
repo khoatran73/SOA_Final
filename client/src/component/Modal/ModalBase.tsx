@@ -25,7 +25,13 @@ interface IState {
     percentWidth: Percentage;
     icon: IconDefinition;
 }
-const ModalBase = forwardRef((props: ModalProps, ref) => {
+
+interface BaseModalProps extends ModalProps {
+    hideTitle?: boolean;
+}
+
+const ModalBase = forwardRef((props: BaseModalProps, ref) => {
+    const { hideTitle = false } = props;
     const [state, setState] = useState<IState>({
         visible: false,
         title: '',
@@ -80,10 +86,12 @@ const ModalBase = forwardRef((props: ModalProps, ref) => {
             wrapClassName="modal-base"
             visible={state.visible}
             title={
-                <div className="flex items-center uppercase">
-                    <FontAwesomeIcon icon={state.icon || faPlus} className="mr-1.5" />
-                    <div>{state.title}</div>
-                </div>
+                props.hideTitle ? null : (
+                    <div className="flex items-center uppercase">
+                        <FontAwesomeIcon icon={state.icon || faPlus} className="mr-1.5" />
+                        <div>{state.title}</div>
+                    </div>
+                )
             }
             closeIcon={<FontAwesomeIcon icon={faClose} />}
             onCancel={handleCancel}
@@ -91,6 +99,7 @@ const ModalBase = forwardRef((props: ModalProps, ref) => {
             footer={props.footer ?? null}
             open={props.open}
             width={(window.innerWidth * parseInt(state.percentWidth.replace('%', ''))) / 100}
+            {...props}
         >
             {state.children}
         </Modal>

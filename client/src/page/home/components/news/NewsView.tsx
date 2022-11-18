@@ -1,29 +1,35 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { faClose, faImage, faSave } from '@fortawesome/free-solid-svg-icons';
-import { Input, Select, Upload, UploadFile } from 'antd';
+import { faClose, faImage } from '@fortawesome/free-solid-svg-icons';
+import { Empty, Input, Select, Upload, UploadFile } from 'antd';
 import TextArea from 'antd/lib/input/TextArea';
 import { RcFile, UploadProps } from 'antd/lib/upload';
+import clsx from 'clsx';
 import _ from 'lodash';
-import React, { useEffect, useRef } from 'react';
+import moment from 'moment';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { RootState } from '~/AppStore';
 import { ButtonBase } from '~/component/Elements/Button/ButtonBase';
 import Loading from '~/component/Elements/loading/Loading';
 import BaseForm, { BaseFormRef } from '~/component/Form/BaseForm';
+import Forbidden from '~/component/Layout/Forbidden';
 import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import { DISTRICT_COMBO_API, PROVINCE_COMBO_API, UPLOAD_FILE_API, WARD_COMBO_API } from '~/configs';
 import NotificationConstant from '~/configs/contants';
 import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
 import { CATEGORY_COMBO_API } from '~/page/product/category/api/api';
+import { NewsCreateRequest, NewsResponse, NewsStatus } from '~/types/home/news';
 import { ComboOption, Identifier } from '~/types/shared';
 import { BasePlacement, District, Placement, Province, Ward } from '~/types/shared/Placement';
 import { AppUser } from '~/types/ums/AuthUser';
+import DateTimeUtil from '~/util/DateTimeUtil';
 import FileUtil from '~/util/FileUtil';
 import LocaleUtil from '~/util/LocaleUtil';
 import NotifyUtil from '~/util/NotifyUtil';
-import { NEWS_CREATE_API } from '../../api/api';
+import { NEWS_CREATE_API, NEWS_DETAIL_API, NEWS_UPDATE_API } from '../../api/api';
 import BoxContainer from '../../layout/BoxContainer';
 
 interface NewsRequest {
@@ -45,24 +51,57 @@ interface State {
     loading: boolean;
     //descriptionCharacter
     descriptionCharacter: number;
+    price: number;
 }
+
+const getNewsDetail = (id: string | undefined) => {
+    if (!id) return;
+    return requestApi<NewsResponse>('get', NEWS_DETAIL_API + '/' + id);
+};
+
+const DefaultImageCanUpload = 5;
+const ImageExtraCanUpload = 5;
+
+const calculateImageCanUpload = (toDateLeft?: string) => {
+    const dateNow = moment().format();
+    const remainMilliSeconds = DateTimeUtil.diffTwoStringDate(toDateLeft ?? '', dateNow);
+    if (remainMilliSeconds > 0) return DefaultImageCanUpload + ImageExtraCanUpload;
+    return DefaultImageCanUpload;
+};
 
 const NewsView: React.FC = () => {
     const formRef = useRef<BaseFormRef>(null);
     const modalRef = useRef<ModalRef>(null);
+    const { id } = useParams();
     const { authUser } = useSelector((state: RootState) => state.authData);
-    const numberImageCanUpload = 5;
+    const { data: requestNews, isLoading } = useQuery([`GET_NEWS_DETAIL_${id}`], () => getNewsDetail(id));
     const navigate = useNavigate();
+    const news = requestNews?.data?.result;
+    const numberImageCanUpload = calculateImageCanUpload(news?.bumpImage?.toDate?.toString());
     const [state, setState] = useMergeState<State>({
-        imageList: [],
-        imageUrls: [],
+        imageList:
+            news?.imageUrls?.map(
+                url =>
+                    ({
+                        uid: url,
+                        name: url,
+                        url: url,
+                        thumbUrl: url,
+                    } as UploadFile),
+            ) ?? [],
+        imageUrls: news?.imageUrls || [],
         categories: [],
         provinces: [],
         districts: [],
         wards: [],
-        descriptionCharacter: 0,
+        descriptionCharacter: news?.description.length ?? 0,
+        price: news?.price ?? 0,
         loading: true,
     });
+
+    const isEditView = useMemo(() => !!id, [id]);
+    const isOwnNews = useMemo(() => news?.userId === authUser?.user?.id, [authUser?.user?.id, news?.userId]);
+    const isOnSell = useMemo(() => news?.status === NewsStatus.OnSell, [news?.status]);
 
     const onSave = async () => {
         formRef.current?.onSubmit();
@@ -74,16 +113,44 @@ const NewsView: React.FC = () => {
             return;
         }
 
-        const formValues = formRef.current?.getFieldsValue();
-        const body = { ...formValues, imageUrls: state.imageUrls };
+        if (state.imageUrls.length === 0) {
+            NotifyUtil.error(NotificationConstant.TITLE, 'Vui lòng tải lên ít nhất một hình ảnh!');
+            return;
+        }
 
+        const formValues = formRef.current?.getFieldsValue();
+        const body = { ...formValues, imageUrls: state.imageUrls } as NewsCreateRequest;
+
+        if (!isEditView) {
+            await onAddNews(body);
+            return;
+        }
+
+        await onEditNews(body);
+    };
+
+    const onAddNews = async (body: NewsCreateRequest) => {
         const response = await requestApi('post', NEWS_CREATE_API, body);
 
         if (response.data?.success) {
             NotifyUtil.success(NotificationConstant.TITLE, NotificationConstant.DESCRIPTION_CREATE_SUCCESS);
-            navigate('/news/dashboard')
+            navigate('/news/dashboard');
             return;
         }
+
+        NotifyUtil.error(NotificationConstant.TITLE, response.data.message ?? NotificationConstant.SERVER_ERROR);
+    };
+
+    const onEditNews = async (body: NewsCreateRequest) => {
+        const response = await requestApi('put', NEWS_UPDATE_API + '/' + body.id, body);
+
+        if (response.data?.success) {
+            NotifyUtil.success(NotificationConstant.TITLE, NotificationConstant.DESCRIPTION_UPDATE_SUCCESS);
+            navigate('/news/dashboard');
+            return;
+        }
+
+        NotifyUtil.error(NotificationConstant.TITLE, response.data.message ?? NotificationConstant.SERVER_ERROR);
     };
 
     useEffect(() => {
@@ -120,7 +187,7 @@ const NewsView: React.FC = () => {
                         wards: resWard.data?.result?.map(x => ({ value: x.code, label: x.name } as ComboOption)),
                     });
             })
-            .catch(err => console.log(err))
+            .catch(err => NotifyUtil.error(NotificationConstant.TITLE, NotificationConstant.SERVER_ERROR))
             .finally(() => setState({ loading: false }));
     };
 
@@ -187,7 +254,10 @@ const NewsView: React.FC = () => {
             setState({
                 [placementUrl.opt]: response.data.result?.map(x => ({ value: x.code, label: x.name } as ComboOption)),
             });
+            return;
         }
+
+        NotifyUtil.error(NotificationConstant.TITLE, response.data.message ?? NotificationConstant.SERVER_ERROR);
     };
 
     const uploadButton = (
@@ -197,6 +267,9 @@ const NewsView: React.FC = () => {
         </div>
     );
 
+    if (isLoading) return <Loading />;
+    if (!isOnSell || !news) return <Empty description="Xin lỗi, tin này đã ẩn hoặc không tồn tại!" />;
+    if (!isOwnNews) return <Forbidden />;
     return (
         <BoxContainer className="flex">
             {state.loading ? (
@@ -204,6 +277,11 @@ const NewsView: React.FC = () => {
             ) : (
                 <>
                     <div className="w-1/3">
+                        <div className="mb-2">
+                            <div className="font-bold text-base text-[#222]">Ảnh về sản phẩm</div>
+                            <div className="text-sm text-[#777]">Tải lên từ 1 - {numberImageCanUpload} ảnh</div>
+                            <div className="text-sm text-[#777] italic">Ảnh đầu tiên là ảnh bìa của sản phẩm</div>
+                        </div>
                         <Upload
                             name="image"
                             action={UPLOAD_FILE_API}
@@ -221,11 +299,13 @@ const NewsView: React.FC = () => {
                     <BaseForm
                         className="w-2/3"
                         initialValues={
-                            {
-                                province: authUser?.user.province,
-                                district: authUser?.user.district,
-                                ward: authUser?.user.ward,
-                            } as AppUser
+                            !isEditView
+                                ? ({
+                                      province: authUser?.user.province,
+                                      district: authUser?.user.district,
+                                      ward: authUser?.user.ward,
+                                  } as AppUser)
+                                : news
                         }
                         ref={formRef}
                         baseFormItem={[
@@ -248,13 +328,33 @@ const NewsView: React.FC = () => {
                                 label: 'Giá',
                                 name: nameof.full<NewsRequest>(x => x.price),
                                 children: (
-                                    <Input suffix={<div>VND</div>} min={0} type="number" placeholder="Nhập giá ..." />
+                                    <Input
+                                        suffix={<div>VND</div>}
+                                        type="number"
+                                        min={0}
+                                        max={100000000} //100 trieu dong
+                                        placeholder="Nhập giá ..."
+                                        onChange={e =>
+                                            setState({
+                                                price: Number(e.target.value),
+                                            })
+                                        }
+                                    />
                                 ),
+                                extra: `${
+                                    state.price === 0
+                                        ? LocaleUtil.numberToText(news?.price)
+                                        : LocaleUtil.numberToText(state.price)
+                                } đồng`,
                                 rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
                             },
                             {
                                 label: 'Mô tả chi tiết',
-                                extra: `${state.descriptionCharacter}/1500 ký tự`,
+                                extra: `${
+                                    state.descriptionCharacter === 0
+                                        ? news?.description.length
+                                        : state.descriptionCharacter
+                                }/1500 ký tự`,
                                 name: nameof.full<NewsRequest>(x => x.description),
                                 children: (
                                     <TextArea
@@ -334,8 +434,20 @@ const NewsView: React.FC = () => {
                         labelCol={0}
                         renderBtnBottom={() => {
                             return (
-                                <div className="flex items-center justify-center w-full">
-                                    <ButtonBase title="Đăng tin" startIcon={faSave} onClick={onSave} size="md" />
+                                // <div className="flex items-center justify-center w-full">
+                                //     <ButtonBase title="Đăng tin" startIcon={faSave}  size="md" />
+                                // </div>
+                                <div className="w-full flex justify-center">
+                                    <div
+                                        className={clsx(
+                                            'border border-[#f80] bg-[#f80] text-base uppercase py-2.5 px-5',
+                                            'w-1/2 text-white rounded select-none cursor-pointer hover:bg-opacity-90',
+                                            'flex justify-center items-center',
+                                        )}
+                                        onClick={onSave}
+                                    >
+                                        {!isEditView ? 'Đăng tin' : 'Lưu chỉnh sửa'}
+                                    </div>
                                 </div>
                             );
                         }}

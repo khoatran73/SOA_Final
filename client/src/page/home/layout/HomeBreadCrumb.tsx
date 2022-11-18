@@ -31,7 +31,7 @@ const HomeBreadCrumb: React.FC<Props> = props => {
                             </div>
                         )}
                         {x.link ? (
-                            <Link className="text-xs text-[#33659c] hover:text-[#33659c]" to={x.link}>
+                            <Link className="text-xs text-[#33659c] hover:text-[#33659c] hover:underline" to={x.link}>
                                 {x.title}
                             </Link>
                         ) : (

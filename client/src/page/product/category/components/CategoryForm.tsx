@@ -148,7 +148,7 @@ const CategoryForm: React.FC<Props> = props => {
                         children: (
                             <Select
                                 placeholder="Chọn kiểu bán ..."
-                                defaultValue={SellType.SellOnline}
+                                // defaultValue={SellType.SellOnline}
                                 options={SellTypeOptions}
                             />
                         ),

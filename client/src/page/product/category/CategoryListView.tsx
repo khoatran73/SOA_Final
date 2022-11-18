@@ -1,4 +1,5 @@
 import { Image } from 'antd';
+import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useRef } from 'react';
 import Loading from '~/component/Elements/loading/Loading';
@@ -8,7 +9,7 @@ import { AppContainer } from '~/component/Layout/AppContainer';
 import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import { useBaseGrid } from '~/hook/useBaseGrid';
 import { baseDeleteApi } from '~/lib/axios';
-import { Category } from '~/types/product/Category';
+import { Category, SellType } from '~/types/product/Category';
 import { CATEGORY_DELETE_API, CATEGORY_INDEX_API } from './api/api';
 import CategoryForm from './components/CategoryForm';
 
@@ -63,10 +64,45 @@ const CategoryListView: React.FC = () => {
         {
             headerName: 'Tên danh mục',
             field: nameof.full<Category>(x => x.name),
-            minWidth: 500,
+            minWidth: 450,
             cellStyle: {
                 display: 'flex',
                 alignItems: 'center',
+            },
+        },
+        {
+            headerName: 'Kiểu bán',
+            field: nameof.full<Category>(x => x.type),
+            minWidth: 200,
+            cellStyle: {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+            },
+            cellRenderer: (params: any) => {
+                const data = _.get(params, 'data') as Category;
+                const type = data.type;
+
+                if (type === SellType.SellOnline)
+                    return (
+                        <div
+                            className={clsx(
+                                'border border-[#589f39] rounded text-[#589f39]',
+                                'flex items-center justify-center h-[35px] w-[130px]',
+                            )}
+                        >
+                            Bán trực tuyến
+                        </div>
+                    );
+
+                return <div
+                className={clsx(
+                    'border border-[#9b9b9b] rounded text-[#9b9b9b]',
+                    'flex items-center justify-center h-[35px] w-[130px]',
+                )}
+            >
+                Bán trực tiếp
+            </div>
             },
         },
         {
@@ -77,7 +113,7 @@ const CategoryListView: React.FC = () => {
                 const data = _.get(params, 'data') as Category;
                 const { imageUrl } = data;
 
-                if (!imageUrl) return null
+                if (!imageUrl) return null;
 
                 return (
                     <div className="w-full h-full flex items-center justify-center p-2">

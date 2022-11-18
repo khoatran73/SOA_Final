@@ -13,6 +13,6 @@ router.get('/search', NewsService.searchNews);
 router.get('/show-by-user', NewsService.showNewsByUserId);
 router.put('/update-bump/:id', NewsService.updateNewsBump);
 router.put('/hide/:id', NewsService.hideNews);
-
+router.put('/update/:id', NewsService.updateNews);
 
 export default router;

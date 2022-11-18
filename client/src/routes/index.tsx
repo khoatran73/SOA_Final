@@ -18,6 +18,7 @@ const NewsPush = React.lazy(() => import('~/page/home/components/news/NewsPush')
 const NewsDashBoard = React.lazy(() => import('~/page/home/components/news/NewsDashBoard'));
 const NewsDetail = React.lazy(() => import('~/page/home/components/news/NewsDetail'));
 const CategorySearch = React.lazy(() => import('~/page/home/components/category/CategorySearch'));
+const NewsCheckout = React.lazy(() => import('~/page/home/components/news/NewsCheckout'));
 
 // #endregion
 
@@ -34,7 +35,7 @@ const ProductListView = React.lazy(() => import('~/page/product/product/ProductL
 const MenuListView = React.lazy(() => import('~/page/system/menu/MenuListView'));
 const RoleListView = React.lazy(() => import('~/page/system/role/RoleListView'));
 const UserListView = React.lazy(() => import('~/page/system/user/UserListView'));
-// #endregionimport ProductTypeListView from './../page/product/product-type/ProductTypeListView';
+// #endregion
 
 const routeList = [
     {
@@ -53,17 +54,19 @@ const routeList = [
                         element: <NewsView />,
                     },
                     {
+                        path: 'edit/:id',
+                        element: <NewsView />,
+                    },
+                    {
                         path: 'detail/:id',
                         element: <NewsDetail />,
                     },
                     {
                         path: 'day-tin/:id',
-                        element: <NewsPush />
+                        element: <NewsPush />,
                     },
-                    {path: 'dashboard',
-                        element: <NewsDashBoard />
-
-                    }
+                    { path: 'dashboard', element: <NewsDashBoard /> },
+                    { path: 'checkout/:id', element: <NewsCheckout /> },
                 ],
             },
             {
@@ -80,7 +83,7 @@ const routeList = [
                     {
                         path: 'balances',
                         element: <DepositCoins />,
-                    }
+                    },
                 ],
             },
         ],

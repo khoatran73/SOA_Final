@@ -27,12 +27,14 @@ export interface News {
     updatedAt: Date;
 }
 
-export type NewsRequest = News & Pick<AppUser, 'province' | 'district' | 'ward'>;
+export type NewsCreateRequest = News & Pick<AppUser, 'province' | 'district' | 'ward'>;
 
 export type NewsResponse = News &
     Partial<AppUser> & {
         slug: string;
         page?: number;
+        index?: number;
+        isOnline?: boolean;
     };
 
 export type NewsResponseWithAddress = News & {

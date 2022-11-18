@@ -15,10 +15,11 @@
         "isolatedModules": true,
         "noEmit": true,
         "jsx": "react-jsx",
-        "paths": {
-            "~/*": ["./src/*"],
-            "react": ["./node_modules/@types/react"]
-        }
+        // "paths": {
+        //     "~/*": ["./src/*"],
+        //     "react": ["./node_modules/@types/react"]
+        // }
     },
-    "include": ["src", "src/setupProxy.js"]
+    "include": ["src", "src/setupProxy.js"],
+    "extends": "./tsconfig.paths.json"
 }

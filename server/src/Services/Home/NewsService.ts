@@ -1,17 +1,17 @@
-import { AppUser } from '../../types/Auth/Identity';
 import { Request, Response } from 'express';
-import { INews, NewsBump, NewsStatus } from '../../types/Home/News';
 import _ from 'lodash';
-import LocaleUtil from '../../utils/LocaleUtil';
+import moment from 'moment';
+import { SellType } from '../../types/Product/Category';
+import DateTimeUtil from '../..//utils/DateTimeUtil';
 import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
 import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
 import News from '../../Models/News';
 import User from '../../Models/User';
+import { AppUser } from '../../types/Auth/Identity';
+import { INews, NewsBump, NewsStatus } from '../../types/Home/News';
+import LocaleUtil from '../../utils/LocaleUtil';
 import Category from './../../Models/Category';
 import PlacementService from './../Common/PlacementService';
-import moment from 'moment';
-import DateTimeUtil from '../..//utils/DateTimeUtil';
-import { userInfo } from 'os';
 
 type NewsRequest = INews & Pick<AppUser, 'province' | 'district' | 'ward'>;
 
@@ -19,6 +19,8 @@ type NewsResponse = INews &
     Partial<AppUser> & {
         slug: string;
         page?: number;
+        index?: number;
+        isOnline?: boolean;
     };
 
 type NewsResponseWithAddress = INews & {
@@ -66,9 +68,47 @@ const addNews = async (req: Request<any, any, NewsRequest>, res: Response) => {
     return res.json(ResponseOk());
 };
 
+const updateNews = async (req: Request<{ id: string }, any, NewsRequest>, res: Response) => {
+    const id = req.params.id;
+    const news = await News.findOne({ id: id });
+    if (!news) return res.json(ResponseFail('Không tìm thấy tin tức!'));
+
+    const user = {
+        email: '',
+        fullName: 'Quản trị viên hệ thống',
+        id: 'a35002f3-c2bd-4949-a76f-9702e360feb7',
+        isSupper: true,
+        username: 'admin',
+        phoneNumber: '',
+        amount: 10127,
+    };
+
+    if (news.userId !== user.id) return res.json(ResponseFail('Bạn không có quyền sửa tin này!'));
+
+    await News.updateOne(
+        { id: id },
+        {
+            ...req.body,
+        },
+    );
+
+    await User.updateOne(
+        { id: user.id },
+        {
+            province: req.body.province,
+            district: req.body.district,
+            ward: req.body.ward,
+        },
+    );
+
+    return res.json(ResponseOk());
+};
+
 const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
     const id = req.params.id;
     const news = await News.findOne({ id: id });
+    if (!news) return res.json(ResponseFail('Không tìm thấy tin'));
+
     const user = await User.findOne({ id: news?.userId });
     const category = await Category.findOne({ id: news?.categoryId });
     const doc = _.get({ ...news }, '_doc') ?? {};
@@ -83,6 +123,7 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
         districtName,
         wardName,
         slug: category?.slug ?? '',
+        isOnline: category?.type ===SellType.SellOnline
     };
 
     return res.json(ResponseOk<NewsResponse>(response));
@@ -91,6 +132,8 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
 const showNewsByCategorySlug = async (req: Request<{ slug: string }, any, any, PaginatedListQuery>, res: Response) => {
     const slug = req.params.slug;
     const category = await Category.findOne({ slug: slug });
+    if (!category) return res.json(ResponseFail('Không tìm danh mục'));
+
     const categoryId = category?.id;
     const news = await News.find({ categoryId: categoryId });
     const userIds = [...new Set(news.map(x => x.userId))];
@@ -105,7 +148,13 @@ const showNewsByCategorySlug = async (req: Request<{ slug: string }, any, any, P
         return { ...doc, address: `${wardName}, ${districtName}, ${provinceName}` } as NewsResponseWithAddress;
     });
 
-    const result = PaginatedListConstructor<NewsResponseWithAddress>(newsResponse, req.query.offset, req.query.limit);
+    const responseOnlyOnSell = filterOnlyOnSell<NewsResponseWithAddress>(newsResponse);
+
+    const result = PaginatedListConstructor<NewsResponseWithAddress>(
+        responseOnlyOnSell,
+        req.query.offset,
+        req.query.limit,
+    );
     return res.json(ResponseOk<PaginatedList<NewsResponseWithAddress>>(result));
 };
 
@@ -121,9 +170,11 @@ const showNewsOthers = async (req: Request<any, any, any, { newsId: string; user
         const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
 
         return { ...doc, provinceName, districtName, wardName } as NewsResponse;
-    });
+    }) as NewsResponse[];
 
-    return res.json(ResponseOk<NewsResponse[]>(newsResponse));
+    const responseOnlyOnSell = filterOnlyOnSell<NewsResponse>(newsResponse);
+
+    return res.json(ResponseOk<NewsResponse[]>(responseOnlyOnSell));
 };
 
 const showNewsRelations = async (
@@ -145,7 +196,9 @@ const showNewsRelations = async (
         return { ...doc, provinceName, districtName, wardName } as NewsResponse;
     });
 
-    return res.json(ResponseOk<NewsResponse[]>(newsResponse));
+    const responseOnlyOnSell = filterOnlyOnSell<NewsResponse>(newsResponse);
+
+    return res.json(ResponseOk<NewsResponse[]>(responseOnlyOnSell));
 };
 
 const showNewsNewest = async (req: Request<any, any, any, { limit: number }>, res: Response) => {
@@ -164,8 +217,8 @@ const showNewsNewest = async (req: Request<any, any, any, { limit: number }>, re
         return { ...doc, provinceName, districtName, wardName } as NewsResponse;
     });
 
-    const result = PaginatedListConstructor<NewsResponse>(newsResponse, 0, limit); //
-
+    const responseOnlyOnSell = filterOnlyOnSell<NewsResponse>(newsResponse);
+    const result = PaginatedListConstructor<NewsResponse>(responseOnlyOnSell, 0, limit); //
     return res.json(ResponseOk<PaginatedList<NewsResponse>>(result));
 };
 
@@ -218,16 +271,18 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
         } as NewsSearch;
     });
 
-    const result = PaginatedListConstructor<NewsSearch>(newsSearches, req.query.offset, req.query.limit);
-
+    const responseOnlyOnSell = filterOnlyOnSell<NewsSearch>(newsSearches);
+    const result = PaginatedListConstructor<NewsSearch>(responseOnlyOnSell, req.query.offset, req.query.limit);
     return res.json(ResponseOk<PaginatedList<NewsSearch>>(result));
 };
 
 const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>, res: Response) => {
     const userId = req.query.userId;
+    const user = await User.findOne({ id: userId });
+    if (!user) return res.json(ResponseFail('Người dùng không tồn tại trong hệ thống!'));
+
     const listNews = await News.find({ userId: userId });
     const allNews = await News.find();
-    const user = await User.findOne({ id: userId });
     const categories = await Category.find();
 
     const newsResponse = listNews.map(x => {
@@ -235,10 +290,19 @@ const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>,
         const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
         const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
         const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
-        const page = calculatePage(allNews, x);
-        const category = categories.find(y => y.id === x.categoryId)
+        const { index, page } = calculatePageAndIndex(allNews, x);
+        const category = categories.find(y => y.id === x.categoryId);
 
-        return { ...doc, provinceName, districtName, wardName, page, categoryName: category?.name } as NewsSearch;
+        return {
+            ...doc,
+            provinceName,
+            districtName,
+            wardName,
+            page,
+            index,
+            categoryName: category?.name,
+            slug: category?.slug,
+        } as NewsSearch;
     });
 
     return res.json(ResponseOk<NewsSearch[]>(newsResponse));
@@ -252,9 +316,7 @@ const updateNewsBump = async (
     const { bumpImage, bumpPriority } = req.body;
 
     const news = await News.findOne({ id: id });
-    if (!news) {
-        return res.json(ResponseFail('Không tìm thấy tin!'));
-    }
+    if (!news) return res.json(ResponseFail('Không tìm thấy tin!'));
 
     let newBumpPriority: NewsBump | undefined = undefined;
     let newBumpImage: NewsBump | undefined = undefined;
@@ -283,9 +345,7 @@ const updateNewsBump = async (
 const hideNews = async (req: Request<{ id: string }, any, any, any>, res: Response) => {
     const id = req.params.id;
     const news = await News.findOne({ id: id });
-    if (!news) {
-        return res.json(ResponseFail('Không tìm thấy tin!'));
-    }
+    if (!news) return res.json(ResponseFail('Không tìm thấy tin!'));
 
     await News.updateOne(
         { id: id },
@@ -323,7 +383,7 @@ const calculateNewBump = (toDateLeft?: string, day?: number) => {
     } as NewsBump;
 };
 
-const calculatePage = (allNews: INews[], news: INews) => {
+const calculatePageAndIndex = (allNews: INews[], news: INews) => {
     const listNews = allNews.filter(x => x.categoryId === news.categoryId);
     let sorted = _.orderBy(listNews, ['createdAt'], ['desc']);
     const priorities = sorted.filter(x => DateTimeUtil.checkExpirationDate(x.bumpPriority?.toDate));
@@ -332,8 +392,15 @@ const calculatePage = (allNews: INews[], news: INews) => {
 
     const index = sorted.findIndex(x => x.id === news.id);
 
-    return Math.floor(index / 10) + 1;
+    return {
+        index: index + 1,
+        page: Math.floor(index / 10) + 1,
+    };
 };
+
+function filterOnlyOnSell<TNewsType>(newsList: TNewsType[]): TNewsType[] {
+    return _.filter(newsList, x => _.get(x, 'status') === NewsStatus.OnSell);
+}
 
 // #endregion
 
@@ -347,7 +414,8 @@ const NewsService = {
     searchNews,
     showNewsByUserId,
     updateNewsBump,
-    hideNews
+    hideNews,
+    updateNews
 };
 
 export default NewsService;
