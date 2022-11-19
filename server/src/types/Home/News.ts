@@ -22,4 +22,9 @@ export interface INews {
     status?: NewsStatus;
     bumpImage?: NewsBump;
     bumpPriority?: NewsBump;
+    province: string;
+    district: string;
+    ward: string;
+    address: string; //d/c cụ thể
+    productTypeId: string;
 }

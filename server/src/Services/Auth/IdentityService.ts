@@ -5,6 +5,7 @@ import Role from '../../Models/Role';
 import User from '../../Models/User';
 import UserRole from '../../Models/UserRole';
 import { AppUser, AuthUser, LoginParams, NewUser } from '../../types/Auth/Identity';
+import PlacementService from '../Common/PlacementService';
 
 declare module 'express-session' {
     interface SessionData {
@@ -13,21 +14,34 @@ declare module 'express-session' {
 }
 
 const checkLogin = async (req: Request, res: Response) => {
-    const user = req.session.user;
-    if (user) {
-        const isSupper = user.isSupper;
-        const userRoles = await UserRole.find({ userId: user.id });
-        const roleIds = userRoles.map(x => x.roleId);
-        const roles = isSupper ? await Role.find() : await Role.find({ id: { $in: roleIds } });
-        const rolesCode = roles.map(x => x.code);
+    const userId = req.session.user?.id;
+    const user = await User.findOne({ id: userId });
+    if (!userId || !user) return res.json(ResponseFail());
 
-        const result: AuthUser = {
-            rights: rolesCode,
-            user,
-        };
-        return res.json(ResponseOk<AuthUser>(result));
-    }
-    return res.json(ResponseFail());
+    const isSupper = user.hasRoleAdminSystem();
+    const userRoles = await UserRole.find({ userId: user.id });
+    const roleIds = userRoles.map(x => x.roleId);
+    const roles = isSupper ? await Role.find() : await Role.find({ id: { $in: roleIds } });
+    const rolesCode = roles.map(x => x.code);
+
+    const result: AuthUser = {
+        rights: rolesCode,
+        user: {
+            email: user.emailAddress,
+            fullName: user.fullName,
+            id: user.id,
+            isSupper: isSupper,
+            username: user.username,
+            phoneNumber: user.phoneNumber,
+            amount: user.amount,
+            province: user.province,
+            district: user.district,
+            ward: user.ward,
+            avatar: user.avatar,
+            createdAt: user.createdAt,
+        },
+    };
+    return res.json(ResponseOk<AuthUser>(result));
 };
 
 const addUser = async (req: Request<any, any, NewUser>, res: Response) => {
@@ -81,6 +95,8 @@ const login = async (req: Request<any, any, LoginParams>, res: Response) => {
             province: user.province,
             district: user.district,
             ward: user.ward,
+            avatar: user.avatar,
+            createdAt: user.createdAt,
         },
     };
     req.session.user = result.user;
@@ -91,6 +107,10 @@ const getUser = async (req: Request, res: Response) => {
     const id = req.query.id;
     const user = await User.findOne({ id: id });
     if (!Boolean(user)) return res.json(ResponseFail('User not found'));
+    const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
+    const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
+    const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
+
     const result = {
         user: {
             email: user?.emailAddress,
@@ -102,13 +122,38 @@ const getUser = async (req: Request, res: Response) => {
             province: user?.province,
             district: user?.district,
             ward: user?.ward,
+            provinceName,
+            districtName,
+            wardName,
+            address: user?.address,
+            avatar: user?.avatar,
         },
     };
     return res.json(ResponseOk(result));
-}
+};
 
 const logout = (req: Request, res: Response) => {
     if (req.session.user) delete req.session.user;
+    return res.json(ResponseOk());
+};
+
+const updateUser = async (req: Request<{ id: string }, any, AppUser, any>, res: Response) => {
+    const id = req.params.id;
+    if (req.session.user?.id !== id) {
+        return res.json(ResponseFail('Bạn không phải người này!'));
+    }
+    const user = await User.findOne({ id: id });
+    if (!user) {
+        return res.json(ResponseFail('Không tìm thấy người dùng!'));
+    }
+
+    await User.updateOne(
+        { id: id },
+        {
+            ...req.body,
+        },
+    );
+
     return res.json(ResponseOk());
 };
 
@@ -117,7 +162,8 @@ const IdentityService = {
     login,
     addUser,
     logout,
-    getUser
+    getUser,
+    updateUser
 };
 
 export default IdentityService;

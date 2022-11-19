@@ -304,7 +304,7 @@ const NewsDashboard: React.FC = () => {
                         <div className="w-full flex py-2 px-3 border-b border-[#dbdbdb] bg-white">
                             <div className="w-[80px] h-[80px] rounded-[40px] overflow-hidden mr-[15px] float-left">
                                 <Link to={''}>
-                                    <Avatar size={80}>B</Avatar>
+                                    <Avatar size={80} src={authUser?.user?.avatar} />
                                 </Link>
                             </div>
                             <div className=" float-left" style={{ width: 'calc(100% - 270px)' }}>

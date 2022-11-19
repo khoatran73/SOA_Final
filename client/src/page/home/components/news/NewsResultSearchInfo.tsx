@@ -49,7 +49,7 @@ const NewsResultSearchInfo: React.FC<Props> = props => {
                 </div>
                 <div className="flex items-center text-xs text-[#9b9b9b]">
                     <div className="flex items-center ">
-                        <Avatar size={18}>a</Avatar> <span className="ml-1">{news.fullName}</span>
+                        <Avatar size={18} src={news?.avatar} /> <span className="ml-1">{news.fullName}</span>
                     </div>
                     <span className="mx-1.5">·</span>
                     <div className="">{DateTimeUtil.fromNow(news?.createdAt)}</div>

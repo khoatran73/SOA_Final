@@ -5,6 +5,8 @@ export const API_CHECK_LOGIN = APP_API_PATH + '/identity/check-login';
 export const API_LOGIN = APP_API_PATH + '/identity/login';
 export const API_LOGOUT = APP_API_PATH + '/identity/logout';
 export const API_GET_USER = APP_API_PATH + '/identity/get-user';
+export const API_UPDATE_USER = APP_API_PATH + '/identity/update';
+
 //layout
 
 export const API_LAYOUT = APP_API_PATH + '/menu/layout';

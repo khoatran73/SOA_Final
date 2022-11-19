@@ -132,9 +132,7 @@ const NewsCheckout: React.FC = () => {
                 <div className="p-3 mb-3 bg-white">
                     <div className="flex w-full justify-between items-center">
                         <div className="flex items-center">
-                            <Avatar size={24} style={{ fontSize: 10 }}>
-                                A
-                            </Avatar>
+                            <Avatar size={24} src={news.avatar} />
                             <span className="font-bold ml-2">Phương Thảo</span>
                         </div>
                         <div className="flex items-center justify-center py-1 px-2 rounded border border-[#e8e8e8] cursor-pointer">
@@ -219,7 +217,7 @@ const NewsCheckout: React.FC = () => {
                         </div>
                         <div
                             className={clsx(
-                                'w-[400px] h-10 flex items-center justify-center',
+                                'w-[400px] h-10 flex items-center justify-center cursor-pointer',
                                 'rounded text-white bg-[#fe9900] uppercase font-bold',
                             )}
                         >

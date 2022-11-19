@@ -12,7 +12,7 @@ import { ComboOption } from './../../types/shared/ComboOption';
 
 const getProductTypeIndex = async (req: Request<any, any, any, PaginatedListQuery>, res: Response) => {
     const types = await ProductType.find({});
-    const categories = await Category.find({})
+    const categories = await Category.find({});
     const response = types.map(type => {
         const doc = _.get({ ...type }, '_doc') ?? {};
         return {
@@ -59,8 +59,8 @@ const deleteProductType = async (req: Request<{ id: string }>, res: Response) =>
         .catch(err => res.json(ResponseFail(err?.message)));
 };
 
-const comboProductType = async (req: Request, res: Response) => {
-    const types = await ProductType.find();
+const comboProductType = async (req: Request<any, any, any, { categoryId: string }>, res: Response) => {
+    const types = await ProductType.find({ categoryId: req.query.categoryId });
     const result = types.map(type => ({ value: type.id, label: type.name } as ComboOption));
     return res.json(ResponseOk<ComboOption<Identifier>[]>(result));
 };

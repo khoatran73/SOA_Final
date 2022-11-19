@@ -268,8 +268,8 @@ const NewsDetail: React.FC = () => {
                                 </div>
                                 <div className="text-base font-bold pb-1 border-b border-gray-200 my-2">Khu vực</div>
                                 <div className="">
-                                    <BaseIcon icon={faLocationPin} className="mr-1" /> {news?.wardName},{' '}
-                                    {news?.districtName}, {news?.provinceName}
+                                    <BaseIcon icon={faLocationPin} className="mr-1" /> {news?.address}, {news?.wardName}
+                                    , {news?.districtName}, {news?.provinceName}
                                 </div>
                             </div>
                         </div>
@@ -277,7 +277,7 @@ const NewsDetail: React.FC = () => {
                             <div className="">
                                 <div className="w-full flex">
                                     <div className="w-[46px]">
-                                        <Avatar size={46}>K</Avatar>
+                                        <Avatar size={46} src={news?.avatar} />
                                     </div>
                                     <div className="w-3/5 flex flex-col ml-2">
                                         <div className="text-[#2a5079] hover:text-[#2a5079] font-bold text-[13px] mt-0.5">
@@ -339,7 +339,12 @@ const NewsDetail: React.FC = () => {
                                             )}
                                             // onClick={() => navigate(`/news/edit/${news?.id}`)}
                                         >
-                                            <div className="font-bold text-base ml-3 uppercase">Mua ngay</div>
+                                            <div
+                                                className="font-bold text-base ml-3 uppercase"
+                                                onClick={() => navigate('/news/checkout/' + id)}
+                                            >
+                                                Mua ngay
+                                            </div>
                                         </div>
                                     </>
                                 )}

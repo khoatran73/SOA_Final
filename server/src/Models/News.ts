@@ -1,6 +1,6 @@
-import { INews, NewsStatus } from '../types/Home/News';
 import { Model, model, Schema } from 'mongoose';
 import { DefaultModelId } from '../configs';
+import { INews, NewsStatus } from '../types/Home/News';
 
 interface NewsMethod {}
 
@@ -18,6 +18,11 @@ const schema = new Schema<INews, NewsModel, NewsMethod>(
         status: { type: String, default: NewsStatus.OnSell },
         bumpImage: Object,
         bumpPriority: Object,
+        province: String,
+        district: String,
+        ward: String,
+        address: String,
+        productTypeId: String,
     },
     { timestamps: true },
 );

@@ -65,6 +65,7 @@ const Header: React.FC<Props> = props => {
                     <div className="h-9 cursor-pointer flex items-center mx-1.5 justify-center uppercase rounded text-white px-2 hover:bg-white hover:bg-opacity-20 duration-75">
                         <Avatar
                             size={32}
+                            src={authUser?.user.avatar}
                             icon={<UserOutlined style={{ color: '#198ae3' }} />}
                             className="flex items-center justify-center bg-white rounded-full"
                         />

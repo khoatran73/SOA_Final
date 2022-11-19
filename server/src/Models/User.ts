@@ -4,7 +4,7 @@ import { Model, model, Schema } from 'mongoose';
 import { DefaultModelId } from '../configs';
 import { Identifier } from '../types/shared';
 
-export interface IUser extends Pick<AppUser, 'province' | 'district' | 'ward'> {
+export interface IUser extends Pick<AppUser, 'province' | 'district' | 'ward' | 'address' | 'avatar' | 'createdAt'> {
     id?: Identifier;
     username: string;
     passwordHash: string;
@@ -23,21 +23,26 @@ interface IUserMethod {
 }
 type UserModel = Model<IUser, {}, IUserMethod>;
 
-const schema = new Schema<IUser, UserModel, IUserMethod>({
-    id: { type: String, unique: true, required: true, default: DefaultModelId },
-    username: { type: String, unique: true, required: true },
-    passwordHash: { type: String, required: true },
-    salt: { type: String, required: true },
-    fullName: { type: String, default: '' },
-    emailAddress: { type: String, default: '' },
-    phoneNumber: { type: String, default: '' },
-    isAdmin: { type: Boolean, default: false },
-    amount: { type: Number, default: 0 },
-    // address
-    province: String,
-    district: String,
-    ward: String,
-});
+const schema = new Schema<IUser, UserModel, IUserMethod>(
+    {
+        id: { type: String, unique: true, required: true, default: DefaultModelId },
+        username: { type: String, unique: true, required: true },
+        passwordHash: { type: String, required: true },
+        salt: { type: String, required: true },
+        fullName: { type: String, default: '' },
+        emailAddress: { type: String, default: '' },
+        phoneNumber: { type: String, default: '' },
+        isAdmin: { type: Boolean, default: false },
+        amount: { type: Number, default: 0 },
+        // address
+        province: String,
+        district: String,
+        ward: String,
+        address: String,
+        avatar: { type: String },
+    },
+    { timestamps: true },
+);
 
 schema.methods.hasRoleAdminSystem = function () {
     return this.isAdmin;

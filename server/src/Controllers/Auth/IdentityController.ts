@@ -10,4 +10,6 @@ router.post('/login', IdentityService.login);
 router.post('/add-user', Authenticate, IdentityService.addUser);
 router.get('/logout', Authenticate, IdentityService.logout);
 
+router.put('/update/:id', Authenticate, IdentityService.updateUser);
+
 export default router;

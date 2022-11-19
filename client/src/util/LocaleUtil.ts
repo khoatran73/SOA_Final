@@ -1,5 +1,8 @@
 import capitalize from 'capitalize';
 import readNumber from 'read-vn-number';
+import list from 'vn-badwords';
+import { queryStringSerialize } from '~/lib/axios';
+
 export default class LocaleUtil {
     static ignoreSensitive = (input: string) => {
         input = input.toLowerCase();
@@ -27,8 +30,17 @@ export default class LocaleUtil {
 
     static numberToText = (number: string | number) => {
         const value = Number(number);
-        const prefix = value < 0 ? 'Âm ' : ''
-        const abs = Math.abs(value)
-        return capitalize(prefix + readNumber(abs)); 
+        const prefix = value < 0 ? 'Âm ' : '';
+        const abs = Math.abs(value);
+        return capitalize(prefix + readNumber(abs));
+    };
+
+    static isContainsBadWords = (obj: object) => {
+        for (const [key, value] of Object.entries(obj)) {
+            if (typeof value !== 'string') continue;
+            if (list.regexp.test(value.toLowerCase())) return true;
+        }
+        
+        return false;
     };
 }

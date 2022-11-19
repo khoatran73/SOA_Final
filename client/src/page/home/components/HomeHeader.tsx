@@ -1,5 +1,5 @@
 import { CaretDownFilled, UserOutlined } from '@ant-design/icons';
-import { faLock, faSignOut } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faSignOut, faUserAlt } from '@fortawesome/free-solid-svg-icons';
 import { Avatar, Button, Dropdown, Image, Menu } from 'antd';
 import Search from 'antd/lib/input/Search';
 import clsx from 'clsx';
@@ -23,7 +23,7 @@ interface State {
     searchKey: string | undefined;
 }
 
-type Action = 'adminPage' | 'logout';
+type Action = 'adminPage' | 'logout' | 'profile';
 
 const HomeHeader: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -103,6 +103,9 @@ const HomeHeader: React.FC = () => {
 
     const onActionClick = (action: Action) => {
         switch (action) {
+            case 'profile':
+                navigate('/user/info/' + authUser?.user.id);
+                return;
             case 'adminPage':
                 navigate('/admin/home');
                 return;
@@ -114,6 +117,12 @@ const HomeHeader: React.FC = () => {
 
     const menu = (
         <Menu>
+            <Menu.Item key="profile" onClick={() => onActionClick('profile')}>
+                <div className="flex items-center justify-start">
+                    <BaseIcon icon={faUserAlt} />
+                    <span className="ml-3">Trang cá nhân</span>
+                </div>
+            </Menu.Item>
             {authUser?.user.isSupper && (
                 <Menu.Item key="adminPage" onClick={() => onActionClick('adminPage')}>
                     <div className="flex items-center justify-start">
@@ -208,6 +217,7 @@ const HomeHeader: React.FC = () => {
                                 >
                                     <Avatar
                                         size={32}
+                                        src={authUser?.user.avatar}
                                         icon={<UserOutlined style={{ color: '#000' }} />}
                                         className="flex items-center justify-center bg-transparent rounded-full"
                                     />

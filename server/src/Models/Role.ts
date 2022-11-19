@@ -6,11 +6,14 @@ interface IRoleMethod {}
 
 type RoleModel = Model<IRole, {}, IRoleMethod>;
 
-const schema = new Schema<IRole, RoleModel, IRoleMethod>({
-    id: { type: String, unique: true, required: true, default: DefaultModelId },
-    code: { type: String, required: true },
-    name: { type: String, required: true },
-});
+const schema = new Schema<IRole, RoleModel, IRoleMethod>(
+    {
+        id: { type: String, unique: true, required: true, default: DefaultModelId },
+        code: { type: String, required: true },
+        name: { type: String, required: true },
+    },
+    { timestamps: true },
+);
 
 const Role = model<IRole, RoleModel>('Role', schema);
 

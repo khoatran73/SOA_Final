@@ -25,6 +25,11 @@ export interface News {
     bumpPriority?: NewsBump;
     createdAt: Date;
     updatedAt: Date;
+    province: string;
+    district: string;
+    ward: string;
+    address: string; //d/c cụ thể
+    productTypeId: string;
 }
 
 export type NewsCreateRequest = News & Pick<AppUser, 'province' | 'district' | 'ward'>;

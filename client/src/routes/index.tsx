@@ -21,6 +21,9 @@ const NewsDetail = React.lazy(() => import('~/page/home/components/news/NewsDeta
 const CategorySearch = React.lazy(() => import('~/page/home/components/category/CategorySearch'));
 const NewsCheckout = React.lazy(() => import('~/page/home/components/news/NewsCheckout'));
 
+const UserProfile = React.lazy(() => import('~/page/home/components/user/UserProfile'));
+const UserInfo = React.lazy(() => import('~/page/home/components/user/UserInfo'));
+
 // #endregion
 
 // #region admin page
@@ -88,7 +91,20 @@ const routeList = [
                     {
                         path: 'history',
                         element: <TransactionHistory />,
-                    }
+                    },
+                ],
+            },
+            {
+                path: 'user',
+                children: [
+                    {
+                        path: 'info/:id',
+                        element: <UserInfo />,
+                    },
+                    {
+                        path: 'profile',
+                        element: <UserProfile />,
+                    },
                 ],
             },
         ],

@@ -21,10 +21,10 @@ import NotificationConstant from '~/configs/contants';
 import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
 import { CATEGORY_COMBO_API } from '~/page/product/category/api/api';
+import { PRODUCT_TYPE_COMBO_API } from '~/page/product/product-type/api/api';
 import { NewsCreateRequest, NewsResponse, NewsStatus } from '~/types/home/news';
 import { ComboOption, Identifier } from '~/types/shared';
 import { BasePlacement, District, Placement, Province, Ward } from '~/types/shared/Placement';
-import { AppUser } from '~/types/ums/AuthUser';
 import DateTimeUtil from '~/util/DateTimeUtil';
 import FileUtil from '~/util/FileUtil';
 import LocaleUtil from '~/util/LocaleUtil';
@@ -34,9 +34,14 @@ import BoxContainer from '../../layout/BoxContainer';
 
 interface NewsRequest {
     categoryId: Identifier;
+    productTypeId: Identifier;
     title: string;
     price: number;
     description: string;
+    province: string;
+    district: string;
+    ward: string;
+    address: string; //d/c cụ thể
 }
 
 interface State {
@@ -45,6 +50,7 @@ interface State {
     imageUrls: string[];
     //info:
     categories: ComboOption[];
+    productTypes: ComboOption[];
     provinces: ComboOption[];
     districts: ComboOption[];
     wards: ComboOption[];
@@ -78,6 +84,9 @@ const NewsView: React.FC = () => {
     const navigate = useNavigate();
     const news = requestNews?.data?.result;
     const numberImageCanUpload = calculateImageCanUpload(news?.bumpImage?.toDate?.toString());
+    const isEditView = useMemo(() => !!id, [id]);
+    const isOwnNews = useMemo(() => news?.userId === authUser?.user?.id, [authUser?.user?.id, news?.userId]);
+    const isOnSell = useMemo(() => news?.status === NewsStatus.OnSell, [news?.status]);
     const [state, setState] = useMergeState<State>({
         imageList:
             news?.imageUrls?.map(
@@ -94,14 +103,11 @@ const NewsView: React.FC = () => {
         provinces: [],
         districts: [],
         wards: [],
+        productTypes: [],
         descriptionCharacter: news?.description.length ?? 0,
         price: news?.price ?? 0,
-        loading: true,
+        loading: false,
     });
-
-    const isEditView = useMemo(() => !!id, [id]);
-    const isOwnNews = useMemo(() => news?.userId === authUser?.user?.id, [authUser?.user?.id, news?.userId]);
-    const isOnSell = useMemo(() => news?.status === NewsStatus.OnSell, [news?.status]);
 
     const onSave = async () => {
         formRef.current?.onSubmit();
@@ -120,6 +126,12 @@ const NewsView: React.FC = () => {
 
         const formValues = formRef.current?.getFieldsValue();
         const body = { ...formValues, imageUrls: state.imageUrls } as NewsCreateRequest;
+
+        const isContainsBadWord = LocaleUtil.isContainsBadWords(body);
+        if (isContainsBadWord) {
+            NotifyUtil.error(NotificationConstant.TITLE, 'Tin của bạn chứa từ ngữ không phù hợp, vui lòng thử lại!');
+            return;
+        }
 
         if (!isEditView) {
             await onAddNews(body);
@@ -154,21 +166,38 @@ const NewsView: React.FC = () => {
     };
 
     useEffect(() => {
+        if (!isEditView)
+            setState({
+                imageList: [],
+                imageUrls: [],
+                categories: [],
+                productTypes: [],
+                provinces: [],
+                districts: [],
+                wards: [],
+                descriptionCharacter: 0,
+                price: 0,
+                loading: false,
+            });
         fetchComboOptions();
-    }, []);
+    }, [id]);
 
     const fetchComboOptions = () => {
+        setState({ loading: true });
         Promise.all([
             requestApi<ComboOption[]>('get', CATEGORY_COMBO_API),
             requestApi<Province[]>('get', PROVINCE_COMBO_API),
             requestApi<District[]>('get', DISTRICT_COMBO_API, {
-                provinceCode: authUser?.user.province,
+                provinceCode: news?.province,
             }),
             requestApi<Ward[]>('get', WARD_COMBO_API, {
-                districtCode: authUser?.user.district,
+                districtCode: news?.district,
+            }),
+            requestApi<ComboOption[]>('get', PRODUCT_TYPE_COMBO_API, {
+                categoryId: news?.categoryId,
             }),
         ])
-            .then(([resCategory, resProvince, resDistrict, resWard]) => {
+            .then(([resCategory, resProvince, resDistrict, resWard, resProdType]) => {
                 if (resCategory.data?.success) setState({ categories: resCategory.data?.result });
                 if (resProvince.data?.success)
                     setState({
@@ -185,6 +214,11 @@ const NewsView: React.FC = () => {
                 if (resWard.data?.success)
                     setState({
                         wards: resWard.data?.result?.map(x => ({ value: x.code, label: x.name } as ComboOption)),
+                    });
+
+                if (resProdType.data?.success)
+                    setState({
+                        productTypes: resProdType.data?.result,
                     });
             })
             .catch(err => NotifyUtil.error(NotificationConstant.TITLE, NotificationConstant.SERVER_ERROR))
@@ -231,7 +265,7 @@ const NewsView: React.FC = () => {
                     provinceCode: value,
                 },
                 opt: 'districts',
-                resetFieldsName: [nameof.full<AppUser>(x => x.district), nameof.full<AppUser>(x => x.ward)],
+                resetFieldsName: [nameof.full<NewsRequest>(x => x.district), nameof.full<NewsRequest>(x => x.ward)],
             },
             [Placement.District]: {
                 url: WARD_COMBO_API,
@@ -239,7 +273,7 @@ const NewsView: React.FC = () => {
                     districtCode: value,
                 },
                 opt: 'wards',
-                resetFieldsName: [nameof.full<AppUser>(x => x.ward)],
+                resetFieldsName: [nameof.full<NewsRequest>(x => x.ward)],
             },
             [Placement.Ward]: {
                 url: '',
@@ -268,8 +302,10 @@ const NewsView: React.FC = () => {
     );
 
     if (isLoading) return <Loading />;
-    if (!isOnSell || !news) return <Empty description="Xin lỗi, tin này đã ẩn hoặc không tồn tại!" />;
-    if (!isOwnNews) return <Forbidden />;
+    if (isEditView) {
+        if (!isOnSell || !news) return <Empty description="Xin lỗi, tin này đã ẩn hoặc không tồn tại!" />;
+        if (!isOwnNews) return <Forbidden />;
+    }
     return (
         <BoxContainer className="flex">
             {state.loading ? (
@@ -299,13 +335,14 @@ const NewsView: React.FC = () => {
                     <BaseForm
                         className="w-2/3"
                         initialValues={
-                            !isEditView
-                                ? ({
-                                      province: authUser?.user.province,
-                                      district: authUser?.user.district,
-                                      ward: authUser?.user.ward,
-                                  } as AppUser)
-                                : news
+                            // !isEditView
+                            //     ? ({
+                            //           province: authUser?.user.province,
+                            //           district: authUser?.user.district,
+                            //           ward: authUser?.user.ward,
+                            //       } as AppUser)
+                            //     :
+                            news
                         }
                         ref={formRef}
                         baseFormItem={[
@@ -315,8 +352,48 @@ const NewsView: React.FC = () => {
                             {
                                 label: 'Danh mục đăng tin',
                                 name: nameof.full<NewsRequest>(x => x.categoryId),
-                                children: <Select options={state.categories} placeholder="Chọn danh mục ..." />,
+                                children: (
+                                    <Select
+                                        options={state.categories}
+                                        placeholder="Chọn danh mục ..."
+                                        onChange={async val => {
+                                            const response = await requestApi<ComboOption[]>(
+                                                'get',
+                                                PRODUCT_TYPE_COMBO_API,
+                                                {},
+                                                { params: { categoryId: val } },
+                                            );
+
+                                            if (response.data.success) {
+                                                formRef.current?.resetFields([
+                                                    nameof.full<NewsRequest>(x => x.productTypeId),
+                                                ]);
+                                                setState({
+                                                    productTypes: response.data.result,
+                                                });
+                                                return;
+                                            }
+
+                                            NotifyUtil.error(
+                                                NotificationConstant.TITLE,
+                                                response.data.message ?? NotificationConstant.SERVER_ERROR,
+                                            );
+                                        }}
+                                    />
+                                ),
                                 rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
+                            },
+                            {
+                                label: 'Loại sản phẩm',
+                                name: nameof.full<NewsRequest>(x => x.productTypeId),
+                                children: (
+                                    <Select
+                                        allowClear
+                                        options={state.productTypes}
+                                        placeholder="Chọn loại sản phẩm ..."
+                                    />
+                                ),
+                                // rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
                             },
                             {
                                 label: 'Tiêu đề',
@@ -343,7 +420,7 @@ const NewsView: React.FC = () => {
                                 ),
                                 extra: `${
                                     state.price === 0
-                                        ? LocaleUtil.numberToText(news?.price)
+                                        ? LocaleUtil.numberToText(news?.price ?? 0)
                                         : LocaleUtil.numberToText(state.price)
                                 } đồng`,
                                 rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
@@ -352,7 +429,7 @@ const NewsView: React.FC = () => {
                                 label: 'Mô tả chi tiết',
                                 extra: `${
                                     state.descriptionCharacter === 0
-                                        ? news?.description.length
+                                        ? Number(news?.description.length ?? 0)
                                         : state.descriptionCharacter
                                 }/1500 ký tự`,
                                 name: nameof.full<NewsRequest>(x => x.description),
@@ -380,11 +457,11 @@ const NewsView: React.FC = () => {
                                 ],
                             },
                             {
-                                children: <span className="font-bold text-base">Về người bán</span>,
+                                children: <span className="font-bold text-base">Nơi bán sản phẩm</span>,
                             },
                             {
                                 label: 'Tỉnh/TP',
-                                name: nameof.full<AppUser>(x => x.province),
+                                name: nameof.full<NewsRequest>(x => x.province),
                                 children: (
                                     <Select
                                         options={state.provinces}
@@ -400,7 +477,7 @@ const NewsView: React.FC = () => {
                             },
                             {
                                 label: 'Quận/Huyện',
-                                name: nameof.full<AppUser>(x => x.district),
+                                name: nameof.full<NewsRequest>(x => x.district),
                                 children: (
                                     <Select
                                         options={state.districts}
@@ -416,7 +493,7 @@ const NewsView: React.FC = () => {
                             },
                             {
                                 label: 'Phường/Xã',
-                                name: nameof.full<AppUser>(x => x.ward),
+                                name: nameof.full<NewsRequest>(x => x.ward),
                                 children: (
                                     <Select
                                         showSearch
@@ -427,6 +504,12 @@ const NewsView: React.FC = () => {
                                         }
                                     />
                                 ),
+                                rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
+                            },
+                            {
+                                label: 'Địa chỉ cụ thể',
+                                name: nameof.full<NewsRequest>(x => x.address),
+                                children: <Input placeholder="Nhập địa chỉ cụ thể ..." />,
                                 rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
                             },
                         ]}

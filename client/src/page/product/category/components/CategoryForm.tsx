@@ -13,7 +13,7 @@ import { UPLOAD_FILE_API } from '~/configs';
 import NotificationConstant from '~/configs/contants';
 import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
-import { Category, SellType, SellTypeOptions } from '~/types/product/Category';
+import { Category, SellTypeOptions } from '~/types/product/Category';
 import FileUtil from '~/util/FileUtil';
 import NotifyUtil from '~/util/NotifyUtil';
 import { CATEGORY_CREATE_API, CATEGORY_UPDATE_API } from '../api/api';
@@ -89,6 +89,8 @@ const CategoryForm: React.FC<Props> = props => {
             props.onClose?.();
             return;
         }
+
+        NotifyUtil.error(NotificationConstant.TITLE, response.data.message ?? NotificationConstant.SERVER_ERROR);
     };
 
     const handlePreview = async (file: UploadFile) => {

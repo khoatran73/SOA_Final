@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import _ from 'lodash';
 import moment from 'moment';
-import { SellType } from '../../types/Product/Category';
 import DateTimeUtil from '../..//utils/DateTimeUtil';
 import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
 import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
@@ -9,11 +8,23 @@ import News from '../../Models/News';
 import User from '../../Models/User';
 import { AppUser } from '../../types/Auth/Identity';
 import { INews, NewsBump, NewsStatus } from '../../types/Home/News';
+import { SellType } from '../../types/Product/Category';
 import LocaleUtil from '../../utils/LocaleUtil';
 import Category from './../../Models/Category';
 import PlacementService from './../Common/PlacementService';
 
-type NewsRequest = INews & Pick<AppUser, 'province' | 'district' | 'ward'>;
+type NewsRequest = {
+    categoryId: string;
+    productTypeId: string;
+    title: string;
+    price: number;
+    description: string;
+    province: string;
+    district: string;
+    ward: string;
+    address: string; //d/c cụ thể
+    imageUrls: string[];
+};
 
 type NewsResponse = INews &
     Partial<AppUser> & {
@@ -39,31 +50,14 @@ type FilterRequest = PaginatedListQuery & {
 };
 
 const addNews = async (req: Request<any, any, NewsRequest>, res: Response) => {
-    //req.session user//
-    const user = {
-        email: '',
-        fullName: 'Quản trị viên hệ thống',
-        id: 'a35002f3-c2bd-4949-a76f-9702e360feb7',
-        isSupper: true,
-        username: 'admin',
-        phoneNumber: '',
-        amount: 10127,
-    };
+    const user = req.session.user;
 
     const news = new News({
         ...req.body,
-        userId: user.id,
+        userId: user?.id,
     });
 
     news.save();
-    await User.updateOne(
-        { id: user.id },
-        {
-            province: req.body.province,
-            district: req.body.district,
-            ward: req.body.ward,
-        },
-    );
 
     return res.json(ResponseOk());
 };
@@ -73,31 +67,14 @@ const updateNews = async (req: Request<{ id: string }, any, NewsRequest>, res: R
     const news = await News.findOne({ id: id });
     if (!news) return res.json(ResponseFail('Không tìm thấy tin tức!'));
 
-    const user = {
-        email: '',
-        fullName: 'Quản trị viên hệ thống',
-        id: 'a35002f3-c2bd-4949-a76f-9702e360feb7',
-        isSupper: true,
-        username: 'admin',
-        phoneNumber: '',
-        amount: 10127,
-    };
+    const user = req.session.user;
 
-    if (news.userId !== user.id) return res.json(ResponseFail('Bạn không có quyền sửa tin này!'));
+    if (news.userId !== user?.id) return res.json(ResponseFail('Bạn không có quyền sửa tin này!'));
 
     await News.updateOne(
         { id: id },
         {
             ...req.body,
-        },
-    );
-
-    await User.updateOne(
-        { id: user.id },
-        {
-            province: req.body.province,
-            district: req.body.district,
-            ward: req.body.ward,
         },
     );
 
@@ -108,14 +85,13 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
     const id = req.params.id;
     const news = await News.findOne({ id: id });
     if (!news) return res.json(ResponseFail('Không tìm thấy tin'));
-
     const user = await User.findOne({ id: news?.userId });
+    const userDoc = _.get({ ...user }, '_doc') ?? {};
     const category = await Category.findOne({ id: news?.categoryId });
     const doc = _.get({ ...news }, '_doc') ?? {};
-    const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
-    const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
-    const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
-    const userDoc = _.get({ ...user }, '_doc') ?? {};
+    const provinceName = PlacementService.getProvinceByCode(news?.province)?.name;
+    const districtName = PlacementService.getDistrictByCode(news?.province, news?.district)?.name;
+    const wardName = PlacementService.getWardByCode(news?.district, news?.ward)?.name;
     const response: NewsResponse = {
         ...userDoc,
         ...doc,
@@ -123,7 +99,7 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
         districtName,
         wardName,
         slug: category?.slug ?? '',
-        isOnline: category?.type ===SellType.SellOnline
+        isOnline: category?.type === SellType.SellOnline,
     };
 
     return res.json(ResponseOk<NewsResponse>(response));
@@ -135,15 +111,12 @@ const showNewsByCategorySlug = async (req: Request<{ slug: string }, any, any, P
     if (!category) return res.json(ResponseFail('Không tìm danh mục'));
 
     const categoryId = category?.id;
-    const news = await News.find({ categoryId: categoryId });
-    const userIds = [...new Set(news.map(x => x.userId))];
-    const users = await User.find({ id: { $in: userIds } });
-    const newsResponse = news.map(x => {
-        const doc = _.get({ ...x }, '_doc') ?? {};
-        const user = users.find(y => y.id === x.userId);
-        const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
-        const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
-        const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
+    const listNews = await News.find({ categoryId: categoryId });
+    const newsResponse = listNews.map(news => {
+        const doc = _.get({ ...news }, '_doc') ?? {};
+        const provinceName = PlacementService.getProvinceByCode(news?.province)?.name;
+        const districtName = PlacementService.getDistrictByCode(news?.province, news?.district)?.name;
+        const wardName = PlacementService.getWardByCode(news?.district, news?.ward)?.name;
 
         return { ...doc, address: `${wardName}, ${districtName}, ${provinceName}` } as NewsResponseWithAddress;
     });
@@ -161,15 +134,16 @@ const showNewsByCategorySlug = async (req: Request<{ slug: string }, any, any, P
 const showNewsOthers = async (req: Request<any, any, any, { newsId: string; userId: string }>, res: Response) => {
     const { userId, newsId } = req.query;
     const listNews = await News.find({ userId: userId, id: { $ne: newsId } });
-    const user = await User.findOne({ id: userId });
+    const user = await User.find({ id: userId });
+    const userDoc = _.get({ ...user }, '_doc') ?? {};
 
-    const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc') ?? {};
-        const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
-        const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
-        const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
+    const newsResponse = listNews.map(news => {
+        const doc = _.get({ ...news }, '_doc') ?? {};
+        const provinceName = PlacementService.getProvinceByCode(news?.province)?.name;
+        const districtName = PlacementService.getDistrictByCode(news?.province, news?.district)?.name;
+        const wardName = PlacementService.getWardByCode(news?.district, news?.ward)?.name;
 
-        return { ...doc, provinceName, districtName, wardName } as NewsResponse;
+        return { ...userDoc, ...doc, provinceName, districtName, wardName } as NewsResponse;
     }) as NewsResponse[];
 
     const responseOnlyOnSell = filterOnlyOnSell<NewsResponse>(newsResponse);
@@ -186,14 +160,15 @@ const showNewsRelations = async (
     const userIds = [...new Set(listNews.map(x => x.userId))];
     const users = await User.find({ id: { $in: userIds } });
 
-    const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc') ?? {};
-        const user = users.find(y => y.id === x.userId);
-        const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
-        const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
-        const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
+    const newsResponse = listNews.map(news => {
+        const doc = _.get({ ...news }, '_doc') ?? {};
+        const user = users.find(y => y.id === news.userId);
+        const userDoc = _.get({ ...user }, '_doc') ?? {};
+        const provinceName = PlacementService.getProvinceByCode(news?.province)?.name;
+        const districtName = PlacementService.getDistrictByCode(news?.province, news?.district)?.name;
+        const wardName = PlacementService.getWardByCode(news?.district, news?.ward)?.name;
 
-        return { ...doc, provinceName, districtName, wardName } as NewsResponse;
+        return { ...userDoc, ...doc, provinceName, districtName, wardName } as NewsResponse;
     });
 
     const responseOnlyOnSell = filterOnlyOnSell<NewsResponse>(newsResponse);
@@ -207,14 +182,15 @@ const showNewsNewest = async (req: Request<any, any, any, { limit: number }>, re
     const userIds = [...new Set(listNews.map(x => x.userId))];
     const users = await User.find({ id: { $in: userIds } });
 
-    const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc') ?? {};
-        const user = users.find(y => y.id === x.userId);
-        const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
-        const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
-        const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
+    const newsResponse = listNews.map(news => {
+        const doc = _.get({ ...news }, '_doc') ?? {};
+        const user = users.find(y => y.id === news.userId);
+        const userDoc = _.get({ ...user }, '_doc') ?? {};
+        const provinceName = PlacementService.getProvinceByCode(news?.province)?.name;
+        const districtName = PlacementService.getDistrictByCode(news?.province, news?.district)?.name;
+        const wardName = PlacementService.getWardByCode(news?.district, news?.ward)?.name;
 
-        return { ...doc, provinceName, districtName, wardName } as NewsResponse;
+        return { ...userDoc, ...doc, provinceName, districtName, wardName } as NewsResponse;
     });
 
     const responseOnlyOnSell = filterOnlyOnSell<NewsResponse>(newsResponse);
@@ -229,8 +205,6 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
     const searchKeyIgnoreSensitive = LocaleUtil.ignoreSensitive(searchKey);
     const allNews = await News.find({}).sort({ createdAt: -1 });
     const categories = await Category.find();
-    const users = await User.find();
-    //
     const category = categories.find(x => x.slug === categorySlug);
 
     const listNews = allNews.filter(news => {
@@ -243,8 +217,7 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
         if (minPrice) predicate = predicate && news.price && news.price >= minPrice;
         if (maxPrice && maxPrice < TenMillions) predicate = predicate && news.price && news.price <= maxPrice;
         //province
-        const user = users.find(x => x.id === news.userId);
-        if (user && provinceCode && provinceCode !== 'all') predicate = predicate && user.province === provinceCode;
+        if (provinceCode && provinceCode !== 'all') predicate = predicate && news?.province === provinceCode;
 
         return predicate;
     });
@@ -257,15 +230,18 @@ const searchNews = async (req: Request<any, any, any, FilterRequest>, res: Respo
     const notPriorities = sorted.filter(x => !DateTimeUtil.checkExpirationDate(x.bumpPriority?.toDate));
     sorted = priorities.concat(notPriorities);
 
+    const userIds = [...new Set(sorted.map(x => x.userId))];
+    const users = await User.find({ id: { $in: userIds } });
+
     const newsSearches = sorted.map(news => {
         const doc = _.get({ ...news }, '_doc') ?? {};
-        const user = users.find(x => x.id === news.userId);
+        const user = users.find(y => y.id === news.userId);
         const userDoc = _.get({ ...user }, '_doc') ?? {};
-        const province = PlacementService.getProvinceByCode(user?.province);
+        const province = PlacementService.getProvinceByCode(news?.province);
 
         return {
-            ...doc,
             ...userDoc,
+            ...doc,
             categoryName: categories.find(x => x.id === news.categoryId)?.name,
             provinceName: province?.name,
         } as NewsSearch;
@@ -280,20 +256,21 @@ const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>,
     const userId = req.query.userId;
     const user = await User.findOne({ id: userId });
     if (!user) return res.json(ResponseFail('Người dùng không tồn tại trong hệ thống!'));
-
+    const userDoc = _.get({ ...user }, '_doc') ?? {};
     const listNews = await News.find({ userId: userId });
     const allNews = await News.find();
     const categories = await Category.find();
 
-    const newsResponse = listNews.map(x => {
-        const doc = _.get({ ...x }, '_doc') ?? {};
-        const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
-        const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
-        const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
-        const { index, page } = calculatePageAndIndex(allNews, x);
-        const category = categories.find(y => y.id === x.categoryId);
+    const newsResponse = listNews.map(news => {
+        const doc = _.get({ ...news }, '_doc') ?? {};
+        const provinceName = PlacementService.getProvinceByCode(news?.province)?.name;
+        const districtName = PlacementService.getDistrictByCode(news?.province, news?.district)?.name;
+        const wardName = PlacementService.getWardByCode(news?.district, news?.ward)?.name;
+        const { index, page } = calculatePageAndIndex(allNews, news);
+        const category = categories.find(y => y.id === news.categoryId);
 
         return {
+            ...userDoc,
             ...doc,
             provinceName,
             districtName,
@@ -383,6 +360,9 @@ const calculateNewBump = (toDateLeft?: string, day?: number) => {
     } as NewsBump;
 };
 
+
+
+
 const calculatePageAndIndex = (allNews: INews[], news: INews) => {
     const listNews = allNews.filter(x => x.categoryId === news.categoryId);
     let sorted = _.orderBy(listNews, ['createdAt'], ['desc']);
@@ -415,7 +395,7 @@ const NewsService = {
     showNewsByUserId,
     updateNewsBump,
     hideNews,
-    updateNews
+    updateNews,
 };
 
 export default NewsService;

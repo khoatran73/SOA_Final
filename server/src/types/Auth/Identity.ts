@@ -18,6 +18,9 @@ export type AppUser = {
     districtName?: string;
     ward?: string;
     wardName?: string;
+    address?: string;
+    avatar: string;
+    createdAt: string;
 };
 
 export interface LoginParams {

@@ -25,6 +25,7 @@
         "express-session": "^1.17.3",
         "jsonwebtoken": "^8.5.1",
         "lodash": "^4.17.21",
+        "moment": "^2.29.3",
         "mongoose": "^6.6.5",
         "multer": "^1.4.5-lts.1",
         "paypal-rest-sdk": "^1.8.1",
@@ -32,8 +33,7 @@
         "socket.io": "^4.4.1",
         "sub-vn": "^0.0.2",
         "swagger-ui-express": "^4.5.0",
-        "uuid": "^9.0.0",
-        "moment": "^2.29.3"
+        "uuid": "^9.0.0"
     },
     "devDependencies": {
         "@types/dotenv": "^8.2.0",

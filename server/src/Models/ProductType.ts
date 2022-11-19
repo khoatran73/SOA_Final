@@ -9,13 +9,16 @@ interface IProductTypeMethod {
 
 type ProductTypeModel = Model<IProductType, {}, IProductTypeMethod>;
 
-const schema = new Schema<IProductType, ProductTypeModel, IProductTypeMethod>({
-    id: { type: String, unique: true, required: true, default: DefaultModelId },
-    name: { type: String, required: true },
-    categoryId: { type: String, required: true },
-    slug: { type: String },
-    imageUrl: { type: String },
-});
+const schema = new Schema<IProductType, ProductTypeModel, IProductTypeMethod>(
+    {
+        id: { type: String, unique: true, required: true, default: DefaultModelId },
+        name: { type: String, required: true },
+        categoryId: { type: String, required: true },
+        slug: { type: String },
+        imageUrl: { type: String },
+    },
+    { timestamps: true },
+);
 
 schema.methods.setSlug = function (name: string) {
     this.slug = slugify(name, slugifyOpts);
