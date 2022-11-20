@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/check-login', IdentityService.checkLogin);
 router.get('/get-user', IdentityService.getUser);
 router.post('/login', IdentityService.login);
-router.post('/accuracy-account', IdentityService.accuracyAccount);
+router.post('/get-otp', IdentityService.getOTP);
 router.post('/add-user',  IdentityService.addUser);
 router.get('/logout', Authenticate, IdentityService.logout);
 

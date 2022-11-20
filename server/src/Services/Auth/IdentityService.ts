@@ -47,8 +47,11 @@ const checkLogin = async (req: Request, res: Response) => {
     return res.json(ResponseOk<AuthUser>(result));
 };
 
-const addUser = async (req: Request<any, any, NewUser>, res: Response) => {
+const addUser = async (req: Request, res: Response) => {
     try {
+        const {otpCode,username} = req.body;
+        let checkOTP = await Otp.findOneAndDelete({ otpCode: otpCode,username: username });
+        if(!Boolean(checkOTP)) return res.json(ResponseFail('OTP không hợp lệ!'));
         const isExistUser = Boolean(await User.findOne({ username: req.body.username }));
         const password = req.body.password;
         if (isExistUser) {
@@ -61,23 +64,31 @@ const addUser = async (req: Request<any, any, NewUser>, res: Response) => {
 
         user.setPassword(password);
         user.save();
-        let codeOTP = Number(Math.floor(Math.random() * 1000000 + 1));
-        let checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: user.username });
+        return res.json(ResponseOk('Đăng kí tài khoản thành công !'))
+    } catch (err) {
+        return res.json(ResponseFail(_.get(err, 'message')));
+    }
+};
+
+const getOTP = async(req: Request,res: Response) => {
+    const {username, emailAddress} = req.body;
+    let codeOTP = Number(Math.floor(Math.random() * 1000000 + 1));
+        let checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: username });
         while (Boolean(checkOTP)) {
-            checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: user.username });
+            checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: username });
             if (Boolean(checkOTP)) {
                 codeOTP = Number(Math.floor(Math.random() * 1000000 + 1));
             }
         }
         await Otp.create({
             otpCode: codeOTP,
-            transactionId: user.username
+            transactionId: username
         }); 
         const paramSendMail: SendMailProps = {
-            emailTo: user.emailAddress,
+            emailTo: emailAddress,
             subject: 'Mã dùng một lần của bạn!',
             html: `
-                <div><p>Xin chào <a href="#">${user.emailAddress}</a></p></div>
+                <div><p>Xin chào <a href="#">${emailAddress}</a></p></div>
                 <div><p>Chúng tôi đã nhận yêu cầu mã dùng một lần</p></div> <br/><br/>
                 <div><p>Mã dùng 1 lần của bạn là: <strong style="font-size:20px;color:red">${codeOTP}</strong></p></div> <br/><br/>
                 <div><p>Nếu không yêu cầu mã này thì bạn có thể vui lòng bỏ qua một cách an toàn.</p></div></br><br/>
@@ -87,21 +98,10 @@ const addUser = async (req: Request<any, any, NewUser>, res: Response) => {
         };
         await SendMail(paramSendMail);
         return res.json(ResponseOk());
-    } catch (err) {
-        return res.json(ResponseFail(_.get(err, 'message')));
-    }
-};
-
-const accuracyAccount = async(req: Request,res: Response) => {
-    const { otpCode, username } = req.body
-    const checkOtp = await Otp.findOneAndDelete({otpCode: otpCode, transactionId: username , expiredAt : { $gt: new Date() }})
-    if(!checkOtp) return res.json(ResponseFail('Mã OTP không đúng!'))
-    await User.findOneAndUpdate({username: username} , {isAccuracy: true})
-    return res.json(ResponseOk())
 }
 
 const login = async (req: Request<any, any, LoginParams>, res: Response) => {
-    const user = await User.findOne({ username: req.body.username , isAccuracy: true });
+    const user = await User.findOne({ username: req.body.username });
 
     if (!user) {
         return res.json(ResponseFail('Tài khoản hoặc mật khẩu không đúng!'));
@@ -140,7 +140,7 @@ const login = async (req: Request<any, any, LoginParams>, res: Response) => {
 };
 const getUser = async (req: Request, res: Response) => {
     const id = req.query.id;
-    const user = await User.findOne({ id: id , isAccuracy: true });
+    const user = await User.findOne({ id: id });
     if (!Boolean(user)) return res.json(ResponseFail('User not found'));
     const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
     const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
@@ -199,7 +199,7 @@ const IdentityService = {
     logout,
     getUser,
     updateUser,
-    accuracyAccount
+    getOTP
 };
 
 export default IdentityService;

@@ -111,7 +111,7 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
                 currency: payment.transactions[0].amount.currency,
                 total: payment.transactions[0].amount.total,
                 title: payment.transactions[0]?.item_list?.items[0].name ?? '',
-                totalVND: Number(newDetails.price ?? coin),
+                totalVnd: Number(newDetails.price ?? coin),
                 newsId: newsId,
                 userReceiveId: newDetails?.userId,
                 description: newDetails?.description,
@@ -127,7 +127,7 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
             await order.save();
         }
     });
-    res.redirect(`http://localhost:3000/${url}`);
+    return res.redirect(`http://localhost:3000/${url}`);
 };
 
 const PayPalService = {

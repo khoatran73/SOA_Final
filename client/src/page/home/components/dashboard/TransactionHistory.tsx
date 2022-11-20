@@ -23,12 +23,12 @@ const ItemHistory = (props: any) => {
             </div>
             <div>
                 <span className="text-md">
-                    Hinh thức: <b className='text-[#e06d6d]'>{props.method}</b>
+                    Hinh thức: <b className='text-[#e06d6d]'>{props.paymentMethod}</b>
                 </span>
             </div>
             <div>
                 <span>
-                    Số tiền: <b className='text-[#e06d6d]'>{LocaleUtil.toLocaleString(props.totalVND)} đ</b>
+                    Số tiền: <b className='text-[#e06d6d]'>{LocaleUtil.toLocaleString(props.totalVnd)} đ</b>
                 </span>
             </div>
         </div>
@@ -94,7 +94,7 @@ const TransactionHistory = () => {
                                 <img src={coinIcon} alt=" " width="55" height="55" />
                             </div>
                             <div className="text-[12px] font-semibold w-[calc(100% - 60px)] text-left float-right mt-2.5 ml-2.5">
-                                <p>Tài khoản Đồng Tốt</p>
+                                <p>Tài khoản Coin</p>
                                 <span className="text-lg">{LocaleUtil.toLocaleString(authUser?.user.amount ?? 0)}</span>
                             </div>
                         </div>

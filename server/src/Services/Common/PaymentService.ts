@@ -35,7 +35,7 @@ const payment = async (req: Request, res: Response) => {
         status: OrderStatus.Waiting,
         updatedBy: userPaymentId,
     });
-    await history.save();
+    await history.save(); 
     await order.save();
     return res.json(ResponseOk());
 };

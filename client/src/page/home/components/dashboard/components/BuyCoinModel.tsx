@@ -8,6 +8,7 @@ import coinIcon from '~/assets/news/coin.svg';
 import paypal from '~/assets/logo/paypal.svg';
 import { requestApi } from '~/lib/axios';
 import { PAYPAL_API_PATH } from './api/api';
+import { Action } from '~/types/product/ProductType';
 interface Props {
     onClose?: () => void;
     onSubmitSuccessfully?: () => void;
@@ -23,7 +24,7 @@ export type ItemPayment = {
 
 const BuyCoinModel: React.FC<Props> = props => {
     const onPaymentBuyCoin = async () => {
-        const action = 'buyCoin';
+        const action = Action.Coin;
         const url = 'dashboard/balances'
         const price = props.money / 24785;
         const items: ItemPayment[] = [{

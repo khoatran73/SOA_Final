@@ -364,7 +364,7 @@ const NewsDashboard: React.FC = () => {
                                 <img src={coinIcon} alt=" " width="55" height="55" />
                             </div>
                             <div className="text-[12px] font-semibold w-[calc(100% - 60px)] text-left float-right mt-2.5 ml-2.5">
-                                <p>Tài khoản Đồng Tốt</p>
+                                <p>Tài khoản Coin</p>
                                 <span className="text-lg">{LocaleUtil.toLocaleString(authUser?.user.amount ?? 0)}</span>
                             </div>
                         </div>

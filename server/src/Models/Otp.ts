@@ -9,9 +9,8 @@ type OtpModel = Model<IOtp, {}, {}>;
 
 const schema = new Schema<IOtp>({
     otpCode: { type: Number, unique: true},
-    expiredAt: { type: Date, default: new Date((new Date()).getTime() + 2*60000) },
     transactionId: { type: String, required: true },
-},{timestamps: true});
+},{timestamps: true , expireAfterSeconds: 120});
 
 const Otp = model<IOtp, OtpModel>('Otp', schema);
 

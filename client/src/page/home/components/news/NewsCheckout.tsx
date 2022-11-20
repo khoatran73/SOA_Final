@@ -37,6 +37,7 @@ import NotificationConstant from '~/configs/contants';
 import coinIcon from '~/assets/news/coin.svg';
 import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
+import { Action } from '~/types/product/ProductType';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -74,7 +75,7 @@ const NewsCheckout: React.FC = () => {
     };
     const onCheckout = async () => {
         const url = 'news/dashboard';
-        const action = 'purchase'
+        const action = Action.Purchase;
         const newDetail = requestNews?.data?.result;
         const note = inputRef.current?.resizableTextArea?.props?.value;
         if (authUser?.user.id === newDetail?.userId) {

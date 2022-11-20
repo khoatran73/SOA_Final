@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ButtonBase } from '../Elements/Button/ButtonBase';
 import { Input } from 'antd';
 import { RegisterParam } from '~/types/ums/AuthUser';
-import { API_ACCURACY_USER, API_ADD_USER } from '~/configs';
+import {  API_ADD_USER, API_GET_OTP_USER } from '~/configs';
 import { requestApi } from '~/lib/axios';
 import { useNavigate } from 'react-router-dom';
 import NotifyUtil from '~/util/NotifyUtil';
@@ -26,7 +26,7 @@ const RegisterView: React.FC = () => {
             return
         }
             
-        requestApi('post', API_ADD_USER, registerParams).then(res => {
+        requestApi('post', API_GET_OTP_USER, registerParams).then(res => {
             if (res.data.success) {
                 modalRef.current?.onOpen(
                     <ModalRegister
@@ -36,7 +36,7 @@ const RegisterView: React.FC = () => {
                         onClose={modalRef.current?.onClose}
                         initialValues={registerParams}
                     />,
-                    'Thanh toán đồng tốt',
+                    'Nhập mã OTP',
                     '60%',
                 );
             }
@@ -113,10 +113,10 @@ const ModalRegister: React.FC<Props> = (props: Props) => {
     }, [counter]);
     const onSend = () => {
         const data = {
-            username: initialValues?.username,
+            ...initialValues,
             otpCode: formRef.current?.getFieldsValue().otpCode,
         }
-        requestApi('post', API_ACCURACY_USER, data).then(res => {
+        requestApi('post', API_ADD_USER, data).then(res => {
             if (res.data.success) {
                 NotifyUtil.success(NotificationConstant.TITLE, 'Đăng kí tài khoản thành công');
                 navigate('/login')

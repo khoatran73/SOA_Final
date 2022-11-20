@@ -1,7 +1,7 @@
 import { Model, model, Schema } from 'mongoose';
 import { DefaultModelId } from '../configs';
 
-interface TransactionHistoryMethod {}
+
 export enum PaymentMethod {
     Coin = 'Coin',
     PayPal = 'PayPal',
@@ -26,9 +26,9 @@ export type ITransactionHistory = {
     address?: string;
 };
 
-type TransactionHistoryModel = Model<ITransactionHistory, {}, TransactionHistoryMethod>;
+type TransactionHistoryModel = Model<ITransactionHistory, {}, {}>;
 
-const schema = new Schema<ITransactionHistory, TransactionHistoryModel, TransactionHistoryMethod>(
+const schema = new Schema<ITransactionHistory>(
     {
         id: { type: String, required: true, unique: true, default: DefaultModelId },
         userTransferId: { type: String, required: true },

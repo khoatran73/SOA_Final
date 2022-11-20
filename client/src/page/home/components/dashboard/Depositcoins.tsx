@@ -56,7 +56,7 @@ const DepositCoins: React.FC = () => {
                 onClose={modalRef.current?.onClose}
                 money={item}
             />,
-            'Thanh toán đồng tốt',
+            'Thanh toán Coin',
             '60%',
         );
     };
@@ -75,7 +75,7 @@ const DepositCoins: React.FC = () => {
                                 link: '/',
                             },
                             {
-                                title: 'Tài khoản đồng tốt',
+                                title: 'Tài khoản Coin',
                                 link: '/news/dashboard',
                             },
                         ]}
