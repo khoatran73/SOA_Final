@@ -3,21 +3,26 @@ import { DefaultModelId } from '../configs';
 
 interface TransactionHistoryMethod {}
 export enum IPaymentMethod {
-    coin = 'coin',
-    paypal = 'paypal',
+    Coin = 'coin',
+    PayPal = 'paypal',
 }
-
+export enum IAction{
+    Coin = 'buyCoin',
+    Purchase = 'purchase'
+}
 export type ITransactionHistory = {
     id: string;
     userTransferId: string;
     userReceiveId?: string;
-    method: IPaymentMethod;
+    paymentMethod: IPaymentMethod;
+    action:IAction,
     title: string;
     description?: string;
     total?: number;
     currency?: string;
     totalVND?: number;
     newId?: string;
+    note?: string;
     address?: string;
 };
 
@@ -28,8 +33,10 @@ const schema = new Schema<ITransactionHistory, TransactionHistoryModel, Transact
         id: { type: String, required: true, unique: true, default: DefaultModelId },
         userTransferId: { type: String, required: true },
         userReceiveId: { type: String },
-        method: { type: String },
-        title: { type: String },
+        paymentMethod: { type: String ,required: true},
+        action: { type: String ,required: true},
+        title: { type: String, required: true},
+        note: { type: String},
         description: { type: String },
         total: { type: Number },
         currency: { type: String },

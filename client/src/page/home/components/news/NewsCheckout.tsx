@@ -1,5 +1,5 @@
 import { Avatar, Empty, Select } from 'antd';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, {  useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -25,7 +25,7 @@ import paymentOrangeIcon from '~/assets/news/payment_orange.svg';
 // normal
 import stickyIcon from '~/assets/news/sticky_note.svg';
 
-import TextArea from 'antd/lib/input/TextArea';
+import TextArea, { TextAreaRef } from 'antd/lib/input/TextArea';
 import clsx from 'clsx';
 import { VND_CHAR } from './../../../../configs/index';
 import LocaleUtil from '~/util/LocaleUtil';
@@ -35,7 +35,7 @@ import { ItemPayment } from '../dashboard/components/BuyCoinModel';
 import NotifyUtil from '~/util/NotifyUtil';
 import NotificationConstant from '~/configs/contants';
 import coinIcon from '~/assets/news/coin.svg';
-import { faCheckCircle, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
 
 const getNewsDetail = (id: string | undefined) => {
@@ -54,6 +54,7 @@ const NewsCheckout: React.FC = () => {
     const isOnSell = useMemo(() => news?.status === NewsStatus.OnSell, [news?.status]);
     const isOwnNews = useMemo(() => news?.userId === authUser?.user.id, [authUser?.user.id, news?.userId]);
     const isSellOnline = useMemo(() => news?.isOnline, [news?.isOnline]);
+    const inputRef = useRef<TextAreaRef>(null);
 
     const renderBottomBill = () => {
         return Array.from({ length: 54 }, (_, index) => index + 1).map(num => {
@@ -73,8 +74,13 @@ const NewsCheckout: React.FC = () => {
     };
     const onCheckout = async () => {
         const url = 'news/dashboard';
+        const action = 'purchase'
+        const newDetail = requestNews?.data?.result;
+        const note = inputRef.current?.resizableTextArea?.props?.value;
+        if (authUser?.user.id === newDetail?.userId) {
+            return NotifyUtil.error(NotificationConstant.TITLE, 'Bạn không thể mua sản phẩm của chính mình');
+        }
         if (methodPayment === 'paypal') {
-            const newDetail = requestNews?.data?.result;
             const price = Number(newDetail?.price) / 24785;
             const items: ItemPayment[] = [
                 {
@@ -87,9 +93,11 @@ const NewsCheckout: React.FC = () => {
             ];
             const params = {
                 items,
-                newId: newDetail?.id,
+                newsId: newDetail?.id,
                 url: url,
-                address:'Sa đéc , Đồng Tháp'
+                address:'Sa đéc , Đồng Tháp',
+                action: action,
+                note: note,
             }
             const res = await requestApi('post', PAYPAL_API_PATH, { ...params });
             if (res.data.success) {
@@ -97,9 +105,11 @@ const NewsCheckout: React.FC = () => {
             }
         } else {
             const data = {
-                newId: requestNews?.data?.result?.id,
+                newsId: newDetail?.id,
                 userPaymentId: authUser?.user.id,
-                address:'Sa đéc , Đồng Tháp'
+                address:'Sa đéc , Đồng Tháp',
+                action: action,
+                note: note,
             };
             requestApi('post', PAYMENT_BY_COIN_API_PATH, data).then(res => {
                 if (res.data.success) {
@@ -117,7 +127,7 @@ const NewsCheckout: React.FC = () => {
     if (isLoading) return <Loading />;
     if (!isOnSell || !news) return <Empty description="Xin lỗi, tin này đã ẩn hoặc không tồn tại!" />;
     if (!isSellOnline) return <Empty description="Xin lỗi, tin này chỉ bán trực tiếp!" />;
-    if (!isOwnNews) return <Forbidden />;
+    if (isOwnNews) return <Forbidden />;
 
     return (
         <BoxContainer className="bg-transparent p-0">
@@ -294,7 +304,7 @@ const NewsCheckout: React.FC = () => {
                         <img src={stickyIcon} alt="" />
                         <div className="text-base font-bold ml-2">Ghi chú</div>
                     </div>
-                    <TextArea placeholder="Nhập ghi chú cho người bán" rows={3} />
+                    <TextArea name="note" ref={inputRef} placeholder="Nhập ghi chú cho người bán" rows={3} />
                     {renderBottomBill()}
                 </div>
                 <div className="p-3 mb-3 bg-white">

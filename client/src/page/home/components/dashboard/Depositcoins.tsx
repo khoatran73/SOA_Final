@@ -82,7 +82,7 @@ const DepositCoins: React.FC = () => {
                     />
                     <div className="w-full float-left relative">
                         <h1 className="flex items-center bg-white py-2 px-3 justify-between font-bold text-base border-b border-[#dbdbdb]">
-                            Tài khoản đồng tốt
+                            Tài khoản Coin
                         </h1>
                         <div className="w-full text-[13px]">
                             <Tabs defaultActiveKey="1" className="">
@@ -96,7 +96,7 @@ const DepositCoins: React.FC = () => {
                                         </div>
                                     </div>
                                     <h1 className="flex items-center bg-slate-50 py-2 px-3 justify-between font-bold text-base border-b border-[#dbdbdb]">
-                                        Nạp đồng tốt
+                                        Nạp Coin
                                     </h1>
                                     <div className="w-full py-2 px-3 border-b border-[#dbdbdb] bg-white">
                                         {listCoins.map((item: number, index: number) => {
@@ -108,7 +108,7 @@ const DepositCoins: React.FC = () => {
                                         })}
                                     </div>
                                 </Tabs.TabPane>
-                                <Tabs.TabPane tab={'Nạp đồng tốt'} key="2">
+                                <Tabs.TabPane tab={'Nạp Coin'} key="2">
                                     <h1 className="flex items-center bg-slate-50 py-2 px-3 justify-between font-bold text-base border-b border-[#dbdbdb]">
                                         Nạp đồng tốt
                                     </h1>

@@ -6,6 +6,7 @@ import TransactionHistory from '../../Models/TransactionHistory';
 import News from '../../Models/News';
 import { INews } from 'Home/News';
 import { queryStringSerialize } from '../../helpers/QuerySeriable';
+import Order from '../../Models/Order';
 paypal.configure({
     mode: 'sandbox', //sandbox or live
     client_id: 'AYQJggj5ZcwxUGY91V-K7RDDeDN2SVJvLF-YNaxJB_gXgn9wx2HUI6AoYsMCkl2qoDVEaPOm2YQ-_XWl',
@@ -23,17 +24,19 @@ type ItemPayment = {
 export const PaymentPayPal = async (req: Request, res: Response) => {
     const items: ItemPayment[] = req.body.items;
     const user = req.session.user;
-    const { coin, newId, url, address } = req.body;
+    const { coin, newsId, url, address, action,note } = req.body;
     const amount = items.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
 
     const queryParams = queryStringSerialize({
         total: amount,
         currency: items[0]?.currency,
         coin: coin === 'undefined' ? '' : coin,
-        newId: newId === 'undefined' ? '' : newId,
+        newsId: newsId === 'undefined' ? '' : newsId,
         userId: user?.id,
         url: url,
         address: address,
+        action: action,
+        note: note,
     });
     const create_payment_json = {
         intent: 'sale',
@@ -41,7 +44,6 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
             payment_method: 'paypal',
         },
         redirect_urls: {
-            // return_url: `http://localhost:3000/api/payment/success?total=${amount}&currency=${items[0]?.currency}&coin=${coin}&userId=${user?.id}&newId=${newId}`,
             return_url: `http://localhost:3000/api/payment/success?${queryParams}`,
             cancel_url: 'http://localhost:3000/api/payment/cancel',
         },
@@ -74,9 +76,9 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
 
 export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
     const payerId = req.query.PayerID as string;
-    const { total, currency, userId, url, address } = req.query;
+    const { total, currency, userId, url, address,action,note } = req.query;
     const coin = req.query.coin;
-    const newId = req.query.newId;
+    const newsId = req.query.newsId;
 
     let newDetails: any = {};
     const execute_payment_json = {
@@ -91,8 +93,8 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
         ],
     };
     const paymentId = req.query.paymentId as string;
-    if (newId) {
-        newDetails = (await News.findOneAndUpdate({ id: newId }, { status: 'Sold' })) ?? {};
+    if (newsId) {
+        newDetails = (await News.findOne({ id: newsId })) ?? {};
     }
     paypal.payment.execute(paymentId, execute_payment_json, async (error, payment) => {
         if (error) {
@@ -102,19 +104,27 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
             if (coin) {
                 await User.findOneAndUpdate({ id: userId }, { $inc: { amount: coin } });
             }
-            const history = {
+            const history = new TransactionHistory({
                 userTransferId: userId,
-                method: payment.payer.payment_method,
+                paymentMethod: payment.payer.payment_method,
+                action: action,
                 currency: payment.transactions[0].amount.currency,
                 total: payment.transactions[0].amount.total,
-                title: payment.transactions[0]?.item_list?.items[0].name,
+                title: payment.transactions[0]?.item_list?.items[0].name ?? '',
                 totalVND: Number(newDetails.price ?? coin),
-                newId: newId,
+                newsId: newsId,
                 userReceiveId: newDetails?.userId,
                 description: newDetails?.description,
                 address: address,
-            };
-            await TransactionHistory.create(history);
+                note: note,
+            });
+            const order = new Order({
+                historyId: history.id,
+                status:'waiting',
+                updatedBy: userId,
+            })
+            await history.save();
+            await order.save();
         }
     });
     res.redirect(`http://localhost:3000/${url}`);

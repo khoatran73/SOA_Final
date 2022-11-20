@@ -23,15 +23,17 @@ export type ItemPayment = {
 
 const BuyCoinModel: React.FC<Props> = props => {
     const onPaymentBuyCoin = async () => {
+        const action = 'buyCoin';
+        const url = 'dashboard/balances'
         const price = props.money / 24785;
-        const data: ItemPayment = {
-            name: 'Thanh toán đồng tốt',
+        const items: ItemPayment[] = [{
+            name: 'Nạp Coin',
             sku: Math.random().toString(36).substring(7),
             price: price.toFixed(2).toString(),
             currency: 'USD',
             quantity: 1,
-        };
-        const res = await requestApi('post', PAYPAL_API_PATH, { items: [data],coin:props.money });
+        }];
+        const res = await requestApi('post', PAYPAL_API_PATH, { items,coin:props.money,action,url });
         if (res.data.success) {
             window.location.href = res.data.result;
         }
@@ -45,11 +47,11 @@ const BuyCoinModel: React.FC<Props> = props => {
                 <div className="ml-3 flex flex-col w-full">
                     <div className="flex-1">
                         <div>
-                            <span className="text-[#333] text-2xl">Thanh toán đồng tốt</span>
+                            <span className="text-[#333] text-2xl">Nạp Coin</span>
                         </div>
                         <div className="mt-3">
                             <i>
-                                Đồng tốt nạp thêm : {LocaleUtil.toLocaleString(props.money)} {VND_CHAR}
+                                Coin nạp thêm : {LocaleUtil.toLocaleString(props.money)} {VND_CHAR}
                             </i>
                         </div>
                     </div>

@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
-import TransactionHistory, { IPaymentMethod, ITransactionHistory } from '../../Models/TransactionHistory';
+import TransactionHistory, { IAction, IPaymentMethod, ITransactionHistory } from '../../Models/TransactionHistory';
 import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
 import News from '../../Models/News';
 import User from '../../Models/User';
+import Order from '../../Models/Order';
 
 const payment = async (req: Request, res: Response) => {
-    const { newId, userPaymentId, address } = req.body;
+    const { newsId, userPaymentId, address ,note} = req.body;
     const userPayment = await User.findOne({ id: userPaymentId });
-    const newDetail = await News.findOne({ id: newId });
+    const newDetail = await News.findOne({ id: newsId });
     const newPrice = newDetail?.price ?? 0;
     const amount = userPayment?.amount ?? 0;
     if (amount < newPrice) {
@@ -15,20 +16,27 @@ const payment = async (req: Request, res: Response) => {
     }
     const newAmount = amount - newPrice;
     await User.updateOne({ id: userPaymentId }, { amount: newAmount });
-    await News.updateOne({ id: newId }, { status: 'Sold' });
-    const History = {
+    const history = new TransactionHistory({
         userTransferId: userPaymentId,
         userReceiveId: newDetail?.userId,
-        method: IPaymentMethod.coin,
-        title: newDetail?.title,
+        paymentMethod: IPaymentMethod.Coin,
+        action: IAction.Purchase,
+        title: newDetail?.title ?? '',
         description: newDetail?.description,
         total: '', 
         currency: '',
         totalVND: newPrice,
-        newId: newId,
-        address: address
-    };
-    await TransactionHistory.create(History);
+        newId: newsId,
+        address: address,
+        note: note,
+    });
+    const order = new Order({
+        historyId: history.id,
+        status:'waiting',
+        updatedBy: userPaymentId,
+    })
+    await history.save();
+    await order.save();
     return res.json(ResponseOk());
 };
 
