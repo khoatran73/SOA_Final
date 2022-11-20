@@ -30,7 +30,7 @@ type TransactionHistoryModel = Model<ITransactionHistory, {}, {}>;
 
 const schema = new Schema<ITransactionHistory>(
     {
-        id: { type: String, required: true, unique: true, default: DefaultModelId },
+        id: { type: String, required: true, unique: true, default: DefaultModelId + Math.random().toString(36).substr(2, 4) },
         userTransferId: { type: String, required: true },
         userReceiveId: { type: String },
         paymentMethod: { type: String, required: true },
