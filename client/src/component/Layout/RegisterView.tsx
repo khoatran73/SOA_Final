@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ButtonBase } from '../Elements/Button/ButtonBase';
 import { Input } from 'antd';
 import { RegisterParam } from '~/types/ums/AuthUser';
-import {  API_ADD_USER, API_GET_OTP_USER } from '~/configs';
+import {  API_GET_OTP_USER, API_REGISTER_USER } from '~/configs';
 import { requestApi } from '~/lib/axios';
 import { useNavigate } from 'react-router-dom';
 import NotifyUtil from '~/util/NotifyUtil';
@@ -116,7 +116,7 @@ const ModalRegister: React.FC<Props> = (props: Props) => {
             ...initialValues,
             otpCode: formRef.current?.getFieldsValue().otpCode,
         }
-        requestApi('post', API_ADD_USER, data).then(res => {
+        requestApi('post', API_REGISTER_USER, data).then(res => {
             if (res.data.success) {
                 NotifyUtil.success(NotificationConstant.TITLE, 'Đăng kí tài khoản thành công');
                 navigate('/login')

@@ -9,6 +9,7 @@ import UserRole from '../../Models/UserRole';
 import { AppUser, AuthUser, LoginParams, NewUser } from '../../types/Auth/Identity';
 import PlacementService from '../Common/PlacementService';
 import Otp from '../../Models/Otp';
+import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
 
 declare module 'express-session' {
     interface SessionData {
@@ -49,9 +50,41 @@ const checkLogin = async (req: Request, res: Response) => {
 
 const addUser = async (req: Request, res: Response) => {
     try {
-        const {otpCode,username} = req.body;
-        let checkOTP = await Otp.findOneAndDelete({ otpCode: otpCode,username: username });
-        if(!Boolean(checkOTP)) return res.json(ResponseFail('OTP không hợp lệ!'));
+        const isExistUser = Boolean(await User.findOne({ username: req.body.username }));
+        const password = req.body.password ?? "123456";
+        const emailAddress = req.body.emailAddress ?? req.body.email;
+        if (isExistUser) {
+            return res.json(ResponseFail('UserName existed!'));
+        }
+
+        const user = new User({
+            ...req.body,
+            emailAddress: emailAddress,
+        });
+        user.setPassword(password);
+        user.save();
+        const paramSendMail: SendMailProps = {
+            emailTo: user.emailAddress,
+            subject:'Thông tin tài khoản!',
+            html: `
+                <div><p>Xin chào <b>${user.fullName}</b></a></p></div>
+                <div><p>Bạn vừa tạo mới tài khoản với tên đăng nhập: <strong style="font-size:20px;color:red">${user.username}</strong> </p></div> <br/><br/>
+                <div><p>Mật khẩu của bạn là: <strong style="font-size:20px;color:red">${password}</strong></p></div> <br/><br/>
+                <p>Xin cảm ơn,</p>
+            `,
+        }
+        await SendMail(paramSendMail);
+        return res.json(ResponseOk('Đăng kí tài khoản thành công !'));
+    } catch (err) {
+        return res.json(ResponseFail(_.get(err, 'message')));
+    }
+};
+
+const registerUser = async (req: Request, res: Response) => {
+    try {
+        const { otpCode, username } = req.body;
+        let checkOTP = await Otp.findOneAndDelete({ otpCode: otpCode, username: username });
+        if (!Boolean(checkOTP)) return res.json(ResponseFail('OTP không hợp lệ!'));
         const isExistUser = Boolean(await User.findOne({ username: req.body.username }));
         const password = req.body.password;
         if (isExistUser) {
@@ -64,30 +97,30 @@ const addUser = async (req: Request, res: Response) => {
 
         user.setPassword(password);
         user.save();
-        return res.json(ResponseOk('Đăng kí tài khoản thành công !'))
+        return res.json(ResponseOk('Đăng kí tài khoản thành công !'));
     } catch (err) {
         return res.json(ResponseFail(_.get(err, 'message')));
     }
 };
 
-const getOTP = async(req: Request,res: Response) => {
-    const {username, emailAddress} = req.body;
+const getOTP = async (req: Request, res: Response) => {
+    const { username, emailAddress } = req.body;
     let codeOTP = Number(Math.floor(Math.random() * 1000000 + 1));
-        let checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: username });
-        while (Boolean(checkOTP)) {
-            checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: username });
-            if (Boolean(checkOTP)) {
-                codeOTP = Number(Math.floor(Math.random() * 1000000 + 1));
-            }
+    let checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: username });
+    while (Boolean(checkOTP)) {
+        checkOTP = await Otp.findOne({ otpCode: codeOTP, transactionId: username });
+        if (Boolean(checkOTP)) {
+            codeOTP = Number(Math.floor(Math.random() * 1000000 + 1));
         }
-        await Otp.create({
-            otpCode: codeOTP,
-            transactionId: username
-        }); 
-        const paramSendMail: SendMailProps = {
-            emailTo: emailAddress,
-            subject: 'Mã dùng một lần của bạn!',
-            html: `
+    }
+    await Otp.create({
+        otpCode: codeOTP,
+        transactionId: username,
+    });
+    const paramSendMail: SendMailProps = {
+        emailTo: emailAddress,
+        subject: 'Mã dùng một lần của bạn!',
+        html: `
                 <div><p>Xin chào <a href="#">${emailAddress}</a></p></div>
                 <div><p>Chúng tôi đã nhận yêu cầu mã dùng một lần</p></div> <br/><br/>
                 <div><p>Mã dùng 1 lần của bạn là: <strong style="font-size:20px;color:red">${codeOTP}</strong></p></div> <br/><br/>
@@ -95,10 +128,10 @@ const getOTP = async(req: Request,res: Response) => {
                 <div><p>Có thể ai đó đã nhập địa chỉ email của bạn do nhầm lẫn.</p></div></br><br/>
                 <p>Xin cảm ơn,</p>
             `,
-        };
-        await SendMail(paramSendMail);
-        return res.json(ResponseOk());
-}
+    };
+    await SendMail(paramSendMail);
+    return res.json(ResponseOk());
+};
 
 const login = async (req: Request<any, any, LoginParams>, res: Response) => {
     const user = await User.findOne({ username: req.body.username });
@@ -167,6 +200,42 @@ const getUser = async (req: Request, res: Response) => {
     return res.json(ResponseOk(result));
 };
 
+const getListUsers = async (req: Request<any, any, any, PaginatedListQuery>, res: Response) => {
+    const users = await User.find();
+    const listUsers = users.map(user => {
+        const provinceName = PlacementService.getProvinceByCode(user?.province)?.name;
+        const districtName = PlacementService.getDistrictByCode(user?.province, user?.district)?.name;
+        const wardName = PlacementService.getWardByCode(user?.district, user?.ward)?.name;
+
+        return {
+                email: user?.emailAddress,
+                fullName: user?.fullName,
+                id: user?.id,
+                username: user?.username,
+                phoneNumber: user?.phoneNumber,
+                amount: user?.amount,
+                province: user?.province,
+                district: user?.district,
+                ward: user?.ward,
+                provinceName,
+                districtName,
+                wardName,
+                address: user?.address,
+                avatar: user?.avatar,
+            } as AppUser;
+    });
+    const result = PaginatedListConstructor<AppUser>(listUsers, req.query.offset, req.query.limit);
+    return res.json(ResponseOk(result));
+};
+
+const deleteUser = async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const user = await User.findOne({ id: id });
+    if (!Boolean(user)) return res.json(ResponseFail('User not found'));
+    await user?.deleteOne();
+    return res.json(ResponseOk());
+};
+
 const logout = (req: Request, res: Response) => {
     if (req.session.user) delete req.session.user;
     return res.json(ResponseOk());
@@ -199,7 +268,10 @@ const IdentityService = {
     logout,
     getUser,
     updateUser,
-    getOTP
+    getOTP,
+    registerUser,
+    getListUsers,
+    deleteUser,
 };
 
 export default IdentityService;
