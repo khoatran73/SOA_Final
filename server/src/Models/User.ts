@@ -1,4 +1,4 @@
-import { AppUser } from 'Auth/Identity';
+import { AppUser, DeliveryAddress } from '../types/Auth/Identity';
 import crypto from 'crypto';
 import { Model, model, Schema } from 'mongoose';
 import { DefaultModelId } from '../configs';
@@ -18,6 +18,7 @@ export interface IUser
     phoneNumber: string;
     isAdmin: boolean;
     amount: number;
+    deliveryAddress: DeliveryAddress[];
 }
 
 interface IUserMethod {
@@ -44,6 +45,7 @@ const schema = new Schema<IUser, UserModel, IUserMethod>(
         ward: String,
         address: String,
         avatar: { type: String },
+        deliveryAddress: { type: [Object] },
     },
     { timestamps: true },
 );

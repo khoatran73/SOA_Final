@@ -5,6 +5,7 @@ import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import bgImageUrl from '~/assets/login/background_login.png';
+import NotificationConstant from '~/configs/contants';
 import { loginAsync } from '~/store/authSlice';
 import { LoginParam } from '~/types/ums/AuthUser';
 import { ButtonBase } from '../Elements/Button/ButtonBase';
@@ -34,14 +35,14 @@ const LoginView: React.FC = () => {
                         {
                             label: 'Tài khoản',
                             name: nameof.full<LoginParam>(x => x.username),
-                            children: <Input />,
-                            rules: [{ required: true }],
+                            children: <Input placeholder="Nhập tài khoản..." />,
+                            rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
                         },
                         {
                             label: 'Mật khẩu',
                             name: nameof.full<LoginParam>(x => x.password),
-                            children: <Input.Password />,
-                            rules: [{ required: true }],
+                            children: <Input.Password placeholder='Nhập mật khẩu...'/>,
+                            rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
                         },
                     ]}
                     labelAlign="left"

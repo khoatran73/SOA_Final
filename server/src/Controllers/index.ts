@@ -7,6 +7,7 @@ import PaymentController from './Common/PaymentController';
 import TransactionHistoryController from './Common/TransactionHistoryController';
 import ChatController from './Home/ChatController';
 import NewsController from './Home/NewsController';
+import OrderController from './Home/OrderController';
 import CategoryController from './Product/CategoryController';
 import ProductTypeController from './Product/ProductTypeController';
 import MenuController from './System/MenuController';
@@ -24,6 +25,7 @@ const route = (app: Application) => {
     app.use('/api/product/type', Authenticate, ProductTypeController);
     // home
     app.use('/api/home/news', Authenticate, NewsController);
+    app.use('/api/home/order', Authenticate, OrderController);
     app.use('/api/chat', Authenticate, ChatController);
     
 };

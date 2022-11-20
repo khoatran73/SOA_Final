@@ -58,7 +58,7 @@ const Header: React.FC<Props> = props => {
                 >
                     <MenuUnfoldOutlined className="absolute top-1.5 left-1.5" style={{ fontSize: '22px' }} />
                 </div>
-                <div className="pl-3 uppercase">IBanking</div>
+                <div className="pl-3 uppercase">Trang quản trị</div>
             </div>
             <div className="flex-1 flex items-center justify-end">
                 <Dropdown overlay={menu}>

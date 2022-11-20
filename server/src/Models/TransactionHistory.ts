@@ -1,3 +1,4 @@
+import { DeliveryAddress } from '../types/Auth/Identity';
 import { Model, model, Schema } from 'mongoose';
 import { DefaultModelId } from '../configs';
 
@@ -7,13 +8,13 @@ export enum PaymentMethod {
     PayPal = 'PayPal',
 }
 export enum PaymentAction {
-    Coin = 'Coin',
-    Purchase = 'Purchase',
+    Coin = 'Coin',  // mua coin
+    Purchase = 'Purchase', // mua hàng
 }
 export type ITransactionHistory = {
     id: string;
-    userTransferId: string;
-    userReceiveId?: string;
+    userTransferId: string; // người mua (người chuyển)
+    userReceiveId?: string; // người bán (người nhận)
     paymentMethod: PaymentMethod;
     action: PaymentAction;
     title: string;
@@ -23,7 +24,8 @@ export type ITransactionHistory = {
     totalVnd?: number;
     newsId?: string;
     note?: string;
-    address?: string;
+    address?: DeliveryAddress;
+    newsUrl?: string;
 };
 
 type TransactionHistoryModel = Model<ITransactionHistory, {}, {}>;
@@ -42,7 +44,7 @@ const schema = new Schema<ITransactionHistory>(
         currency: { type: String },
         totalVnd: { type: Number },
         newsId: { type: String },
-        address: { type: String },
+        address: { type: Object },
     },
     { timestamps: true },
 );

@@ -25,6 +25,21 @@ export interface AppUser {
     wardName?: string;
     avatar: string;
     address: string;
+    deliveryAddress?: DeliveryAddress[];
+}
+
+export interface DeliveryAddress {
+    id: string; // id DeliveryAddress
+    name: string; // tên người nhận
+    phone: string; //sdt người nhận
+    province: string; // code tỉnh
+    provinceName: string;
+    district: string; //code huyện
+    districtName: string;
+    wardName: string;
+    ward: string; // code xã
+    address: string; //đc cụ thể
+    isDefault: boolean; // địa chỉ mặc định ?
 }
 
 export type User = Partial<AppUser> & {

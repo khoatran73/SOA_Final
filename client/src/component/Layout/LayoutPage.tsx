@@ -7,6 +7,7 @@ import { BreadcrumbType, WrapBreadcrumb } from '~/component/Elements/Breadcrumb/
 import { fetchAuthLayoutAsync } from '~/store/layoutSlice';
 import { Breadcrumb } from '../Elements/Breadcrumb/WrapBreadcrumb';
 import Footer from './Footer';
+import Forbidden from './Forbidden';
 import Header from './Header';
 import MenuSide from './MenuSide';
 
@@ -35,6 +36,7 @@ const LayoutPage: React.FC = () => {
             };
         }) || [];
 
+    // return <Forbidden />;
     return (
         <div className="flex w-screen h-screen text-[13px]">
             <Sider

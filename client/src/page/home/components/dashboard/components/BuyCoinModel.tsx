@@ -5,7 +5,7 @@ import { AppModalContainer } from '~/component/Layout/AppModalContainer';
 import { VND_CHAR } from '~/configs';
 import LocaleUtil from '~/util/LocaleUtil';
 import coinIcon from '~/assets/news/coin.svg';
-import paypal from '~/assets/logo/paypal.svg';
+import paypalIcon from '~/assets/logo/paypal.svg';
 import { requestApi } from '~/lib/axios';
 import { PAYPAL_API_PATH } from './api/api';
 import { Action } from '~/types/product/ProductType';
@@ -25,87 +25,64 @@ export type ItemPayment = {
 const BuyCoinModel: React.FC<Props> = props => {
     const onPaymentBuyCoin = async () => {
         const action = Action.Coin;
-        const url = 'dashboard/balances'
+        const url = 'dashboard/balances?reload=load';
         const price = props.money / 24785;
-        const items: ItemPayment[] = [{
-            name: 'Nạp Coin',
-            sku: Math.random().toString(36).substring(7),
-            price: price.toFixed(2).toString(),
-            currency: 'USD',
-            quantity: 1,
-        }];
-        const res = await requestApi('post', PAYPAL_API_PATH, { items,coin:props.money,action,url });
+        const items: ItemPayment[] = [
+            {
+                name: 'Nạp Coin',
+                sku: Math.random().toString(36).substring(7),
+                price: price.toFixed(2).toString(),
+                currency: 'USD',
+                quantity: 1,
+            },
+        ];
+        const res = await requestApi('post', PAYPAL_API_PATH, { items, coin: props.money, action, url });
         if (res.data.success) {
             window.location.href = res.data.result;
         }
     };
     return (
-        <AppModalContainer>
-            <div className="w-[80%] h-auto mx-auto flex py-2 px-3 relative cursor-pointer border border-[#ebeaea] mt-2">
-                <div className="_2ZIVS1lDi3cofxmi0NnPnf flex items-center w-auto ">
-                    <img src={coinIcon} alt=" " width="150" height="150" />
+        <AppModalContainer style={{ padding: 0 }}>
+            <div className="w-full h-auto mx-auto flex py-2 px-3 relative">
+                <div className="flex items-center w-auto ">
+                    <img src={coinIcon} alt=" " width="80" height="80" />
                 </div>
                 <div className="ml-3 flex flex-col w-full">
-                    <div className="flex-1">
+                    <div className="">
                         <div>
-                            <span className="text-[#333] text-2xl">Nạp Coin</span>
+                            <span className="text-[#333] text-base font-bold">Nạp Coin</span>
                         </div>
-                        <div className="mt-3">
-                            <i>
-                                Coin nạp thêm : {LocaleUtil.toLocaleString(props.money)} {VND_CHAR}
-                            </i>
+                        <div className="flex items-center text-xs">
+                            Coin nạp thêm: {LocaleUtil.toLocaleString(props.money)}
                         </div>
                     </div>
-                    <div className="flex justify-between w-full">
-                        <span className="text-[#050505] text-lg">Số tiền phải trả</span>
-                        <span className="text-[#fa5353] text-lg">
+                    <div className="flex justify-between w-full mt-1">
+                        <span className="text-[#050505] text-xs">Số tiền phải trả:</span>
+                        <span className="text-[#c74646] text-xs">
                             {LocaleUtil.toLocaleString(props.money)} {VND_CHAR}
                         </span>
                     </div>
                 </div>
             </div>
-            <div className="w-[80%] mx-auto h-[50px] flex items-center justify-between mt-3  border border-[#ebeaea] p-2">
-                <span className="text-[#050505] text-xl">Thanh tiền :</span>
-                <span className="text-[#c74646] text-xl">
+            <div className="w-full mx-auto h-[50px] flex items-center justify-between p-2">
+                <span className="text-[#050505] text-md">Thanh tiền:</span>
+                <span className="text-[#c74646] text-md font-bold">
                     {LocaleUtil.toLocaleString(props.money)} {VND_CHAR}
                 </span>
             </div>
-            <h1 className=" w-[80%] mx-auto mt-3 flex items-center bg-white py-2 px-3 justify-between font-bold text-base border-b border-[#dbdbdb]">
+            <h1 className=" w-full mx-auto mt-1 flex items-center px-2 justify-between font-bold text-md">
                 Hình thức thanh toán
             </h1>
-            <div className="w-[80%] mx-auto h-auto flex items-center justify-between mt-3  border border-[#ebeaea] p-2">
-                <div>
-                    <div className="flex flex-row items-center">
-                        <BaseIcon icon={faCircleCheck} className="text-[#00b300] text-2xl ml-2 mr-6 -mt-8" />
-                        <div>
-                            <span className="text-[#4d4d4d] text-xl">Ví Paypal</span>
-                            <img
-                                width={94}
-                                height={32}
-                                className="object-cover cursor-pointer mt-2"
-                                src={paypal}
-                                alt=""
-                            />
-                        </div>
-                    </div>
+            <div className="flex relative border m-2 p-4">
+                <div className="flex items-center">
+                    <img src={paypalIcon} width={32} alt="" />
+                    <div className="text-md ml-2">Ví PayPal</div>
                 </div>
+                <BaseIcon className="absolute text-[#50bd25] right-0 top-[5px]" icon={faCircleCheck} width={32} />
             </div>
-            <div className="flex mx-auto mt-4">
-                <ButtonBase
-                    className="text-lg"
-                    title={`${LocaleUtil.toLocaleString(props.money)} ${VND_CHAR} - Thanh toán`}
-                    startIcon={faMoneyBillTransfer}
-                    onClick={onPaymentBuyCoin}
-                />
-                <ButtonBase
-                    className="text-lg"
-                    title="Đóng"
-                    startIcon={faClose}
-                    variant="danger"
-                    onClick={() => {
-                        props.onClose && props.onClose();
-                    }}
-                />
+            <div className="flex items-center justify-center w-full mt-2">
+                <ButtonBase title="Thanh toán" startIcon={faMoneyBillTransfer} onClick={onPaymentBuyCoin} />
+                <ButtonBase title="Đóng" startIcon={faClose} variant="danger" onClick={props.onClose} />
             </div>
         </AppModalContainer>
     );

@@ -67,7 +67,7 @@ const UserInfo: React.FC = () => {
             />
             <BoxContainer>
                 <div className="w-full flex justify-between">
-                    <div className="flex-1 flex">
+                    <div className="w-1/3 flex">
                         <img
                             width={80}
                             height={80}
@@ -104,7 +104,7 @@ const UserInfo: React.FC = () => {
                             </div>
                         )}
                     </div>
-                    <div className="flex-1">
+                    <div className="w-2/3">
                         <div className="flex items-center text-[#9b9b9b]">
                             <img src={calendarIcon} alt="" width={18} height={18} />
                             <div className="flex items-center ml-2 text-[13px]">

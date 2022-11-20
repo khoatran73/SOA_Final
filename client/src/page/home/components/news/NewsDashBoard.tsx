@@ -24,6 +24,8 @@ import NotifyUtil from '~/util/NotifyUtil';
 import { NEWS_BY_USER_ID_API, NEWS_HIDE_API } from '../../api/api';
 import BoxContainer from '../../layout/BoxContainer';
 import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
+import NewsChart from './chart/NewsChart';
+import NewsChartContainer from './chart/NewsChartContainer';
 
 const isOnSell = (status?: NewsStatus) => status === NewsStatus.OnSell;
 
@@ -275,6 +277,7 @@ const NewsDashboard: React.FC = () => {
     );
     const listNews = requestNews?.data?.result ?? [];
     const listNewsOnSell = listNews.filter(x => x.status === NewsStatus.OnSell);
+    console.log('🚀 ~ file: NewsDashBoard.tsx ~ line 280 ~ listNewsOnSell', listNewsOnSell);
     const listNewsSold = listNews.filter(x => x.status === NewsStatus.Sold);
 
     return (
@@ -353,6 +356,9 @@ const NewsDashboard: React.FC = () => {
                                         );
                                     })}
                                 </Tabs.TabPane>
+                                <Tabs.TabPane tab={'Xem thống kê'} key="3">
+                                    <NewsChartContainer />
+                                </Tabs.TabPane>
                             </Tabs>
                         </div>
                     </div>
@@ -368,75 +374,13 @@ const NewsDashboard: React.FC = () => {
                                 <span className="text-lg">{LocaleUtil.toLocaleString(authUser?.user.amount ?? 0)}</span>
                             </div>
                         </div>
-                        {/* <div className="w-full float-left relative bg-[#dfdfdf]">
-                            <span className="block text-center py-[5px]">Các gói nạp</span>
-                        </div> */}
-                        {/* <div className="">
-                            <ul className="_1902iE8tRDmhuAmwmwcuOe">
-                                <li>
-                                    <i>109198</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 8.000.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                                <li>
-                                    <i>109197</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 3.000.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                                <li>
-                                    <i>40</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 1.500.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                                <li>
-                                    <i>39</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 1.000.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                                <li>
-                                    <i>38</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 500.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                                <li>
-                                    <i>37</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 100.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                                <li>
-                                    <i>36</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 50.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                                <li>
-                                    <i>81</i>
-                                    <label>
-                                        <span className="xgL91COrexpdYDS0TGkqB">Nạp 20.000</span>
-                                        <small className="_1mIdCFAzYjbxUJJsJjTXrs" />
-                                    </label>
-                                </li>
-                            </ul>
-                        </div> */}
                         <div className="w-full">
                             <Link
                                 to="/dashboard/balances"
                                 className={clsx(
                                     'm-auto w-full h-[30px] text-white bg-[#5a9e3f] uppercase',
                                     'text-[13px] font-bold flex items-center justify-center rounded',
+                                    'hover:text-white',
                                 )}
                             >
                                 Nạp Ngay

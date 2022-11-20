@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '~/AppStore';
 import Loading from '~/component/Elements/loading/Loading';
 import LoginView from '~/component/Layout/LoginView';
+import RegisterView from '~/component/Layout/RegisterView';
 import { fetchAuthDataAsync } from '~/store/authSlice';
 
 type Props = {
@@ -21,7 +22,12 @@ export const AuthProvider = ({ children }: Props) => {
     }, []);
 
     if (checkLoginLoading) return <Loading />;
-    if (isAuthenticated === false) {
+    if (!isAuthenticated) {
+        const pathName = location.pathname;
+        if (pathName.includes('register')) {
+            return <RegisterView />;
+        }
+
         return <LoginView />;
     }
 

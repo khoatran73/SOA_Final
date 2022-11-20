@@ -12,7 +12,8 @@ import { useEffect, useState } from 'react';
 import { TRANSACTION_HISTORY_API } from '~/configs';
 import { requestApi } from '~/lib/axios';
 import moment from 'moment';
-const ItemHistory = (props: any) => {
+import { TransactionHistoryType } from '~/types/home/history';
+const ItemHistory = (props: TransactionHistoryType) => {
     return (
         <div className="w-full h-[auto] mx-auto py-2 px-3 border border-[#ebeaea] mt-3">
             <div className="flex justify-between">
@@ -28,7 +29,7 @@ const ItemHistory = (props: any) => {
             </div>
             <div>
                 <span>
-                    Số tiền: <b className='text-[#e06d6d]'>{LocaleUtil.toLocaleString(props.totalVnd)} đ</b>
+                    Số tiền: <b className='text-[#e06d6d]'>{LocaleUtil.toLocaleString(props.totalVnd ?? 0)} đ</b>
                 </span>
             </div>
         </div>

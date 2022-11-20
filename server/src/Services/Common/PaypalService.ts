@@ -6,7 +6,9 @@ import TransactionHistory from '../../Models/TransactionHistory';
 import News from '../../Models/News';
 import { INews } from 'Home/News';
 import { queryStringSerialize } from '../../helpers/QuerySeriable';
-import Order from '../../Models/Order';
+import Order, { OrderStatus } from '../../Models/Order';
+import _ from 'lodash';
+import PlacementService from './PlacementService';
 paypal.configure({
     mode: 'sandbox', //sandbox or live
     client_id: 'AYQJggj5ZcwxUGY91V-K7RDDeDN2SVJvLF-YNaxJB_gXgn9wx2HUI6AoYsMCkl2qoDVEaPOm2YQ-_XWl',
@@ -24,7 +26,7 @@ type ItemPayment = {
 export const PaymentPayPal = async (req: Request, res: Response) => {
     const items: ItemPayment[] = req.body.items;
     const user = req.session.user;
-    const { coin, newsId, url, address, action,note } = req.body;
+    const { coin, newsId, url, address, action, note } = req.body;
     const amount = items.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
 
     const queryParams = queryStringSerialize({
@@ -34,9 +36,15 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
         newsId: newsId === 'undefined' ? '' : newsId,
         userId: user?.id,
         url: url,
-        address: address,
+        // address: address,
         action: action,
         note: note,
+        name: _.get(address, 'name'),
+        phone: _.get(address, 'phone'),
+        province: _.get(address, 'province'),
+        district: _.get(address, 'district'),
+        ward: _.get(address, 'ward'),
+        address: _.get(address, 'address'),
     });
     const createPaymentJson = {
         intent: 'sale',
@@ -76,7 +84,7 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
 
 export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
     const payerId = req.query.PayerID as string;
-    const { total, currency, userId, url, address,action,note } = req.query;
+    const { total, currency, userId, url, action, note, name, phone, province, district, ward, address } = req.query;
     const coin = req.query.coin;
     const newsId = req.query.newsId;
 
@@ -104,6 +112,10 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
             if (coin) {
                 await User.findOneAndUpdate({ id: userId }, { $inc: { amount: coin } });
             }
+            const provinceName = PlacementService.getProvinceByCode(province?.toString())?.name;
+            const districtName = PlacementService.getDistrictByCode(province?.toString(), district?.toString())?.name;
+            const wardName = PlacementService.getWardByCode(district?.toString(), ward?.toString())?.name;
+
             const history = new TransactionHistory({
                 userTransferId: userId,
                 paymentMethod: payment.payer.payment_method,
@@ -115,14 +127,24 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
                 newsId: newsId,
                 userReceiveId: newDetails?.userId,
                 description: newDetails?.description,
-                address: address,
+                address: {
+                    name,
+                    phone,
+                    district,
+                    province,
+                    ward,
+                    address,
+                    provinceName: provinceName ?? '',
+                    districtName: districtName ?? '',
+                    wardName: wardName ?? ''
+                },
                 note: note,
             });
             const order = new Order({
                 historyId: history.id,
-                status:'waiting',
+                status: OrderStatus.Waiting,
                 updatedBy: userId,
-            })
+            });
             await history.save();
             await order.save();
         }

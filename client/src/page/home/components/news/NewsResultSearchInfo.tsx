@@ -8,6 +8,7 @@ import { VND_CHAR } from '~/configs';
 import { NewsSearch } from '~/types/home/news';
 import DateTimeUtil from '~/util/DateTimeUtil';
 import LocaleUtil from '~/util/LocaleUtil';
+import heartIcon from '~/assets/news/heart.svg';
 
 interface Props {
     news: NewsSearch;
@@ -38,6 +39,15 @@ const NewsResultSearchInfo: React.FC<Props> = props => {
                 >
                     {news?.imageUrls.length}
                 </div>
+                <img
+                    className={clsx(
+                        'absolute flex items-center justify-center text-white ',
+                        'font-bold text-[10px] bottom-1 right-1',
+                    )}
+                    width={20}
+                    height={20}
+                    src={heartIcon}
+                />
             </div>
             <div className="ml-2 h-full flex flex-col justify-between">
                 <div>

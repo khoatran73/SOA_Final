@@ -14,6 +14,7 @@ const payment = async (req: Request, res: Response) => {
     if (amount < newsPrice) {
         return res.json(ResponseFail('Bạn không đủ tiền để mua sản phẩm này'));
     }
+
     const coinRemain = amount - newsPrice;
     await User.updateOne({ id: userPaymentId }, { amount: coinRemain });
     const history = new TransactionHistory({

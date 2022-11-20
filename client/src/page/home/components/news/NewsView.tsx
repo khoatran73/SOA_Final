@@ -9,7 +9,7 @@ import moment from 'moment';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { RootState } from '~/AppStore';
 import { ButtonBase } from '~/component/Elements/Button/ButtonBase';
 import Loading from '~/component/Elements/loading/Loading';
@@ -301,6 +301,20 @@ const NewsView: React.FC = () => {
         </div>
     );
 
+    if (!authUser?.user.phoneNumber)
+        return (
+            <BoxContainer>
+                Vui lòng nhấn{' '}
+                <Link
+                    className="text-[#4a90e2] hover:text-[#4a90e2] hover:underline"
+                    to={`/user/info/${authUser?.user?.id}`}
+                >
+                    vào đây
+                </Link>{' '}
+                để cập nhật thông tin trước khi thực hiện chức năng này!
+            </BoxContainer>
+        );
+
     if (isLoading) return <Loading />;
     if (isEditView) {
         if (!isOnSell || !news) return <Empty description="Xin lỗi, tin này đã ẩn hoặc không tồn tại!" />;
@@ -317,6 +331,12 @@ const NewsView: React.FC = () => {
                             <div className="font-bold text-base text-[#222]">Ảnh về sản phẩm</div>
                             <div className="text-sm text-[#777]">Tải lên từ 1 - {numberImageCanUpload} ảnh</div>
                             <div className="text-sm text-[#777] italic">Ảnh đầu tiên là ảnh bìa của sản phẩm</div>
+                            <div className="text-sm text-[#777]">
+                                Xem thêm về{' '}
+                                <Link to="" className="text-[#4a90e2] hover:text-[#4a90e2] hover:underline">
+                                    Quy định đăng tin
+                                </Link>{' '}
+                            </div>
                         </div>
                         <Upload
                             name="image"
@@ -511,6 +531,7 @@ const NewsView: React.FC = () => {
                                 name: nameof.full<NewsRequest>(x => x.address),
                                 children: <Input placeholder="Nhập địa chỉ cụ thể ..." />,
                                 rules: [{ required: true, message: NotificationConstant.NOT_EMPTY }],
+                                extra: 'Điền thôn/ số nhà, tên đường',
                             },
                         ]}
                         layout="vertical"

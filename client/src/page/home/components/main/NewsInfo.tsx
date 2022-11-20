@@ -4,11 +4,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import emptyImage from '~/assets/layout/empty.jpg';
 import cameraImage from '~/assets/news/camera.svg';
+import heartIcon from '~/assets/news/heart.svg';
 import { VND_CHAR } from '~/configs';
 import { NewsResponse } from '~/types/home/news';
 import DateTimeUtil from '~/util/DateTimeUtil';
 import LocaleUtil from '~/util/LocaleUtil';
-import list from 'vn-badwords';
 
 interface Props {
     news: NewsResponse;
@@ -40,6 +40,15 @@ const NewsInfo: React.FC<Props> = props => {
                 >
                     {news?.imageUrls.length}
                 </div>
+                <img
+                    className={clsx(
+                        'absolute flex items-center justify-center text-white ',
+                        'font-bold text-[10px] bottom-1 right-1',
+                    )}
+                    width={20}
+                    height={20}
+                    src={heartIcon}
+                />
             </div>
             <div className="mb-2">
                 <div className="line-clamp-2 h-[40px] mt-0.5 text-[#222]" style={{ width: 'calc(100% - 16px)' }}>

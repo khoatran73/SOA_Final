@@ -78,7 +78,7 @@ const BuyProtection = ({ id }: { id: string }) => {
                 <div>
                     <div className="font-bold text-[20px] mb-2">Quy trình mua hàng</div>
                     <div className="mb-[20px]">
-                        Bạn có thể thanh toán trực tiếp trên nền tảng Chợ Tốt. Tiền hàng được hoàn trả 100% trong vòng{' '}
+                        Bạn có thể thanh toán trực tiếp trên nền tảng Chợ Đồ Si. Tiền hàng được hoàn trả 100% trong vòng{' '}
                         <b>7 ngày</b> giao dịch.
                     </div>
                 </div>
@@ -280,7 +280,10 @@ const NewsDetail: React.FC = () => {
                                         <Avatar size={46} src={news?.avatar} />
                                     </div>
                                     <div className="w-3/5 flex flex-col ml-2">
-                                        <div className="text-[#2a5079] hover:text-[#2a5079] font-bold text-[13px] mt-0.5">
+                                        <div
+                                            className="text-[#2a5079] hover:text-[#2a5079] font-bold text-[13px] mt-0.5 cursor-pointer"
+                                            onClick={() => navigate(`/user/info/${news.userId}`)}
+                                        >
                                             {news?.fullName}
                                         </div>
                                         <div className="flex items-center mt-2">

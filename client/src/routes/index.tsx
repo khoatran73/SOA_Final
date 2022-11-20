@@ -21,6 +21,9 @@ const NewsCheckout = React.lazy(() => import('~/page/home/components/news/NewsCh
 const UserProfile = React.lazy(() => import('~/page/home/components/user/UserProfile'));
 const UserInfo = React.lazy(() => import('~/page/home/components/user/UserInfo'));
 
+const OrderView = React.lazy(() => import('~/page/home/components/order/OrderView'));
+const OrderHistory = React.lazy(() => import('~/page/home/components/order/OrderHistory'));
+
 // #endregion
 
 // #region admin page
@@ -83,6 +86,19 @@ const routeList = [
                 element: <ChatView />,
             },
             {
+                path: 'order',
+                children: [
+                    {
+                        path: 'my-orders',
+                        element: <OrderView />,
+                    },
+                    {
+                        path: 'history/:id',
+                        element: <OrderHistory />,
+                    },
+                ],
+            },
+            {
                 path: 'dashboard',
                 children: [
                     {
@@ -116,7 +132,11 @@ const routeList = [
         children: [
             {
                 path: 'home',
-                element: <AdminHomeListView />,
+                element: (
+                    <PrivateRoute>
+                        <AdminHomeListView />
+                    </PrivateRoute>
+                ),
             },
             {
                 path: 'system',

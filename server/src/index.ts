@@ -1,10 +1,11 @@
+import cors from 'cors';
 import dotenv from 'dotenv';
-import express, { Application } from 'express';
+import express, { Application, Request } from 'express';
 import expressSession from 'express-session';
 import http from 'http';
+import morgan from 'morgan';
 import route from './Controllers';
 import { connectDatabase } from './db';
-import cors from 'cors';
 import { ServerSocket } from './socket';
 
 const MemoryStore = expressSession.MemoryStore;
@@ -35,6 +36,9 @@ app.use(
 );
 app.use(express.json());
 
+morgan.token('id', (req: Request) => req.params.id);
+morgan.token('body', (req: Request) => JSON.stringify(req.body));
+app.use(morgan(':id :body :method :url :response-time'));
 route(app);
 
 server.listen(port, () => {

@@ -136,7 +136,7 @@ const MenuSide: React.FC<MenuProps> = ({ menuList, collapsed }) => {
                     'h-16 w-full flex items-center justify-center bg-white',
                 )}
             >
-                IBanking
+                Trang quản trị
             </div>
         ) : (
             <div
@@ -149,7 +149,7 @@ const MenuSide: React.FC<MenuProps> = ({ menuList, collapsed }) => {
                     color: 'var(--info)',
                 }}
             >
-                IBanking
+                Trang quản trị
             </div>
         );
 

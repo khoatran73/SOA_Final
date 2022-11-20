@@ -1,5 +1,5 @@
-import { Avatar, Empty, Select } from 'antd';
-import React, {  useMemo, useRef, useState } from 'react';
+import { Avatar, Empty } from 'antd';
+import React, { useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -25,19 +25,22 @@ import paymentOrangeIcon from '~/assets/news/payment_orange.svg';
 // normal
 import stickyIcon from '~/assets/news/sticky_note.svg';
 
+import { faCircleCheck, faLocationPin } from '@fortawesome/free-solid-svg-icons';
 import TextArea, { TextAreaRef } from 'antd/lib/input/TextArea';
 import clsx from 'clsx';
-import { VND_CHAR } from './../../../../configs/index';
-import LocaleUtil from '~/util/LocaleUtil';
+import coinIcon from '~/assets/news/coin.svg';
+import { BaseIcon } from '~/component/Icon/BaseIcon';
 import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
+import NotificationConstant from '~/configs/contants';
+import { PaymentMethod } from '~/types/home/history';
+import { Action } from '~/types/product/ProductType';
+import LocaleUtil from '~/util/LocaleUtil';
+import NotifyUtil from '~/util/NotifyUtil';
 import { PAYMENT_BY_COIN_API_PATH, PAYPAL_API_PATH } from '../dashboard/components/api/api';
 import { ItemPayment } from '../dashboard/components/BuyCoinModel';
-import NotifyUtil from '~/util/NotifyUtil';
-import NotificationConstant from '~/configs/contants';
-import coinIcon from '~/assets/news/coin.svg';
-import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
-import { BaseIcon } from '~/component/Icon/BaseIcon';
-import { Action } from '~/types/product/ProductType';
+import { VND_CHAR } from './../../../../configs/index';
+import { DeliveryAddress } from './../../../../types/ums/AuthUser';
+import DeliveryAddressView from './DeliveryAddressView';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -48,7 +51,7 @@ const NewsCheckout: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { data: requestNews, isLoading } = useQuery([`GET_NEWS_DETAIL_${id}`], () => getNewsDetail(id));
-    const [methodPayment, setMethodPayment] = useState('coin');
+    const [methodPayment, setMethodPayment] = useState<PaymentMethod>(PaymentMethod.Coin);
     const news = requestNews?.data?.result;
     const { authUser } = useSelector((state: RootState) => state.authData);
     const modalRef = useRef<ModalRef>(null);
@@ -56,6 +59,8 @@ const NewsCheckout: React.FC = () => {
     const isOwnNews = useMemo(() => news?.userId === authUser?.user.id, [authUser?.user.id, news?.userId]);
     const isSellOnline = useMemo(() => news?.isOnline, [news?.isOnline]);
     const inputRef = useRef<TextAreaRef>(null);
+    const defaultDelAddress = authUser?.user?.deliveryAddress?.find(x => x.isDefault);
+    const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress | undefined>(defaultDelAddress);
 
     const renderBottomBill = () => {
         return Array.from({ length: 54 }, (_, index) => index + 1).map(num => {
@@ -74,14 +79,23 @@ const NewsCheckout: React.FC = () => {
         });
     };
     const onCheckout = async () => {
-        const url = 'news/dashboard';
+        if (!defaultDelAddress) {
+            NotifyUtil.error(NotificationConstant.TITLE, 'Vui lòng chọn địa chỉ nhận hàng!');
+            return;
+        }
+        const result = await NotifyUtil.confirmDialog('Thông báo', 'Thanh toán bằng ' + methodPayment);
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        const urlReturn = 'order/my-orders';
         const action = Action.Purchase;
         const newDetail = requestNews?.data?.result;
         const note = inputRef.current?.resizableTextArea?.props?.value;
         if (authUser?.user.id === newDetail?.userId) {
             return NotifyUtil.error(NotificationConstant.TITLE, 'Bạn không thể mua sản phẩm của chính mình');
         }
-        if (methodPayment === 'paypal') {
+        if (methodPayment === PaymentMethod.PayPal) {
             const price = Number(newDetail?.price) / 24785;
             const items: ItemPayment[] = [
                 {
@@ -95,34 +109,57 @@ const NewsCheckout: React.FC = () => {
             const params = {
                 items,
                 newsId: newDetail?.id,
-                url: url,
-                address:'Sa đéc , Đồng Tháp',
+                url: urlReturn,
+                address: deliveryAddress,
                 action: action,
                 note: note,
-            }
+            };
             const res = await requestApi('post', PAYPAL_API_PATH, { ...params });
             if (res.data.success) {
-                window.location.href = res.data.result;
+                NotifyUtil.success(NotificationConstant.TITLE, 'Thanh toán thành công');
+                navigate(urlReturn);
+                return;
             }
-        } else {
+
+            NotifyUtil.error(NotificationConstant.TITLE, res.data.message ?? NotificationConstant.SERVER_ERROR);
+            return;
+        } else if (methodPayment === PaymentMethod.Coin) {
             const data = {
                 newsId: newDetail?.id,
                 userPaymentId: authUser?.user.id,
-                address:'Sa đéc , Đồng Tháp',
+                address: deliveryAddress,
                 action: action,
                 note: note,
             };
             requestApi('post', PAYMENT_BY_COIN_API_PATH, data).then(res => {
                 if (res.data.success) {
                     NotifyUtil.success(NotificationConstant.TITLE, 'Thanh toán thành công');
-                    navigate(url);
+                    navigate(urlReturn);
+                    return;
                 }
+
+                NotifyUtil.error(NotificationConstant.TITLE, res.data.message ?? NotificationConstant.SERVER_ERROR);
+                return;
             });
         }
     };
 
-    const onChangeMethod = (method: string) => {
+    const onChangeMethod = (method: PaymentMethod) => {
         setMethodPayment(method);
+    };
+
+    const handleChangeDeliveryAddress = () => {
+        modalRef.current?.onOpen(
+            <DeliveryAddressView
+                onClose={modalRef.current?.onClose}
+                user={authUser?.user}
+                deliveryAddress={deliveryAddress}
+                setDeliveryAddress={setDeliveryAddress}
+            />,
+            'Địa chỉ nhận hàng',
+            '35%',
+            faLocationPin,
+        );
     };
 
     if (isLoading) return <Loading />;
@@ -184,22 +221,28 @@ const NewsCheckout: React.FC = () => {
                                 <img src={locationIcon} alt="" />
                                 <div className="text-base font-bold ml-2">Địa chỉ Người nhận</div>
                             </div>
-                            <div className="font-bold cursor-pointer uppercase text-[#4a90e2]">Thay đổi</div>
+                            <div
+                                className="font-bold cursor-pointer uppercase text-[#4a90e2]"
+                                onClick={handleChangeDeliveryAddress}
+                            >
+                                Thay đổi
+                            </div>
                         </div>
                         <div className="mt-2">
                             <div>
-                                {authUser?.user.fullName} | {authUser?.user.phoneNumber}
+                                {deliveryAddress?.name} | {deliveryAddress?.phone}
                             </div>
-                            <div className="text-[#777] mt-2 mb-4">123, Phường Bình Thuận, Quận Hải Châu, Đà Nẵng</div>
+                            <div className="text-[#777] mt-2 mb-4">
+                                {deliveryAddress?.address}, {deliveryAddress?.wardName}, {deliveryAddress?.districtName}
+                                , {deliveryAddress?.provinceName}
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div className="p-3 mb-3 bg-white">
                     <div className="flex w-full justify-between items-center">
                         <div className="flex items-center">
-                            <Avatar size={24} style={{ fontSize: 10 }}>
-                                A
-                            </Avatar>
+                            <Avatar size={24} src={news?.avatar} style={{ fontSize: 10 }} />
                             <span className="font-bold ml-2">{requestNews.data?.result?.fullName}</span>
                         </div>
                         <div className="flex items-center justify-center py-1 px-2 rounded border border-[#e8e8e8] cursor-pointer">
@@ -244,7 +287,7 @@ const NewsCheckout: React.FC = () => {
                         <div className="flex justify-between w-full items-center mt-5 mb-3">
                             <div
                                 onClick={() => {
-                                    onChangeMethod('coin');
+                                    onChangeMethod(PaymentMethod.Coin);
                                 }}
                                 className="flex relative w-1/2 border m-2 p-4"
                             >
@@ -252,7 +295,7 @@ const NewsCheckout: React.FC = () => {
                                     <img src={coinIcon} width={32} alt="" />
                                     <div className="text-md ml-2">Đồng coin</div>
                                 </div>
-                                {methodPayment === 'coin' && (
+                                {methodPayment === PaymentMethod.Coin && (
                                     <BaseIcon
                                         className="absolute text-[#50bd25] right-0 top-[5px]"
                                         icon={faCircleCheck}
@@ -262,7 +305,7 @@ const NewsCheckout: React.FC = () => {
                             </div>
                             <div
                                 onClick={() => {
-                                    onChangeMethod('paypal');
+                                    onChangeMethod(PaymentMethod.PayPal);
                                 }}
                                 className="flex relative w-1/2 border m-2 p-4"
                             >
@@ -270,7 +313,7 @@ const NewsCheckout: React.FC = () => {
                                     <img src={paypalIcon} width={32} alt="" />
                                     <div className="text-md ml-2">Ví PayPal</div>
                                 </div>
-                                {methodPayment === 'paypal' && (
+                                {methodPayment === PaymentMethod.PayPal && (
                                     <BaseIcon
                                         className="absolute text-[#50bd25] right-0 top-[5px]"
                                         icon={faCircleCheck}
@@ -336,7 +379,7 @@ const NewsCheckout: React.FC = () => {
                 </div>
             </div>
             <div className="w-[35%]" />
-            <ModalBase ref={modalRef} hideTitle className="detail-modal" />
+            <ModalBase ref={modalRef} className="detail-modal" />
         </BoxContainer>
     );
 };
