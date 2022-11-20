@@ -38,7 +38,7 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
         action: action,
         note: note,
     });
-    const create_payment_json = {
+    const createPaymentJson = {
         intent: 'sale',
         payer: {
             payment_method: 'paypal',
@@ -60,7 +60,7 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
             },
         ],
     };
-    paypal.payment.create(create_payment_json, function (error, payment) {
+    paypal.payment.create(createPaymentJson, function (error, payment) {
         if (error) {
             throw error;
         } else {
