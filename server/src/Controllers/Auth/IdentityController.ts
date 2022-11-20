@@ -8,7 +8,7 @@ router.get('/check-login', IdentityService.checkLogin);
 router.get('/get-user', Authenticate,IdentityService.getUser);
 router.get('/get-list-user', IdentityService.getListUsers);
 router.post('/login', IdentityService.login);
-router.post('/get-otp', Authenticate,IdentityService.getOTP);
+router.post('/get-otp', IdentityService.getOTP);
 router.post('/add-user', Authenticate, IdentityService.addUser);
 router.post('/register-user', IdentityService.registerUser);
 router.get('/logout', Authenticate, IdentityService.logout);

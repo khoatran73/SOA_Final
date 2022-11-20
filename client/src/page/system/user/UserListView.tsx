@@ -1,34 +1,23 @@
-import { GetDataPath } from '@ag-grid-community/core';
+
 import { faAppleAlt } from '@fortawesome/free-solid-svg-icons';
-import React, { useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '~/AppStore';
+import React, {  useRef } from 'react';
 import Loading from '~/component/Elements/loading/Loading';
-import Overlay, { OverlayRef } from '~/component/Elements/loading/Overlay';
 import BaseGrid, { BaseGridColDef, BaseGridRef } from '~/component/Grid/BaseGrid';
 import { GridToolbar } from '~/component/Grid/Components/GridToolbar';
 import { AppContainer } from '~/component/Layout/AppContainer';
 import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import { useBaseGrid } from '~/hook/useBaseGrid';
-import { useMergeState } from '~/hook/useMergeState';
 import { baseDeleteApi } from '~/lib/axios';
 import { AppUser, User } from '~/types/ums/AuthUser';
 import { DELETE_USER_BY_ID_API, USER_LIST_API } from './api/api';
 import UserForm from './component/UserForm';
-interface State {
-    loading: boolean;
-}
+
 const UserListView: React.FC = () => {
-    const { authUser } = useSelector((state: RootState) => state.authData);
-    const overlayRef = useRef<OverlayRef>(null);
     const gridRef = useRef<BaseGridRef>(null);
     const modalRef = useRef<ModalRef>(null);
     const gridController = useBaseGrid<User>({
         url: USER_LIST_API,
         gridRef: gridRef,
-    });
-    const [state, setState] = useMergeState<State>({
-        loading: true,
     });
 
     const onDetail = (dataRow: User) => {

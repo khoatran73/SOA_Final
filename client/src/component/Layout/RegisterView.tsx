@@ -16,7 +16,6 @@ import ModalBase, { ModalRef } from '../Modal/ModalBase';
 const RegisterView: React.FC = () => {
     const formRef = useRef<BaseFormRef>(null);
     const modalRef = useRef<ModalRef>(null);
-    // const navigate = useNavigate();
     const onRegister = () => {
         const registerParams = formRef.current?.getFieldsValue() as RegisterParam;
         const password = registerParams.password
@@ -32,6 +31,7 @@ const RegisterView: React.FC = () => {
                     <ModalRegister
                         onSubmitSuccessfully={() => {
                             modalRef.current?.onClose();
+                            window.location.href = '/login';
                         }}
                         onClose={modalRef.current?.onClose}
                         initialValues={registerParams}
@@ -101,7 +101,6 @@ interface Props {
 }
 
 const ModalRegister: React.FC<Props> = (props: Props) => {
-    const navigate = useNavigate();
     const formRef = useRef<BaseFormRef>(null);
     const [counter, setCounter] = useState(60);
     const {initialValues} = props;
@@ -119,12 +118,19 @@ const ModalRegister: React.FC<Props> = (props: Props) => {
         requestApi('post', API_REGISTER_USER, data).then(res => {
             if (res.data.success) {
                 NotifyUtil.success(NotificationConstant.TITLE, 'Đăng kí tài khoản thành công');
-                navigate('/login')
+                props.onSubmitSuccessfully?.();
+            }else{
+                NotifyUtil.error(NotificationConstant.TITLE, res.data.message ?? '');
             }
         });
     }
-    const onResentOtp = () => {
-        console.log('onResentOtp')
+    const onResentOtp = async() => {
+        requestApi('post', API_GET_OTP_USER, initialValues).then(res => {
+            if (res.data.success) {
+                setCounter(60);
+                NotifyUtil.success(NotificationConstant.TITLE, 'Gửi lại mã thành công!');
+            }
+        })
     }
     return (
         <AppModalContainer>
