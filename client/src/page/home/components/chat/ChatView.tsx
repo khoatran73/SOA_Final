@@ -26,7 +26,6 @@ const ChatView: React.FC = (props: any) => {
                 setListMessageUser(res.data.result);
             }
         });
-        console.log(listMessageUser[indexActiveUserChat.index]?.id, userId);
         dispatch(fetchMessage([userId, listMessageUser[indexActiveUserChat.index]?.id]));
         socket.on('receive_message', (data: any) => {
             dispatch(setNewMessage(data));
@@ -90,7 +89,7 @@ const ChatView: React.FC = (props: any) => {
                             >
                                 <div className="w-1/4">
                                     <div className="p-2 mr-2 h-12 w-12 bg-blue-700 rounded-full text-white font-semibold flex items-center justify-center ml-1">
-                                        {item.username.charAt(0).toUpperCase()}
+                                        {item.username?.charAt(0).toUpperCase()}
                                     </div>
                                 </div>
                                 <div className="w-full">
@@ -105,8 +104,7 @@ const ChatView: React.FC = (props: any) => {
                     <div className=" h-[500px] overflow-auto flex flex-col mt-5 scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
                         {message &&
                             message.length > 0 &&
-                            message.map((item: any, index: number) => {
-                                console.log(indexActiveUserChat)
+                            message.map((item: any, index: number) => {                                
                                 if (item.userId === authUser?.user.id) {
                                     return (
                                         <div key={index} className="flex justify-end mb-4">

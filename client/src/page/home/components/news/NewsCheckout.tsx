@@ -1,8 +1,8 @@
-import { Avatar, Empty } from 'antd';
-import React, { useMemo } from 'react';
+import { Avatar, Empty, Select } from 'antd';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useSelector } from 'react-redux';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { RootState } from '~/AppStore';
 import buyProtectionIcon from '~/assets/news/buy-protection.svg';
 import chatIcon from '~/assets/news/chat.png';
@@ -29,6 +29,14 @@ import TextArea from 'antd/lib/input/TextArea';
 import clsx from 'clsx';
 import { VND_CHAR } from './../../../../configs/index';
 import LocaleUtil from '~/util/LocaleUtil';
+import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
+import { PAYMENT_BY_COIN_API_PATH, PAYPAL_API_PATH } from '../dashboard/components/api/api';
+import { ItemPayment } from '../dashboard/components/BuyCoinModel';
+import NotifyUtil from '~/util/NotifyUtil';
+import NotificationConstant from '~/configs/contants';
+import coinIcon from '~/assets/news/coin.svg';
+import { faCheckCircle, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { BaseIcon } from '~/component/Icon/BaseIcon';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -37,10 +45,12 @@ const getNewsDetail = (id: string | undefined) => {
 
 const NewsCheckout: React.FC = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { data: requestNews, isLoading } = useQuery([`GET_NEWS_DETAIL_${id}`], () => getNewsDetail(id));
+    const [methodPayment, setMethodPayment] = useState('coin');
     const news = requestNews?.data?.result;
     const { authUser } = useSelector((state: RootState) => state.authData);
-
+    const modalRef = useRef<ModalRef>(null);
     const isOnSell = useMemo(() => news?.status === NewsStatus.OnSell, [news?.status]);
     const isOwnNews = useMemo(() => news?.userId === authUser?.user.id, [authUser?.user.id, news?.userId]);
     const isSellOnline = useMemo(() => news?.isOnline, [news?.isOnline]);
@@ -60,6 +70,48 @@ const NewsCheckout: React.FC = () => {
                 />
             );
         });
+    };
+    const onCheckout = async () => {
+        const url = 'news/dashboard';
+        if (methodPayment === 'paypal') {
+            const newDetail = requestNews?.data?.result;
+            const price = Number(newDetail?.price) / 24785;
+            const items: ItemPayment[] = [
+                {
+                    name: newDetail?.title ?? '',
+                    sku: newDetail?.id ?? '',
+                    price: price.toFixed(2).toString(),
+                    currency: 'USD',
+                    quantity: 1,
+                },
+            ];
+            const params = {
+                items,
+                newId: newDetail?.id,
+                url: url,
+                address:'Sa đéc , Đồng Tháp'
+            }
+            const res = await requestApi('post', PAYPAL_API_PATH, { ...params });
+            if (res.data.success) {
+                window.location.href = res.data.result;
+            }
+        } else {
+            const data = {
+                newId: requestNews?.data?.result?.id,
+                userPaymentId: authUser?.user.id,
+                address:'Sa đéc , Đồng Tháp'
+            };
+            requestApi('post', PAYMENT_BY_COIN_API_PATH, data).then(res => {
+                if (res.data.success) {
+                    NotifyUtil.success(NotificationConstant.TITLE, 'Thanh toán thành công');
+                    navigate(url);
+                }
+            });
+        }
+    };
+
+    const onChangeMethod = (method: string) => {
+        setMethodPayment(method);
     };
 
     if (isLoading) return <Loading />;
@@ -124,7 +176,9 @@ const NewsCheckout: React.FC = () => {
                             <div className="font-bold cursor-pointer uppercase text-[#4a90e2]">Thay đổi</div>
                         </div>
                         <div className="mt-2">
-                            <div>Anh Khoa Trần | 0865997531</div>
+                            <div>
+                                {authUser?.user.fullName} | {authUser?.user.phoneNumber}
+                            </div>
                             <div className="text-[#777] mt-2 mb-4">123, Phường Bình Thuận, Quận Hải Châu, Đà Nẵng</div>
                         </div>
                     </div>
@@ -132,8 +186,10 @@ const NewsCheckout: React.FC = () => {
                 <div className="p-3 mb-3 bg-white">
                     <div className="flex w-full justify-between items-center">
                         <div className="flex items-center">
-                            <Avatar size={24} src={news.avatar} />
-                            <span className="font-bold ml-2">Phương Thảo</span>
+                            <Avatar size={24} style={{ fontSize: 10 }}>
+                                A
+                            </Avatar>
+                            <span className="font-bold ml-2">{requestNews.data?.result?.fullName}</span>
                         </div>
                         <div className="flex items-center justify-center py-1 px-2 rounded border border-[#e8e8e8] cursor-pointer">
                             <img src={chatIcon} alt="" width={24} />
@@ -146,15 +202,15 @@ const NewsCheckout: React.FC = () => {
                                 width={64}
                                 height={64}
                                 className="object-cover"
-                                src={
-                                    'https://cdn.chotot.com/3TiVQX6HrptuXXe44VFioQL_1jB2ajnPMJJupgIoyNs/preset:listing/plain/092feac01602f4fbdd2c7c8aee8ace07-2799541796690472608.jpg'
-                                }
+                                src={requestNews.data?.result?.imageUrls[0]}
                                 alt=""
                             />
                         </div>
                         <div className="ml-2">
-                            <div>quần tất thỏ và cà rốt</div>
-                            <div className="text-[#d0021b] font-bold">89.000 {VND_CHAR}</div>
+                            <div>{requestNews.data?.result?.title}</div>
+                            <div className="text-[#d0021b] font-bold">
+                                {LocaleUtil.toLocaleString(requestNews.data?.result?.price ?? 0)} {VND_CHAR}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -173,27 +229,66 @@ const NewsCheckout: React.FC = () => {
                         <img src={paymentOrangeIcon} alt="" />
                         <div className="text-base font-bold ml-2">Phương thức Thanh toán</div>
                     </div>
-                    <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center mt-5 mb-3">
-                            <img src={paypalIcon} width={32} alt="" />
-                            <div className="text-md ml-2">Ví PayPal</div>
+                    <div className="flex items-center w-full">
+                        <div className="flex justify-between w-full items-center mt-5 mb-3">
+                            <div
+                                onClick={() => {
+                                    onChangeMethod('coin');
+                                }}
+                                className="flex relative w-1/2 border m-2 p-4"
+                            >
+                                <div className="flex items-center">
+                                    <img src={coinIcon} width={32} alt="" />
+                                    <div className="text-md ml-2">Đồng coin</div>
+                                </div>
+                                {methodPayment === 'coin' && (
+                                    <BaseIcon
+                                        className="absolute text-[#50bd25] right-0 top-[5px]"
+                                        icon={faCircleCheck}
+                                        width={32}
+                                    />
+                                )}
+                            </div>
+                            <div
+                                onClick={() => {
+                                    onChangeMethod('paypal');
+                                }}
+                                className="flex relative w-1/2 border m-2 p-4"
+                            >
+                                <div className="flex items-center">
+                                    <img src={paypalIcon} width={32} alt="" />
+                                    <div className="text-md ml-2">Ví PayPal</div>
+                                </div>
+                                {methodPayment === 'paypal' && (
+                                    <BaseIcon
+                                        className="absolute text-[#50bd25] right-0 top-[5px]"
+                                        icon={faCircleCheck}
+                                        width={32}
+                                    />
+                                )}
+                            </div>
                         </div>
-                        <div className="font-bold cursor-pointer uppercase text-[#4a90e2]">Thay đổi</div>
                     </div>
                 </div>
                 <div className="p-3 mb-3 bg-white pb-5 relative">
                     <div className="text-base font-bold mb-3">Thông tin Thanh toán</div>
                     <div className="flex w-full justify-between pb-3 border-b-2 border-dashed border-black">
                         <span>Số tiền</span>
-                        <span>5.750.000 {VND_CHAR}</span>
+                        <span>
+                            {LocaleUtil.toLocaleString(requestNews.data?.result?.price ?? 0)} {VND_CHAR}
+                        </span>
                     </div>
                     <div className="flex w-full justify-between my-3">
                         <span>Tổng thanh toán</span>
-                        <span className="text-base font-bold">5.750.000 {VND_CHAR}</span>
+                        <span className="text-base font-bold">
+                            {LocaleUtil.toLocaleString(requestNews.data?.result?.price ?? 0)} {VND_CHAR}
+                        </span>
                     </div>
                     <div className="flex w-full justify-between my-3">
                         <span>Bằng chữ</span>
-                        <span className="text-base font-bold">{LocaleUtil.numberToText(5750000)} đồng</span>
+                        <span className="text-base font-bold">
+                            {LocaleUtil.numberToText(requestNews.data?.result?.price ?? 0)} đồng
+                        </span>
                     </div>
                     <div className="flex mt-5 mb-2">
                         <img src={stickyIcon} alt="" />
@@ -213,12 +308,15 @@ const NewsCheckout: React.FC = () => {
                     <div className="mt-7 mb-2 flex justify-between">
                         <div className="flex flex-col">
                             <div className="uppercase text-[#9b9b9b] text-[10px] font-bold">TỔNG CỘNG:</div>
-                            <div className="font-bold text-lg text-black">5.750.000đ</div>
+                            <div className="font-bold text-lg text-black">
+                                {LocaleUtil.toLocaleString(requestNews.data?.result?.price ?? 0)} {VND_CHAR}
+                            </div>
                         </div>
                         <div
+                            onClick={onCheckout}
                             className={clsx(
-                                'w-[400px] h-10 flex items-center justify-center cursor-pointer',
-                                'rounded text-white bg-[#fe9900] uppercase font-bold',
+                                'w-[400px] h-10 flex items-center justify-center',
+                                'rounded text-white bg-[#fe9900] uppercase font-bold cursor-pointer',
                             )}
                         >
                             Đặt hàng
@@ -227,6 +325,7 @@ const NewsCheckout: React.FC = () => {
                 </div>
             </div>
             <div className="w-[35%]" />
+            <ModalBase ref={modalRef} hideTitle className="detail-modal" />
         </BoxContainer>
     );
 };

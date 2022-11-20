@@ -4,8 +4,7 @@ import TransactionHistory from '../../Models/TransactionHistory';
 
 const getTransaction  = async(req:Request, res:Response) =>{
     const {id} = req.query;
-    console.log(id);
-    const transaction = await TransactionHistory.find({userId: id}).sort({createdAt:-1});
+    const transaction = await TransactionHistory.find({userTransferId: id}).sort({createdAt:-1});
     return res.json(ResponseOk(transaction));
 }
 

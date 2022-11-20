@@ -58,6 +58,14 @@ const addNews = async (req: Request<any, any, NewsRequest>, res: Response) => {
     });
 
     news.save();
+    await User.updateOne(
+        { id: user?.id },
+        {
+            province: req.body.province,
+            district: req.body.district,
+            ward: req.body.ward,
+        },
+    );
 
     return res.json(ResponseOk());
 };
@@ -78,6 +86,15 @@ const updateNews = async (req: Request<{ id: string }, any, NewsRequest>, res: R
         },
     );
 
+    await User.updateOne(
+        { id: user?.id },
+        {
+            province: req.body.province,
+            district: req.body.district,
+            ward: req.body.ward,
+        },
+    );
+
     return res.json(ResponseOk());
 };
 
@@ -92,15 +109,15 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
     const provinceName = PlacementService.getProvinceByCode(news?.province)?.name;
     const districtName = PlacementService.getDistrictByCode(news?.province, news?.district)?.name;
     const wardName = PlacementService.getWardByCode(news?.district, news?.ward)?.name;
-    const response: NewsResponse = {
+    const response = {
         ...userDoc,
         ...doc,
         provinceName,
         districtName,
-        wardName,
+        wardName, 
         slug: category?.slug ?? '',
         isOnline: category?.type === SellType.SellOnline,
-    };
+    } as NewsResponse;
 
     return res.json(ResponseOk<NewsResponse>(response));
 };

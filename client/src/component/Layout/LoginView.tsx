@@ -3,6 +3,7 @@ import { Input } from 'antd';
 import * as React from 'react';
 import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 import bgImageUrl from '~/assets/login/background_login.png';
 import { loginAsync } from '~/store/authSlice';
 import { LoginParam } from '~/types/ums/AuthUser';

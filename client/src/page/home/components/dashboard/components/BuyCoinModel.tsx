@@ -13,7 +13,7 @@ interface Props {
     onSubmitSuccessfully?: () => void;
     money: number;
 }
-type ItemPayment = {
+export type ItemPayment = {
     name: string;
     sku: string;
     price: string;

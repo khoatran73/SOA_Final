@@ -7,6 +7,8 @@ export const API_LOGOUT = APP_API_PATH + '/identity/logout';
 export const API_GET_USER = APP_API_PATH + '/identity/get-user';
 export const API_UPDATE_USER = APP_API_PATH + '/identity/update';
 
+export const API_ADD_USER = APP_API_PATH + '/identity/add-user';
+export const API_ACCURACY_USER = APP_API_PATH + '/identity/accuracy-account';
 //layout
 
 export const API_LAYOUT = APP_API_PATH + '/menu/layout';

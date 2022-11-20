@@ -1,8 +1,5 @@
 import React from 'react';
 import { matchRoutes, RouteMatch, RouteObject, useRoutes } from 'react-router-dom';
-import ChatView from '~/page/home/components/chat/ChatView';
-import DepositCoins from '~/page/home/components/dashboard/Depositcoins';
-import TransactionHistory from '~/page/home/components/dashboard/TransactionHistory';
 import PrivateRoute from './PrivateRoute';
 
 // #region layout
@@ -40,6 +37,10 @@ const MenuListView = React.lazy(() => import('~/page/system/menu/MenuListView'))
 const RoleListView = React.lazy(() => import('~/page/system/role/RoleListView'));
 const UserListView = React.lazy(() => import('~/page/system/user/UserListView'));
 // #endregion
+const RegisterView = React.lazy(() => import('~/component/Layout/RegisterView'));
+const ChatView = React.lazy(() => import('~/page/home/components/chat/ChatView'));
+const DepositCoins = React.lazy(() => import('~/page/home/components/dashboard/Depositcoins'));
+const TransactionHistory = React.lazy(() => import('~/page/home/components/dashboard/TransactionHistory'));
 
 const routeList = [
     {
@@ -180,6 +181,10 @@ const routeList = [
     {
         path: '/login',
         element: <LoginView />,
+    },
+    {
+        path: '/register',
+        element: <RegisterView />,
     },
     {
         path: '/*',

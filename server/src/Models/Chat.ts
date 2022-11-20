@@ -15,8 +15,8 @@ type ChatModel = Model<IChat, {}, ChatMethod>;
 
 const schema = new Schema<IChat, ChatModel, ChatMethod>(
     {
-        users: { type: [], required: true, unique: true },
-        roomId: { type: String, required: true },
+        users: {type: [], required: true},
+        roomId: { type: String, required: true},
         message: { type: [] },
     },
     { timestamps: true },

@@ -17,18 +17,18 @@ const ItemHistory = (props: any) => {
         <div className="w-full h-[auto] mx-auto py-2 px-3 border border-[#ebeaea] mt-3">
             <div className="flex justify-between">
                 <span className="text-lg text-[#f35c5c]">
-                    {props.content.title}
+                    {props.title}
                 </span>
                 <span className="text-xs text">{moment(props.createdAt).format('dd/MM/YYYY HH:mm:ss')}</span>
             </div>
             <div>
                 <span className="text-md">
-                    Hinh thức: <b className='text-[#e06d6d]'>{props.content.method}</b>
+                    Hinh thức: <b className='text-[#e06d6d]'>{props.method}</b>
                 </span>
             </div>
             <div>
                 <span>
-                    Số tiền: <b className='text-[#e06d6d]'>{LocaleUtil.toLocaleString(Math.round(props.content.total * 24785))} đ</b>
+                    Số tiền: <b className='text-[#e06d6d]'>{LocaleUtil.toLocaleString(props.totalVND)} đ</b>
                 </span>
             </div>
         </div>

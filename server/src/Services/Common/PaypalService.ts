@@ -3,6 +3,9 @@ import { Request, Response } from 'express';
 import { ResponseOk } from '../../common/ApiResponse';
 import User from '../../Models/User';
 import TransactionHistory from '../../Models/TransactionHistory';
+import News from '../../Models/News';
+import { INews } from 'Home/News';
+import { queryStringSerialize } from '../../helpers/QuerySeriable';
 paypal.configure({
     mode: 'sandbox', //sandbox or live
     client_id: 'AYQJggj5ZcwxUGY91V-K7RDDeDN2SVJvLF-YNaxJB_gXgn9wx2HUI6AoYsMCkl2qoDVEaPOm2YQ-_XWl',
@@ -20,15 +23,26 @@ type ItemPayment = {
 export const PaymentPayPal = async (req: Request, res: Response) => {
     const items: ItemPayment[] = req.body.items;
     const user = req.session.user;
-    const coin = req.body.coin;
+    const { coin, newId, url, address } = req.body;
     const amount = items.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
+
+    const queryParams = queryStringSerialize({
+        total: amount,
+        currency: items[0]?.currency,
+        coin: coin === 'undefined' ? '' : coin,
+        newId: newId === 'undefined' ? '' : newId,
+        userId: user?.id,
+        url: url,
+        address: address,
+    });
     const create_payment_json = {
         intent: 'sale',
         payer: {
             payment_method: 'paypal',
         },
         redirect_urls: {
-            return_url: `http://localhost:3000/api/payment/success?total=${amount}&currency=${items[0]?.currency}&coin=${coin}&userId=${user?.id}`,
+            // return_url: `http://localhost:3000/api/payment/success?total=${amount}&currency=${items[0]?.currency}&coin=${coin}&userId=${user?.id}&newId=${newId}`,
+            return_url: `http://localhost:3000/api/payment/success?${queryParams}`,
             cancel_url: 'http://localhost:3000/api/payment/cancel',
         },
         transactions: [
@@ -60,8 +74,11 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
 
 export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
     const payerId = req.query.PayerID as string;
-    const { total, currency, coin, userId } = req.query;
-    console.log(coin)
+    const { total, currency, userId, url, address } = req.query;
+    const coin = req.query.coin;
+    const newId = req.query.newId;
+
+    let newDetails: any = {};
     const execute_payment_json = {
         payer_id: payerId,
         transactions: [
@@ -74,25 +91,33 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
         ],
     };
     const paymentId = req.query.paymentId as string;
-    paypal.payment.execute(paymentId, execute_payment_json,  async (error, payment) =>{
+    if (newId) {
+        newDetails = (await News.findOneAndUpdate({ id: newId }, { status: 'Sold' })) ?? {};
+    }
+    paypal.payment.execute(paymentId, execute_payment_json, async (error, payment) => {
         if (error) {
             console.log(error.response);
             throw error;
-        }else{
-            await User.findOneAndUpdate({id:userId}, { $inc: { amount: coin } });
-            const history = {
-                userId: userId,
-                content: {
-                    method: payment.payer.payment_method,
-                    currency: payment.transactions[0].amount.currency,
-                    total: payment.transactions[0].amount.total,
-                    title: payment.transactions[0]?.item_list?.items[0].name,
-                }
+        } else {
+            if (coin) {
+                await User.findOneAndUpdate({ id: userId }, { $inc: { amount: coin } });
             }
+            const history = {
+                userTransferId: userId,
+                method: payment.payer.payment_method,
+                currency: payment.transactions[0].amount.currency,
+                total: payment.transactions[0].amount.total,
+                title: payment.transactions[0]?.item_list?.items[0].name,
+                totalVND: Number(newDetails.price ?? coin),
+                newId: newId,
+                userReceiveId: newDetails?.userId,
+                description: newDetails?.description,
+                address: address,
+            };
             await TransactionHistory.create(history);
         }
     });
-    res.redirect('http://localhost:3000/dashboard/balances');
+    res.redirect(`http://localhost:3000/${url}`);
 };
 
 const PayPalService = {
