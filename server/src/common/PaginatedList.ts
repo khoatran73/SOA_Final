@@ -14,9 +14,9 @@ export interface PaginatedListQuery {
 
 export const PaginatedListConstructor = <T = any>(items: Array<T>, offset: number = 0, limit: number = 10): PaginatedList<T> => {
     return {
-        currentPage: Math.floor(Math.ceil(offset / limit)),
+        currentPage: Math.ceil(limit / (limit - offset) - 1),
         totalCount: items.length,
-        totalPages: 1,
+        totalPages: Math.ceil(items.length / (limit - offset)),
         items: items.slice(offset, limit),
         limit: limit,
         offset: offset,

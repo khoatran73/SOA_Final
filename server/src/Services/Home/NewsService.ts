@@ -300,7 +300,9 @@ const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>,
         } as NewsSearch;
     });
 
-    return res.json(ResponseOk<NewsSearch[]>(newsResponse));
+    const sorted: NewsSearch[] = _.orderBy(newsResponse, ['createdAt'], ['desc']);
+
+    return res.json(ResponseOk<NewsSearch[]>(sorted));
 };
 
 const updateNewsBump = async (
@@ -362,11 +364,9 @@ const calculateNewBump = (toDateLeft?: string, day?: number) => {
 
     const remainMilliSeconds = DateTimeUtil.diffTwoStringDate(toDateLeft ?? '', dateNow);
     if (remainMilliSeconds > 0) {
-        console.log('>');
         fromDate = moment().format();
         toDate = moment().add(remainMilliSeconds, 'ms').add(day, 'd').format();
     } else {
-        console.log('<');
         fromDate = moment().format();
         toDate = moment().add(day, 'd').format();
     }

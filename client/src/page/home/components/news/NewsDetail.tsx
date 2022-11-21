@@ -1,5 +1,5 @@
 import { faLocationPin } from '@fortawesome/free-solid-svg-icons';
-import { Avatar, Empty, Image, Popover } from 'antd';
+import { Avatar, Empty, Image } from 'antd';
 import clsx from 'clsx';
 import _ from 'lodash';
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -8,12 +8,20 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { RootState } from '~/AppStore';
 import emptyImage from '~/assets/layout/empty.jpg';
+import backIcon from '~/assets/news/back.svg';
+import buyProtectionIcon from '~/assets/news/buy-protection.svg';
 import chatIcon from '~/assets/news/chat.png';
 import depositImage from '~/assets/news/deposit.png';
 import editIcon from '~/assets/news/edit.svg';
+import instructionBanner from '~/assets/news/instruction_banner.png';
+import instructionStep1 from '~/assets/news/instruction_step_1.svg';
+import instructionStep2 from '~/assets/news/instruction_step_2.svg';
+import instructionStep3 from '~/assets/news/instruction_step_3.svg';
+import instructionStep4 from '~/assets/news/instruction_step_4.svg';
 import phoneCallIcon from '~/assets/news/phone-call.svg';
 import Loading from '~/component/Elements/loading/Loading';
 import { BaseIcon } from '~/component/Icon/BaseIcon';
+import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 import { GET_CHAT_DATA_API } from '~/contexts/Socket/Type';
 import { useMergeState } from '~/hook/useMergeState';
 import { requestApi } from '~/lib/axios';
@@ -27,14 +35,6 @@ import BoxContainer from '../../layout/BoxContainer';
 import CarouselLayout from '../../layout/CarouselLayout';
 import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
 import NewsInfo from '../main/NewsInfo';
-import buyProtectionIcon from '~/assets/news/buy-protection.svg';
-import backIcon from '~/assets/news/back.svg';
-import instructionBanner from '~/assets/news/instruction_banner.png';
-import instructionStep1 from '~/assets/news/instruction_step_1.svg';
-import instructionStep2 from '~/assets/news/instruction_step_2.svg';
-import instructionStep3 from '~/assets/news/instruction_step_3.svg';
-import instructionStep4 from '~/assets/news/instruction_step_4.svg';
-import ModalBase, { ModalRef } from '~/component/Modal/ModalBase';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -307,7 +307,7 @@ const NewsDetail: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {isSellOnline && (
+                                {isSellOnline && !isOwnNews && (
                                     <>
                                         <div
                                             className="w-full flex items-center justify-between p-3 rounded cursor-pointer bg-[#f8f8f8] mt-5"

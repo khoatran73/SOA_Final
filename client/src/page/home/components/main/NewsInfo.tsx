@@ -9,6 +9,7 @@ import { VND_CHAR } from '~/configs';
 import { NewsResponse } from '~/types/home/news';
 import DateTimeUtil from '~/util/DateTimeUtil';
 import LocaleUtil from '~/util/LocaleUtil';
+import defaultAvatar from '~/assets/default-avatar.png';
 
 interface Props {
     news: NewsResponse;
@@ -20,7 +21,7 @@ const NewsInfo: React.FC<Props> = props => {
     return (
         <Link
             to={`/news/detail/${news.id}`}
-            className="w-full hover:shadow-linear-sm h-[320px] flex flex-col p-3 relative border border-[#f4f4f4]"
+            className="w-full hover:shadow-linear-sm h-[325px] flex flex-col p-3 relative border border-[#f4f4f4]"
         >
             <div className="w-full rounded overflow-hidden flex items-center justify-center relative">
                 <Image
@@ -59,7 +60,7 @@ const NewsInfo: React.FC<Props> = props => {
                 </div>
             </div>
             <div className="text-[#9b9b9b] text-xs line-clamp-1 text-[10px]">
-                <Avatar size={20} src={news?.avatar} />
+                <Avatar size={20} src={!news?.avatar ? defaultAvatar : news?.avatar} />
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
                 {DateTimeUtil.fromNow(news?.createdAt)}
                 <span className='after:content-["\B7"] after:align-middle mx-1 h-full' />
