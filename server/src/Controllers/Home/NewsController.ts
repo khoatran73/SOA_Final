@@ -51,8 +51,7 @@ router.get('/show/:id', NewsService.showNews);
  *     - News
  *     parameters:
  *      - name: slug
- *        in: query
- *        description: The id of user
+ *        in: path
  *        required: true
  *     responses:
  *      200:

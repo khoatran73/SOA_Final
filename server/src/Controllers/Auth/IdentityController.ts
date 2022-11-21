@@ -26,7 +26,7 @@ router.get('/check-login', IdentityService.checkLogin);
  *     - Identity
  *     parameters:
  *      - name: id
- *        in: path
+ *        in: query
  *        description: The id of user
  *        required: true
  *     responses:
