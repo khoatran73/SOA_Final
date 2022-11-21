@@ -68,6 +68,33 @@ export interface AuthUser {
  *        isDefault:
  *          type: boolean
  *          default: true
+ *    AddUserParams:
+ *      type: object
+ *      properties:
+ *        username:
+ *          type: string
+ *          default: string
+ *        password:
+ *          type: string
+ *          default: string
+ *        fullName:
+ *          type: string
+ *          default: string
+ *        phoneNumber:
+ *          type: string
+ *          default: string
+ *        emailAddress:
+ *          type: string
+ *          default: string
+ *    OtpParams:
+ *      type: object
+ *      properties:
+ *        username:
+ *         type: string
+ *         default: string
+ *        emailAddress:
+ *         type: string
+ *         default: string
  */
 
 
