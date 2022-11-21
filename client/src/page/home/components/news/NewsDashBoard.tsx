@@ -24,8 +24,6 @@ import NotifyUtil from '~/util/NotifyUtil';
 import { NEWS_BY_USER_ID_API, NEWS_HIDE_API } from '../../api/api';
 import BoxContainer from '../../layout/BoxContainer';
 import HomeBreadCrumb from '../../layout/HomeBreadCrumb';
-import NewsChart from './chart/NewsChart';
-import NewsChartContainer from './chart/NewsChartContainer';
 
 const isOnSell = (status?: NewsStatus) => status === NewsStatus.OnSell;
 
@@ -355,9 +353,6 @@ const NewsDashboard: React.FC = () => {
                                             </div>
                                         );
                                     })}
-                                </Tabs.TabPane>
-                                <Tabs.TabPane tab={'Xem thống kê'} key="3">
-                                    <NewsChartContainer />
                                 </Tabs.TabPane>
                             </Tabs>
                         </div>

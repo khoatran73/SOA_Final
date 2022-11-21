@@ -57,6 +57,7 @@ const addNews = async (req: Request<any, any, NewsRequest>, res: Response) => {
         userId: user?.id,
     });
 
+    news.setId(Math.random())
     news.save();
     await User.updateOne(
         { id: user?.id },

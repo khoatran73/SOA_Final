@@ -1,8 +1,6 @@
 export type ChartParam = {
     code: string;
     name: string;
-    unit: string;
-    lineType?: string;
 };
 
 export interface ChartOption {
@@ -25,9 +23,9 @@ export interface Series {
     areaStyle?: {}
 }
 
-export interface FoChartType {
+export interface ChartType {
     params: ChartParam[];
-    results: any[];
+    results: Record<string, any>[];
 }
 
 export type TypeName = {

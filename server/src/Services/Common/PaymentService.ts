@@ -36,7 +36,9 @@ const payment = async (req: Request, res: Response) => {
         status: OrderStatus.Waiting,
         updatedBy: userPaymentId,
     });
+    history.setId(Math.random());
     await history.save(); 
+    order.setId(Math.random());
     await order.save();
     return res.json(ResponseOk());
 };

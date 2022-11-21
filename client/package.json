@@ -17,6 +17,7 @@
         "@types/node": "^16.7.13",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
+        "@types/dom-to-image": "^2.6.4",
         "ag-grid-community": "^28.2.0",
         "ag-grid-enterprise": "^28.2.0",
         "ag-grid-react": "^28.2.0",
@@ -50,7 +51,8 @@
         "uuid": "^8.3.2",
         "vn-badwords": "^1.1.4",
         "web-vitals": "^2.1.0",
-        "zustand": "^4.1.1"
+        "zustand": "^4.1.1",
+        "dom-to-image": "^2.6.0"
     },
     "scripts": {
         "start": "craco start",

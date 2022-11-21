@@ -29,6 +29,7 @@ const addProductType = async (req: Request<any, any, IProductType>, res: Respons
         ...req.body,
     });
     productType.setSlug(productType.name);
+    productType.setId(Math.random());
     productType.save();
 
     return res.json(ResponseOk());

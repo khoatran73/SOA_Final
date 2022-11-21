@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import _ from 'lodash';
-import News from '../../Models/News';
 import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
-import Order, { IOrder } from '../../Models/Order';
+import News from '../../Models/News';
+import Order, { IOrder, OrderStatus } from '../../Models/Order';
 import TransactionHistory, { ITransactionHistory, PaymentAction } from '../../Models/TransactionHistory';
 import User, { IUser } from '../../Models/User';
 
-enum OrderAction {
+export enum OrderAction {
     Buy = 'Buy',
     Sell = 'Sell',
 }
@@ -101,14 +101,32 @@ const addOrder = async (req: Request<any, any, Pick<IOrder, 'historyId' | 'statu
         await Order.updateOne({ id: oldOrderNewest?.id }, { isNewest: false });
     }
 
+    order.setId(Math.random());
     order.save();
+
+    if (status === OrderStatus.Done) {
+        const userReceive = await User.findOne({ id: history.userReceiveId });
+        if (!!userReceive) {
+            await TransactionHistory.updateOne(
+                { id: historyId },
+                {
+                    isReceivedCoin: true,
+                },
+            );
+
+            const newCoin = userReceive.amount + Number(history.totalVnd);
+            await User.updateOne({ id: userReceive.id }, { amount: newCoin });
+            newCoin;
+        }
+    }
+
     return res.json(ResponseOk());
 };
 
 const OrderService = {
     getOrders,
     getOrdersByHistoryId,
-    addOrder
+    addOrder,
 };
 
 export default OrderService;

@@ -1,14 +1,13 @@
-import { DeliveryAddress } from '../types/Auth/Identity';
 import { Model, model, Schema } from 'mongoose';
-import { DefaultModelId } from '../configs';
-
+import { v4 as uuidv4 } from 'uuid';
+import { DeliveryAddress } from '../types/Auth/Identity';
 
 export enum PaymentMethod {
     Coin = 'Coin',
     PayPal = 'PayPal',
 }
 export enum PaymentAction {
-    Coin = 'Coin',  // mua coin
+    Coin = 'Coin', // mua coin
     Purchase = 'Purchase', // mua hàng
 }
 export type ITransactionHistory = {
@@ -26,13 +25,26 @@ export type ITransactionHistory = {
     note?: string;
     address?: DeliveryAddress;
     newsUrl?: string;
+    isReceivedCoin?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 };
 
-type TransactionHistoryModel = Model<ITransactionHistory, {}, {}>;
+type TransactionHistoryModel = Model<
+    ITransactionHistory,
+    {},
+    {
+        setId: (num: number) => void;
+    }
+>;
 
 const schema = new Schema<ITransactionHistory>(
     {
-        id: { type: String, required: true, unique: true, default: DefaultModelId + Math.random().toString(36).substr(2, 4) },
+        id: {
+            type: String,
+            required: true,
+            unique: true,
+        },
         userTransferId: { type: String, required: true },
         userReceiveId: { type: String },
         paymentMethod: { type: String, required: true },
@@ -45,9 +57,14 @@ const schema = new Schema<ITransactionHistory>(
         totalVnd: { type: Number },
         newsId: { type: String },
         address: { type: Object },
+        isReceivedCoin: { type: Boolean, default: false },
     },
     { timestamps: true },
 );
+
+schema.methods.setId = function (num: number) {
+    this.id = uuidv4() + '-' + (Math.random() * 10000000).toString().substring(0, 7);
+};
 
 const TransactionHistory = model<ITransactionHistory, TransactionHistoryModel>('TransactionHistory', schema);
 

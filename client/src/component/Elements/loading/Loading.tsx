@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { ReactComponent as SpiralLoading } from '~/assets/layout/spiral.svg';
 
 type LoadingProps = {
     text?: string;
+    style?: CSSProperties;
 };
 
 const Loading: React.FC<LoadingProps> = props => {
@@ -16,7 +17,8 @@ const Loading: React.FC<LoadingProps> = props => {
                 width: '100%',
                 height: '100%',
                 zIndex: 999,
-                backgroundColor: 'transparent'
+                backgroundColor: 'transparent',
+                ...props.style
             }}
         >
             <SpiralLoading />

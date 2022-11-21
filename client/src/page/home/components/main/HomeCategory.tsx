@@ -19,11 +19,11 @@ const HomeCategory: React.FC = () => {
                 {categories?.map(category => (
                     <Link
                         to={`/category?categorySlug=${category.slug}`}
-                        className="flex flex-col items-center justify-center my-1.5 w-[12.5%]"
+                        className="flex flex-col items-center my-1.5 w-[14.285%] px-3"
                         key={category.id}
                     >
                         <Image width={84} height={84} src={category?.imageUrl} preview={false} fallback={emptyImage} />
-                        <div className="mt-1 text-[#222] text-sm">{category.name}</div>
+                        <div className="mt-1 text-[#222] text-sm text-center">{category.name}</div>
                     </Link>
                 ))}
             </div>

@@ -2,7 +2,7 @@ import paypal from 'paypal-rest-sdk';
 import { Request, Response } from 'express';
 import { ResponseOk } from '../../common/ApiResponse';
 import User from '../../Models/User';
-import TransactionHistory from '../../Models/TransactionHistory';
+import TransactionHistory, { PaymentMethod } from '../../Models/TransactionHistory';
 import News from '../../Models/News';
 import { INews } from 'Home/News';
 import { queryStringSerialize } from '../../helpers/QuerySeriable';
@@ -49,7 +49,7 @@ export const PaymentPayPal = async (req: Request, res: Response) => {
     const createPaymentJson = {
         intent: 'sale',
         payer: {
-            payment_method: 'paypal',
+            payment_method: PaymentMethod.PayPal,
         },
         redirect_urls: {
             return_url: `http://localhost:3000/api/payment/success?${queryParams}`,
@@ -136,7 +136,7 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
                     address,
                     provinceName: provinceName ?? '',
                     districtName: districtName ?? '',
-                    wardName: wardName ?? ''
+                    wardName: wardName ?? '',
                 },
                 note: note,
             });
@@ -145,7 +145,9 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
                 status: OrderStatus.Waiting,
                 updatedBy: userId,
             });
+            history.setId(Math.random());
             await history.save();
+            order.setId(Math.random());
             await order.save();
         }
     });

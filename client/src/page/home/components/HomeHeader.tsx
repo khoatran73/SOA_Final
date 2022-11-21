@@ -1,5 +1,5 @@
 import { CaretDownFilled, UserOutlined } from '@ant-design/icons';
-import { faLock, faSignOut, faUserAlt } from '@fortawesome/free-solid-svg-icons';
+import { faCoins, faLock, faSignOut, faUserAlt } from '@fortawesome/free-solid-svg-icons';
 import { Avatar, Button, Dropdown, Image, Menu } from 'antd';
 import Search from 'antd/lib/input/Search';
 import clsx from 'clsx';
@@ -23,7 +23,7 @@ interface State {
     searchKey: string | undefined;
 }
 
-type Action = 'adminPage' | 'logout' | 'profile';
+type Action = 'adminPage' | 'logout' | 'profile' | 'statistic';
 
 const HomeHeader: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -38,17 +38,6 @@ const HomeHeader: React.FC = () => {
 
     const onSearch = async (value: string) => {
         console.log('onsearch');
-        // const response = await requestApi<PaginatedList<NewsSearch>>(
-        //     'get',
-        //     NEWS_SEARCH_API,
-        //     {},
-        //     { params: { searchKey: value } },
-        // );
-        // if (response?.data?.success) {
-        //     setState({
-        //         newsResult: response?.data?.result?.items || [],
-        //     });
-        // }
     };
 
     useEffect(() => {
@@ -109,6 +98,9 @@ const HomeHeader: React.FC = () => {
             case 'adminPage':
                 navigate('/admin/home');
                 return;
+            case 'statistic':
+                navigate('/dashboard/statistic');
+                return;
             case 'logout':
                 dispatch(logoutAsync(() => null));
                 return;
@@ -131,6 +123,12 @@ const HomeHeader: React.FC = () => {
                     </div>
                 </Menu.Item>
             )}
+            <Menu.Item key="statistic" onClick={() => onActionClick('statistic')}>
+                <div className="flex items-center justify-start">
+                    <BaseIcon icon={faCoins} />
+                    <span className="ml-3">Thống kê</span>
+                </div>
+            </Menu.Item>
             <Menu.Item key="logout" onClick={() => onActionClick('logout')}>
                 <div className="flex items-center justify-start">
                     <BaseIcon icon={faSignOut} />

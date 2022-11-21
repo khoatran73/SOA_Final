@@ -18,6 +18,7 @@ const LayoutPage: React.FC = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const { menus } = useSelector((state: RootState) => state.layout);
+    const { authUser } = useSelector((state: RootState) => state.authData);
 
     useEffect(() => {
         dispatch(fetchAuthLayoutAsync());
@@ -36,7 +37,7 @@ const LayoutPage: React.FC = () => {
             };
         }) || [];
 
-    // return <Forbidden />;
+    if (!authUser?.user?.isSupper) return <Forbidden />;
     return (
         <div className="flex w-screen h-screen text-[13px]">
             <Sider

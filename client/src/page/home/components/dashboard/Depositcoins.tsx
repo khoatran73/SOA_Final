@@ -94,7 +94,7 @@ const DepositCoins: React.FC = () => {
                                         <img src={coinIcon} alt=" " width="35" height="35" />
                                     </div>
                                     <Link
-                                        to=""
+                                        to={'/dashboard/history'}
                                         className="flex-1 text-right text-[#4a90e2] hover:text-[#4a90e2] hover:underline"
                                     >
                                         Xem lịch sử giao dịch

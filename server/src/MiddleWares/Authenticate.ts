@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+
 const Authenticate = (req: Request, res: Response, next: NextFunction) => {
-    if (req.session.user) {
+    if (!!req.session.user) {
         next();
     } else {
         res.status(403).json({ success: false, message: 'UnAuthorized' });

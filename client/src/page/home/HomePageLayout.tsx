@@ -35,7 +35,7 @@ const HomePageLayout: React.FC = () => {
                     className={clsx(
                         'm-auto w-full h-[30px] text-white bg-[#5a9e3f] uppercase',
                         'text-[13px] font-bold flex items-center justify-center rounded',
-                        'hover:text-white mt-2',
+                        'hover:text-white mt-2 min-w-[90px]',
                     )}
                 >
                     Nạp Ngay

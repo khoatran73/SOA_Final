@@ -1,3 +1,4 @@
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { Image } from 'antd';
 import clsx from 'clsx';
 import _ from 'lodash';
@@ -48,6 +49,7 @@ const CategoryListView: React.FC = () => {
             />,
             'Cập nhật danh mục',
             '50%',
+            faEdit
         );
     };
 

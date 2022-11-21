@@ -26,6 +26,7 @@ const addCategory = async (req: Request<any, any, ICategory>, res: Response) => 
         ...req.body,
     });
     category.setSlug(category.name);
+    category.setId(Math.random());
     category.save();
 
     return res.json(ResponseOk());

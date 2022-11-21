@@ -13,6 +13,9 @@ import { TRANSACTION_HISTORY_API } from '~/configs';
 import { requestApi } from '~/lib/axios';
 import moment from 'moment';
 import { TransactionHistoryType } from '~/types/home/history';
+import DateTimeUtil from '~/util/DateTimeUtil';
+
+
 const ItemHistory = (props: TransactionHistoryType) => {
     return (
         <div className="w-full h-[auto] mx-auto py-2 px-3 border border-[#ebeaea] mt-3">
@@ -20,7 +23,7 @@ const ItemHistory = (props: TransactionHistoryType) => {
                 <span className="text-lg text-[#f35c5c]">
                     {props.title}
                 </span>
-                <span className="text-xs text">{moment(props.createdAt).format('dd/MM/YYYY HH:mm:ss')}</span>
+                <span className="text-xs text">{moment(props.createdAt).format(DateTimeUtil.DmyHmsFormat)}</span>
             </div>
             <div>
                 <span className="text-md">
@@ -104,7 +107,7 @@ const TransactionHistory = () => {
                             <Link
                                 to="/dashboard/balances"
                                 className={clsx(
-                                    'm-auto w-full h-[30px] text-white bg-[#5a9e3f] uppercase',
+                                    'm-auto w-full h-[30px] text-white bg-[#5a9e3f] uppercase hover:text-white',
                                     'text-[13px] font-bold flex items-center justify-center rounded',
                                 )}
                             >

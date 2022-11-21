@@ -8,6 +8,7 @@ import TransactionHistoryController from './Common/TransactionHistoryController'
 import ChatController from './Home/ChatController';
 import NewsController from './Home/NewsController';
 import OrderController from './Home/OrderController';
+import StatisticController from './Home/StatisticController';
 import CategoryController from './Product/CategoryController';
 import ProductTypeController from './Product/ProductTypeController';
 import MenuController from './System/MenuController';
@@ -25,8 +26,9 @@ const routes = (app: Express) => {
     app.use('/api/product/type', Authenticate, ProductTypeController);
     // home
     app.use('/api/home/news', Authenticate, NewsController);
-    app.use('/api/home/order', Authenticate, OrderController);
     app.use('/api/chat', Authenticate, ChatController);
+    app.use('/api/home/order', Authenticate, OrderController);
+    app.use('/api/home/statistic', Authenticate, StatisticController);
 };
 
 export default routes;

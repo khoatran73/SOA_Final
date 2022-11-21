@@ -64,6 +64,7 @@ const addUser = async (req: Request, res: Response) => {
             emailAddress: emailAddress,
         });
         user.setPassword(password);
+        user.setId(Math.random());
         user.save();
         const paramSendMail: SendMailProps = {
             emailTo: user.emailAddress,
@@ -98,6 +99,7 @@ const registerUser = async (req: Request, res: Response) => {
         });
 
         user.setPassword(password);
+        user.setId(Math.random());
         user.save();
         return res.json(ResponseOk('Đăng kí tài khoản thành công !'));
     } catch (err) {

@@ -44,6 +44,7 @@ const RegisterView = React.lazy(() => import('~/component/Layout/RegisterView'))
 const ChatView = React.lazy(() => import('~/page/home/components/chat/ChatView'));
 const DepositCoins = React.lazy(() => import('~/page/home/components/dashboard/Depositcoins'));
 const TransactionHistory = React.lazy(() => import('~/page/home/components/dashboard/TransactionHistory'));
+const StatisticView = React.lazy(() => import('~/page/home/components/dashboard/statistic/StatisticView'));
 
 const routeList = [
     {
@@ -108,6 +109,10 @@ const routeList = [
                     {
                         path: 'history',
                         element: <TransactionHistory />,
+                    },
+                    {
+                        path: 'statistic',
+                        element: <StatisticView />,
                     },
                 ],
             },

@@ -31,8 +31,8 @@ router.post('/create', NewsService.addNews);
  *     - News
  *     parameters:
  *      - name: id
- *        in: query
- *        description: The id of user
+ *        in: path
+ *        description: The id of news
  *        required: true
  *     responses:
  *      200:
@@ -75,7 +75,7 @@ router.get('/category/:slug', NewsService.showNewsByCategorySlug);
  *        required: true
  *      - name: newsId
  *        in: query
- *        description: The id of user
+ *        description: The id of news
  *        required: true
  *     responses:
  *      200:
@@ -95,11 +95,11 @@ router.get('/other', NewsService.showNewsOthers);
  *     parameters:
  *      - name: newsId
  *        in: query
- *        description: The id of user
+ *        description: The id of news
  *        required: true
  *      - name: categoryId
  *        in: query
- *        description: The id of user
+ *        description: The id of category
  *        required: true
  *     responses:
  *      200:

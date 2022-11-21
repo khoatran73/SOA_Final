@@ -12,6 +12,7 @@ import { ProductType } from '~/types/product/ProductType';
 import { PRODUCT_TYPE_DELETE_API, PRODUCT_TYPE_INDEX_API } from './api/api';
 import ProductTypeForm from './components/ProductTypeForm';
 import { GetDataPath } from '@ag-grid-community/core';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
 
 const ProductTypeListView: React.FC = () => {
     const gridRef = useRef<BaseGridRef>(null);
@@ -31,7 +32,7 @@ const ProductTypeListView: React.FC = () => {
                 }}
                 onClose={modalRef.current?.onClose}
             />,
-            'Tạo mới danh mục',
+            'Tạo mới loại sản phẩm',
             '50%',
         );
     };
@@ -46,8 +47,9 @@ const ProductTypeListView: React.FC = () => {
                 }}
                 onClose={modalRef.current?.onClose}
             />,
-            'Cập nhật danh mục',
+            'Cập nhật loại sản phẩm',
             '50%',
+            faEdit,
         );
     };
 
