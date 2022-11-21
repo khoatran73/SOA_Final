@@ -10,6 +10,9 @@ export enum OrderStatus {
 
 export const OrderStatusToString = {
     [OrderStatus.Waiting]: 'Chờ xác nhận',
+    [OrderStatus.Confirm]: 'Chốt đơn',
+    [OrderStatus.Shipping]: 'Đang giao hàng',
+    [OrderStatus.Done]: 'Hoàn thành',
 };
 
 export enum OrderAction {
@@ -32,4 +35,5 @@ export interface Order {
     status: OrderStatus;
     updatedBy: string;
     createdAt: Date;
+    isNewest: boolean;
 }

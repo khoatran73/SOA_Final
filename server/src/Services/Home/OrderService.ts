@@ -27,7 +27,7 @@ const getOrders = async (req: Request<any, any, any, { action: OrderAction }>, r
 
     const historyFieldName = action === OrderAction.Buy ? 'userTransferId' : 'userReceiveId';
 
-    const orders = await Order.find();
+    const orders = await Order.find({ isNewest: true });
     const histories = await TransactionHistory.find();
 
     const ordersFiltered = orders.filter(order => {
@@ -42,7 +42,7 @@ const getOrders = async (req: Request<any, any, any, { action: OrderAction }>, r
     const users = await User.find();
     const listNews = await News.find();
 
-    const result = ordersFiltered.map(order => {
+    const ordersResponse = ordersFiltered.map(order => {
         const history = histories.find(x => x.id === order.historyId);
         const receiverUser = users.find(x => x.id === history?.userReceiveId);
         // === doc
@@ -63,7 +63,7 @@ const getOrders = async (req: Request<any, any, any, { action: OrderAction }>, r
         return orderResponse;
     });
 
-    return res.json(ResponseOk<OrderResponse[]>(result));
+    return res.json(ResponseOk<OrderResponse[]>(ordersResponse));
 };
 
 const getOrdersByHistoryId = async (req: Request<{ id: string }>, res: Response) => {
@@ -82,9 +82,33 @@ const getOrdersByHistoryId = async (req: Request<{ id: string }>, res: Response)
     return res.json(ResponseOk<HistoryOrderResponse>(result));
 };
 
+const addOrder = async (req: Request<any, any, Pick<IOrder, 'historyId' | 'status'>, any>, res: Response) => {
+    const { historyId, status } = req.body;
+    const user = req.session.user;
+    const history = await TransactionHistory.findOne({ id: historyId });
+    if (!status) return res.json(ResponseFail('Trạng thái không hợp lệ'));
+    if (!history) return res.json(ResponseFail('Không tìm thấy lịch sử'));
+
+    const order = new Order({
+        historyId: historyId,
+        status: status,
+        isNewest: true,
+        updatedBy: user?.id,
+    });
+
+    const oldOrderNewest = await Order.findOne({ isNewest: true, historyId: historyId });
+    if (!!oldOrderNewest) {
+        await Order.updateOne({ id: oldOrderNewest?.id }, { isNewest: false });
+    }
+
+    order.save();
+    return res.json(ResponseOk());
+};
+
 const OrderService = {
     getOrders,
     getOrdersByHistoryId,
+    addOrder
 };
 
 export default OrderService;

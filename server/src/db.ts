@@ -1,13 +1,14 @@
 import { connect } from 'mongoose';
+import log from './logger';
 
-export const connectDatabase = (dbUrl: string | undefined) => {
+export const connectDatabase = async (dbUrl: string | undefined) => {
     if (!dbUrl) {
-        console.log('connection string was undefined!!');
+        log.error('Connection string was undefined!!');
         return;
     } else {
-        connect(dbUrl)
-            .then(() => console.log('connect to MongoDB successfully'))
-            .catch(err => console.log('connection to MongoDB failed: ', err));
+        await connect(dbUrl)
+            .then(() => log.info('Connect to MongoDB successfully'))
+            .catch(err => log.error('Connect to MongoDB failed: ', err));
     }
 };
 

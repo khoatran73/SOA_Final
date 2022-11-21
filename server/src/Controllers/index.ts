@@ -1,4 +1,4 @@
-import { Application } from 'express';
+import { Express, Request, Response } from 'express';
 import Authenticate from '../MiddleWares/Authenticate';
 import IdentityController from './Auth/IdentityController';
 import CommonController from './Common/CommonController';
@@ -13,7 +13,7 @@ import ProductTypeController from './Product/ProductTypeController';
 import MenuController from './System/MenuController';
 import RoleController from './System/RoleController';
 
-const route = (app: Application) => {
+const routes = (app: Express) => {
     app.use('/api/identity', IdentityController);
     app.use('/api/menu', Authenticate, MenuController);
     app.use('/api/role', Authenticate, RoleController);
@@ -27,7 +27,6 @@ const route = (app: Application) => {
     app.use('/api/home/news', Authenticate, NewsController);
     app.use('/api/home/order', Authenticate, OrderController);
     app.use('/api/chat', Authenticate, ChatController);
-    
 };
 
-export default route;
+export default routes;

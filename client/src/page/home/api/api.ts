@@ -17,3 +17,4 @@ export const NEWS_HIDE_API = HOME_PATH + '/news/hide';
 
 export const GET_ORDERS_API =  HOME_PATH + '/order/get-orders';
 export const GET_ORDERS_BY_HISTORY_API =  HOME_PATH + '/order/get-by-history';
+export const CREATE_ORDER_API =  HOME_PATH + '/order/create';

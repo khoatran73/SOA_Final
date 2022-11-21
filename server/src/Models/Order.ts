@@ -8,6 +8,7 @@ export interface IOrder {
     historyId: string;
     status: OrderStatus;
     updatedBy: string;
+    isNewest: boolean;
 }
 type OrderModel = Model<IOrder, {}, {}>;
 
@@ -17,6 +18,7 @@ const schema = new Schema<IOrder>(
         historyId: { type: String, required: true },
         status: { type: String, required: true },
         updatedBy: { type: String, required: true },
+        isNewest: { type: Boolean, default: true },
     },
     { timestamps: true },
 );

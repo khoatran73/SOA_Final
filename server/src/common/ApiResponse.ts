@@ -1,5 +1,25 @@
 type StatusCode = '200' | '400' | '403' | '404' | '500';
 
+
+/**
+ * @openapi
+ * components:
+ *  types:
+ *    ApiResponse:
+ *      type: object
+ *      properties:
+ *        success:
+ *          type: boolean
+ *        message:
+ *          type: string
+ *          default: string
+ *        statusCode:
+ *          type: string
+ *          default: string
+*        result:
+ *          type: object
+ */
+
 export interface ApiResponse<T = any> {
     success?: boolean;
     message?: string;
