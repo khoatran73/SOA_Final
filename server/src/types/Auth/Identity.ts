@@ -33,8 +33,44 @@ export interface AuthUser {
  *          default: string
  *        deliveryAddress:
  *          type: array
- *          default: []
+ *          items: 
+ *            $ref: '#/components/types/DeliveryAddress'
+ *    LoginParams:
+ *      type: object
+ *      properties:
+ *        username:
+ *          type: string
+ *          default: string
+ *        password:
+ *          type: string
+ *          default: string
+ *    DeliveryAddress:
+ *      type: object
+ *      properties:
+ *        name:
+ *          type: string
+ *          default: string
+ *        phone:
+ *          type: string
+ *          default: string
+ *        province:
+ *          type: string
+ *          default: string
+ *        district:
+ *          type: string
+ *          default: string
+ *        ward:
+ *          type: string
+ *          default: string
+ *        address:
+ *          type: string
+ *          default: string
+ *        isDefault:
+ *          type: boolean
+ *          default: true
  */
+
+
 export type AppUser = {
     id: string;
     username: string;
@@ -71,20 +107,6 @@ export interface DeliveryAddress {
     isDefault: boolean; // địa chỉ mặc định ?
 }
 
-/**
- * @openapi
- * components:
- *  types:
- *    LoginParams:
- *      type: object
- *      properties:
- *        username:
- *          type: string
- *          default: string
- *        password:
- *          type: string
- *          default: string
- */
 export interface LoginParams {
     username: string;
     password: string;
