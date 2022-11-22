@@ -8,21 +8,24 @@ import { useSocket } from '~/contexts/Socket/Context';
 import { requestApi } from '~/lib/axios';
 import { chatSlice, fetchMessage } from '~/store/chatSlice';
 import './chatbox.scss';
+import defaultAvatar from '~/assets/default-avatar.png';
+import { Avatar } from 'antd';
+import { BaseIcon } from '~/component/Icon/BaseIcon';
+import { faClose } from '@fortawesome/free-solid-svg-icons';
+import clsx from 'clsx';
 
-const MessageSend = (message: string,username: string): JSX.Element => {
+const MessageSend = (message: string, username: string): JSX.Element => {
     return (
         <div className="chat-message">
             <div className="flex items-end justify-end">
-                <div className="flex flex-col space-y-2 text-xs max-w-[250px] mx-2 order-1 items-end">
+                <div className="flex flex-col space-y-2 text-xs max-w-[250px] mx-2  items-end">
                     <div>
                         <span className="px-4 py-2 rounded-lg inline-block rounded-br-none bg-blue-600 text-white ">
                             {message}
                         </span>
                     </div>
                 </div>
-                <div className="w-6 h-6 order-2 bg-blue-700 rounded-full text-white font-semibold flex items-center justify-center ml-1">
-                    {username.charAt(0).toUpperCase()}
-                </div>
+                <Avatar size={24} style={{ fontSize: 20 }} src={defaultAvatar} />
             </div>
         </div>
     );
@@ -38,9 +41,7 @@ const MessageReceive = (message: string, username: string): JSX.Element => {
                         </span>
                     </div>
                 </div>
-                <div className="w-6 h-6 order-1 bg-blue-700 rounded-full text-white font-semibold flex items-center justify-center ml-1">
-                    {username.charAt(0).toUpperCase()}
-                </div>
+                <Avatar size={24} style={{ fontSize: 20 }} src={defaultAvatar} />
             </div>
         </div>
     );
@@ -52,13 +53,13 @@ const ChatBox: React.FC = (props: any) => {
     const { setShowChat, setNewMessage } = chatSlice.actions;
     const dispatch = useDispatch();
     const { socket } = useSocket();
-    const [userChat, setUserChat] = React.useState<{username?:string,fullname?:string}>({});
+    const [userChat, setUserChat] = React.useState<{ username?: string; fullname?: string }>({});
 
     React.useEffect(() => {
         requestApi('get', API_GET_USER, { id: userChatId }).then(res => {
             if (res.data.result) {
                 const user = _.get(res.data.result, 'user.username', '');
-                setUserChat({username:user,fullname:_.get(res.data.result, 'user.fullName', '')});
+                setUserChat({ username: user, fullname: _.get(res.data.result, 'user.fullName', '') });
             }
         });
         dispatch(fetchMessage(_.get(data, 'users')));
@@ -82,48 +83,33 @@ const ChatBox: React.FC = (props: any) => {
         }
     };
     return (
-        <div className="chat_box-container fixed right-2 bottom-2">
-            <div className="flex-1 justify-between flex flex-col w-[400px] h-[550px]">
-                <div className="chat_box-header flex sm:items-center justify-between py-3 border-b-2 ">
-                    <div className="relative flex items-center space-x-4">
+        <div className="fixed right-3 bottom-2">
+            <div className="flex-1 justify-between flex flex-col w-[300px] h-[450px] rounded-2xl overflow-hidden bg-white shadow">
+                <div className="flex w-full items-center justify-between bg-[#ffba00] bg-opacity-60 py-1.5 px-3">
+                    <div className="relative flex items-center">
                         <div className="relative">
-                            <span className="absolute text-green-500 right-0 bottom-0">
-                                <svg width="20" height="20">
-                                    <circle cx="8" cy="8" r="8" fill="currentColor" />
-                                </svg>
-                            </span>
-                            <div className="h-12 w-12 p-2 bg-blue-700 rounded-full text-white font-semibold flex items-center justify-center ml-1">
-                                {userChat.username?.charAt(0).toUpperCase()}
-                            </div>
+                            <Avatar size={40} style={{ fontSize: 20 }} src={defaultAvatar} />
                         </div>
-                        <div className="flex flex-col leading-tight">
-                            <div className="text-[19px] mt-1 flex items-center">
-                                 <span className="text-gray-700 mr-3">{userChat.fullname}</span>
+                        <div className="flex flex-col ml-2">
+                            <div className="text-[16px] font-bold flex items-center">
+                                <span className="text-gray-700 ">{userChat.fullname}</span>
                             </div>
-                            <span className="text-sm text-gray-600">Hoạt động vài phút trước</span>
+                            <div className="flex items-center">
+                                <span
+                                    className={clsx('w-2 h-2 rounded-full bg-[#9b9b9b]')}
+                                    style={{
+                                        background: '#589f39',
+                                    }}
+                                />
+                                <span className="text-[11px] text-[#9b9b9b] ml-1.5">Đang hoạt động</span>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <button
-                            type="button"
-                            className="mr-1 inline-flex items-center justify-center rounded-lg border h-10 w-10 transition duration-500 ease-in-out text-gray-500 hover:bg-gray-300 focus:outline-none"
-                            onClick={onCloseClick}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                className="h-6 w-6"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
+                    <div
+                        className="flex items-center justify-center w-8 h-8 duration-150 ease-in-out rounded-full cursor-pointer hover:bg-[white] hover:bg-opacity-30 "
+                        onClick={onCloseClick}
+                    >
+                        <BaseIcon icon={faClose} size={'lg'} />
                     </div>
                 </div>
                 <div
@@ -134,36 +120,24 @@ const ChatBox: React.FC = (props: any) => {
                         message.length > 0 &&
                         message.map((item: any, index: number) => {
                             return item.userId === authUser?.user.id
-                                ? MessageSend(item.message,authUser?.user?.username ?? '')
-                                : MessageReceive(item.message,userChat.username ?? '');
+                                ? MessageSend(item.message, authUser?.user?.username ?? '')
+                                : MessageReceive(item.message, userChat.username ?? '');
                         })}
                 </div>
                 <div className="border-t-2 border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
                     <div className="relative flex">
                         <input
                             ref={inputRef}
+                            className="relative top-[-9px] w-full bg-[#3a3b3c] bg-opacity-40 placeholder:text-[#e4e6eb] py-2 px-4 rounded-[40px] text-[#e4e6eb] outline-none"
                             type="text"
                             name="message"
-                            placeholder="Write your message!"
-                            className="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-12 bg-gray-200 rounded-md py-3"
+                            onKeyPress={event => {
+                                if (event.key === 'Enter') {
+                                    sendMessage();
+                                }
+                            }}
+                            placeholder="Aa ..."
                         />
-                        <div className="absolute right-0 items-center inset-y-0 hidden sm:flex">
-                            <button
-                                type="button"
-                                className="inline-flex items-center justify-center rounded-lg px-4 py-3 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none"
-                                onClick={sendMessage}
-                            >
-                                <span className="font-bold">Send</span>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                    className="h-5 w-5 ml-2 transform rotate-90"
-                                >
-                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                                </svg>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>

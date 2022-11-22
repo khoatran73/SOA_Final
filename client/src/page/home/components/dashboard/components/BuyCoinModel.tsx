@@ -25,7 +25,7 @@ export type ItemPayment = {
 const BuyCoinModel: React.FC<Props> = props => {
     const onPaymentBuyCoin = async () => {
         const action = Action.Coin;
-        const url = 'dashboard/balances?reload=load';
+        const url = '/dashboard/balances?reload=load';
         const price = props.money / 24785;
         const items: ItemPayment[] = [
             {

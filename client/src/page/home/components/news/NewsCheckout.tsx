@@ -1,7 +1,7 @@
 import { Avatar, Empty } from 'antd';
 import React, { useMemo, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { RootState } from '~/AppStore';
 import buyProtectionIcon from '~/assets/news/buy-protection.svg';
@@ -41,6 +41,8 @@ import { ItemPayment } from '../dashboard/components/BuyCoinModel';
 import { VND_CHAR } from './../../../../configs/index';
 import { DeliveryAddress } from './../../../../types/ums/AuthUser';
 import DeliveryAddressView from './DeliveryAddressView';
+import { fetchAuthDataAsync } from '~/store/authSlice';
+import Overlay, { OverlayRef } from '~/component/Elements/loading/Overlay';
 
 const getNewsDetail = (id: string | undefined) => {
     if (!id) return;
@@ -50,6 +52,8 @@ const getNewsDetail = (id: string | undefined) => {
 const NewsCheckout: React.FC = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const overLayRef = useRef<OverlayRef>(null);
     const { data: requestNews, isLoading } = useQuery([`GET_NEWS_DETAIL_${id}`], () => getNewsDetail(id));
     const [methodPayment, setMethodPayment] = useState<PaymentMethod>(PaymentMethod.Coin);
     const news = requestNews?.data?.result;
@@ -114,10 +118,10 @@ const NewsCheckout: React.FC = () => {
                 action: action,
                 note: note,
             };
+            overLayRef.current?.open();
             const res = await requestApi('post', PAYPAL_API_PATH, { ...params });
             if (res.data.success) {
-                NotifyUtil.success(NotificationConstant.TITLE, 'Thanh toán thành công');
-                navigate(urlReturn);
+                window.location.href = res.data.result; 
                 return;
             }
 
@@ -134,7 +138,8 @@ const NewsCheckout: React.FC = () => {
             requestApi('post', PAYMENT_BY_COIN_API_PATH, data).then(res => {
                 if (res.data.success) {
                     NotifyUtil.success(NotificationConstant.TITLE, 'Thanh toán thành công');
-                    navigate(urlReturn);
+                    dispatch(fetchAuthDataAsync());
+                    navigate('/order/my-orders');
                     return;
                 }
 
@@ -169,7 +174,7 @@ const NewsCheckout: React.FC = () => {
 
     return (
         <BoxContainer className="bg-transparent p-0">
-            <div className="w-[65%]">
+            <div className="w-[65%] relative">
                 <div className="p-3 bg-white">
                     <span className="font-bold text-lg">Xác nhận đơn hàng</span>
                 </div>
@@ -377,6 +382,7 @@ const NewsCheckout: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                <Overlay ref={overLayRef} />
             </div>
             <div className="w-[35%]" />
             <ModalBase ref={modalRef} className="detail-modal" />

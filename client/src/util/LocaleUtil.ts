@@ -30,6 +30,7 @@ export default class LocaleUtil {
 
     static numberToText = (number: string | number) => {
         const value = Number(number);
+        if (!Number.isInteger(value)) return '';
         const prefix = value < 0 ? 'Âm ' : '';
         const abs = Math.abs(value);
         return capitalize(prefix + readNumber(abs));

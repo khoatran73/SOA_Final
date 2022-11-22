@@ -75,9 +75,9 @@ const UserInfo: React.FC = () => {
                             src={!user?.avatar ? defaultAvatar : user?.avatar}
                             alt=""
                         />
-                        {isOwn && (
-                            <div className="ml-3">
-                                <div className="text-lg mb-3">{user?.fullName}</div>
+                        <div className="ml-3">
+                            <div className="text-lg mb-3">{user?.fullName}</div>
+                            {isOwn && (
                                 <div
                                     className="rounded-[20px] border text-md py-1 px-3 cursor-pointer"
                                     onClick={() =>
@@ -101,8 +101,8 @@ const UserInfo: React.FC = () => {
                                 >
                                     Chỉnh sửa trang cá nhân
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                     <div className="w-2/3">
                         <div className="flex items-center text-[#9b9b9b]">

@@ -1,7 +1,9 @@
 import { Image } from 'antd';
 import clsx from 'clsx';
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import { RootState, useAppState } from '~/AppStore';
 import bumpArrowIcon from '~/assets/news/bump-arrow.svg';
 import bumpFlashIcon from '~/assets/news/bump-flash.svg';
 import bumpImageIcon from '~/assets/news/bump-image.svg';
@@ -11,6 +13,7 @@ import { VND_CHAR } from '~/configs';
 import NotificationConstant from '~/configs/contants';
 import { useNewsDetail } from '~/hook/useNewsDetail';
 import { requestApi } from '~/lib/axios';
+import { fetchAuthDataAsync } from '~/store/authSlice';
 import LocaleUtil from '~/util/LocaleUtil';
 import NotifyUtil from '~/util/NotifyUtil';
 import BoxContainer from '../../layout/BoxContainer';
@@ -58,11 +61,19 @@ const BumpPriorityPerSevenDayDiscount = calculateDiscountPrice(
 const BumpImagePerSevenDay = 10000;
 
 const NewsPush: React.FC = () => {
+    const { authUser } = useSelector((state: RootState) => state.authData);
+    const dispatch = useDispatch();
     const { id } = useParams(); //news id
     const { data: responseNews, isLoading } = useNewsDetail(id);
     const news = responseNews?.data?.result;
-    const [bumpPriority, setBumpPriority] = useState<number | undefined>();
-    const [bumpImage, setBumpImage] = useState<number | undefined>();
+    const [bumpPriority, setBumpPriority] = useState<{
+        day: number;
+        price: number;
+    } | null>();
+    const [bumpImage, setBumpImage] = useState<{
+        day: number;
+        price: number;
+    } | null>();
     const navigate = useNavigate();
 
     const discountClassName =
@@ -72,27 +83,47 @@ const NewsPush: React.FC = () => {
         'md:min-h-[88px] md:px-[15px] md:py-3 hover:border-green-4 hover:bg-green-5 relative',
     );
 
-    const handleBumpPriority = (day: number) => {
+    const handleBumpPriority = (day: number, price: number) => {
         // click 2 cái => remove
-        if (bumpPriority && bumpPriority === day) {
-            setBumpPriority(undefined);
+        if (bumpPriority && bumpPriority.day === day) {
+            setBumpPriority(null);
             return;
         }
 
-        setBumpPriority(day);
+        setBumpPriority({
+            day: day,
+            price: price,
+        });
         return;
     };
 
-    const handleBumpImage = (day: number = SevenNumber) => {
+    const handleBumpImage = (day: number = SevenNumber, price: number = BumpImagePerSevenDay) => {
         if (bumpImage) {
-            setBumpImage(undefined);
+            setBumpImage(null);
             return;
         }
 
-        setBumpImage(day);
+        setBumpImage({
+            day,
+            price,
+        });
     };
 
     const handlePayment = async () => {
+        const coinRemain =
+            Number(authUser?.user?.amount ?? 0) - Number(bumpImage?.price ?? 0) - Number(bumpPriority?.price ?? 0);
+        if (coinRemain < 0) {
+            NotifyUtil.error(NotificationConstant.TITLE, 'Bạn không đủ coin để thực hiện hành động này!');
+            return;
+        }
+        const confirm = await NotifyUtil.confirmDialog(
+            NotificationConstant.TITLE,
+            `Bạn sẽ còn ${LocaleUtil.toLocaleString(coinRemain)} coin sau khi thực hiện hành động này`,
+        );
+        if (!confirm.isConfirmed) {
+            return;
+        }
+
         if (!bumpImage && !bumpPriority) return;
 
         const body = {
@@ -103,7 +134,8 @@ const NewsPush: React.FC = () => {
         const response = await requestApi('put', NEWS_UPDATE_BUMP_API + '/' + id, body);
         if (response.data.success) {
             NotifyUtil.success(NotificationConstant.TITLE, NotificationConstant.DESCRIPTION_UPDATE_SUCCESS);
-            navigate(-1)
+            dispatch(fetchAuthDataAsync());
+            navigate(-1);
             return;
         }
 
@@ -144,11 +176,11 @@ const NewsPush: React.FC = () => {
                             <div
                                 className={clsx(
                                     smallCardClassName,
-                                    bumpPriority === SevenNumber
+                                    bumpPriority?.day === SevenNumber
                                         ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
                                         : '',
                                 )}
-                                onClick={() => handleBumpPriority(SevenNumber)}
+                                onClick={() => handleBumpPriority(SevenNumber, BumpPriorityPerSevenDayDiscount)}
                             >
                                 <div className="flex items-center justify-between">
                                     <div>{SevenNumber} ngày</div>
@@ -169,7 +201,7 @@ const NewsPush: React.FC = () => {
                                         <span className={discountClassName}>-{SevenDayDiscount * 100}%</span>
                                     </div>
                                 </div>
-                                {bumpPriority === SevenNumber && (
+                                {bumpPriority?.day === SevenNumber && (
                                     <div className="absolute -top-2 -right-2">
                                         <img src={tickIcon} width={20} height={20} alt="" />
                                     </div>
@@ -178,11 +210,11 @@ const NewsPush: React.FC = () => {
                             <div
                                 className={clsx(
                                     smallCardClassName,
-                                    bumpPriority === ThreeNumber
+                                    bumpPriority?.day === ThreeNumber
                                         ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
                                         : '',
                                 )}
-                                onClick={() => handleBumpPriority(ThreeNumber)}
+                                onClick={() => handleBumpPriority(ThreeNumber, BumpPriorityPerThreeDayDiscount)}
                             >
                                 <div className="flex items-center justify-between">
                                     <div>{ThreeNumber} ngày</div>
@@ -203,7 +235,7 @@ const NewsPush: React.FC = () => {
                                         <span className={discountClassName}>-{ThreeDaysDiscount * 100}%</span>
                                     </div>
                                 </div>
-                                {bumpPriority === ThreeNumber && (
+                                {bumpPriority?.day === ThreeNumber && (
                                     <div className="absolute -top-2 -right-2">
                                         <img src={tickIcon} width={20} height={20} alt="" />
                                     </div>
@@ -212,11 +244,11 @@ const NewsPush: React.FC = () => {
                             <div
                                 className={clsx(
                                     smallCardClassName,
-                                    bumpPriority === 1
+                                    bumpPriority?.day === 1
                                         ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
                                         : '',
                                 )}
-                                onClick={() => handleBumpPriority(1)}
+                                onClick={() => handleBumpPriority(1, BumpPriorityDefaultPerDay)}
                             >
                                 <div className="flex items-center justify-between">
                                     <div>1 ngày</div>
@@ -231,7 +263,7 @@ const NewsPush: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                {bumpPriority === 1 && (
+                                {bumpPriority?.day === 1 && (
                                     <div className="absolute -top-2 -right-2">
                                         <img src={tickIcon} width={20} height={20} alt="" />
                                     </div>
@@ -248,7 +280,7 @@ const NewsPush: React.FC = () => {
                                             ? 'bg-green-5 border-green-2 hover:bg-green-5 hover:border-green-2'
                                             : '',
                                     )}
-                                    onClick={() => handleBumpImage(100000)} //vinh vien
+                                    onClick={() => handleBumpImage(100000, BumpImagePerSevenDay)} //vinh vien
                                 >
                                     <div>
                                         <div className="flex justify-between">

@@ -340,14 +340,9 @@ const NewsDetail: React.FC = () => {
                                                 'flex items-center justify-center rounded-lg py-2.5 px-4 border border-[#589f39] text-[#589f39] mt-5',
                                                 'cursor-pointer hover:bg-gray-100 duration-150',
                                             )}
-                                            // onClick={() => navigate(`/news/edit/${news?.id}`)}
+                                            onClick={() => navigate('/news/checkout/' + id)}
                                         >
-                                            <div
-                                                className="font-bold text-base ml-3 uppercase"
-                                                onClick={() => navigate('/news/checkout/' + id)}
-                                            >
-                                                Mua ngay
-                                            </div>
+                                            <div className="font-bold text-base ml-3 uppercase">Mua ngay</div>
                                         </div>
                                     </>
                                 )}
@@ -407,7 +402,12 @@ const NewsDetail: React.FC = () => {
                         <b className="text-base">
                             Tin rao khác của <span className="uppercase">{news?.fullName}</span>
                         </b>
-                        <div>Xem tat ca</div>
+                        <Link
+                            to={`/user/info/${news.userId}`}
+                            className="text-[#4a90e2] hover:text-[#4a90e2] hover:underline"
+                        >
+                            Xem tất cả
+                        </Link>
                         {/* TODO: Link qua trang cá nhân */}
                     </div>
                     <CarouselLayout slidesToShow={5} slidesToScroll={1}>
@@ -423,7 +423,12 @@ const NewsDetail: React.FC = () => {
                 <BoxContainer className="mt-5">
                     <div className="w-full flex items-center justify-between">
                         <b className="text-base">Tin đăng tương tự</b>
-                        <Link to={`/category?categorySlug=${news?.slug}`}>Xem thêm</Link>
+                        <Link
+                            to={`/category?categorySlug=${news?.slug}`}
+                            className="text-[#4a90e2] hover:text-[#4a90e2] hover:underline"
+                        >
+                            Xem thêm
+                        </Link>
                     </div>
                     <CarouselLayout slidesToShow={5} slidesToScroll={1}>
                         {state.listNewsRelation.map(news => (

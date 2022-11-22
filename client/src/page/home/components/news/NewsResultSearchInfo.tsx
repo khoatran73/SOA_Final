@@ -4,11 +4,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import emptyImage from '~/assets/layout/empty.jpg';
 import cameraImage from '~/assets/news/camera.svg';
+import priorityIcon from '~/assets/news/priority-gray.svg';
 import { VND_CHAR } from '~/configs';
 import { NewsSearch } from '~/types/home/news';
 import DateTimeUtil from '~/util/DateTimeUtil';
 import LocaleUtil from '~/util/LocaleUtil';
 import heartIcon from '~/assets/news/heart.svg';
+import defaultAvatar from '~/assets/default-avatar.png';
 
 interface Props {
     news: NewsSearch;
@@ -25,8 +27,8 @@ const NewsResultSearchInfo: React.FC<Props> = props => {
                 <Image
                     className="rounded object-cover"
                     src={news.imageUrls.length === 0 ? emptyImage : news.imageUrls[0]}
-                    height={128}
-                    width={128}
+                    height={140}
+                    width={140}
                     fallback={emptyImage}
                     preview={false}
                 />
@@ -59,8 +61,17 @@ const NewsResultSearchInfo: React.FC<Props> = props => {
                 </div>
                 <div className="flex items-center text-xs text-[#9b9b9b]">
                     <div className="flex items-center ">
-                        <Avatar size={18} src={news?.avatar} /> <span className="ml-1">{news.fullName}</span>
+                        <Avatar size={18} src={!news?.avatar ? defaultAvatar : news?.avatar} /> <span className="ml-1">{news.fullName}</span>
                     </div>
+                    {DateTimeUtil.checkExpirationDate(news.bumpPriority?.toDate) && (
+                        <>
+                            <span className="mx-1.5">·</span>
+                            <div className="flex items-center justify-center">
+                                <img src={priorityIcon} alt="" />
+                                <span className="ml-1">Tin ưu tiên</span>
+                            </div>
+                        </>
+                    )}
                     <span className="mx-1.5">·</span>
                     <div className="">{DateTimeUtil.fromNow(news?.createdAt)}</div>
                     <span className="mx-1.5">·</span>

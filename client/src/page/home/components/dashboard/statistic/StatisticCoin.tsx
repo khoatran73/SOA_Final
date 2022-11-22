@@ -8,6 +8,7 @@ import { STATISTIC_COIN_API } from '~/page/home/api/api';
 import { ChartType, Series } from '~/types/chart/Chart';
 import { PaymentAction } from '~/types/home/history';
 import { OrderAction } from '~/types/home/order';
+import DateTimeUtil from '~/util/DateTimeUtil';
 import BaseChart from '../../chart/BaseChart';
 
 interface GetDataChartRequest {
@@ -27,8 +28,8 @@ const StatisticCoin: React.FC = () => {
         toDate: string;
         activeButton: number;
     }>({
-        fromDate: moment().subtract(3, 'd').format(),
-        toDate: moment().format(),
+        fromDate: moment().subtract(2, 'd').format(DateTimeUtil.YmdFormat),
+        toDate: moment().format(DateTimeUtil.YmdFormat),
         activeButton: 0,
     });
 
@@ -86,7 +87,7 @@ const StatisticCoin: React.FC = () => {
                     dataLegend: dataLegend,
                     dataDate: dataDate,
                     series: series,
-                    min: min,
+                    min: 0,
                     max: max + max / 100,
                     interval: Math.floor(dataDate.length / 30),
                 }}

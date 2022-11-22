@@ -118,7 +118,7 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
 
             const history = new TransactionHistory({
                 userTransferId: userId,
-                paymentMethod: payment.payer.payment_method,
+                paymentMethod: PaymentMethod.PayPal,
                 action: action,
                 currency: payment.transactions[0].amount.currency,
                 total: payment.transactions[0].amount.total,
@@ -151,6 +151,8 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
             await order.save();
         }
     });
+    
+    if (url?.toString()?.[0] === '/') return res.redirect(`http://localhost:3000${url}`);
     return res.redirect(`http://localhost:3000/${url}`);
 };
 

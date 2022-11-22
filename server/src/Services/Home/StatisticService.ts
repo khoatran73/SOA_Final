@@ -21,7 +21,7 @@ interface GetDataChartRequest {
     paymentAction: PaymentAction;
     fromDate: Date;
     toDate: Date;
-    params: ChartParam
+    params: ChartParam;
 }
 
 const getCoinPayChart = async (req: Request<any, any, any, GetDataChartRequest>, res: Response) => {
@@ -52,12 +52,17 @@ const getCoinPayChart = async (req: Request<any, any, any, GetDataChartRequest>,
     };
 
     while (DateTimeUtil.diffTwoMomentDate(momentFromDate, momentToDate, 'd') <= 0) {
-        const historiesWithSameDay = histories.filter(
-            x => DateTimeUtil.diffTwoMomentDate(momentFromDate, moment(x.createdAt), 'd') === 0,
-        );
+        const historiesWithSameDay = histories.filter(x => {
+            return (
+                DateTimeUtil.diffTwoMomentDate(
+                    momentFromDate,
+                    moment(moment(x.createdAt, DateTimeUtil.YmdFormat).format(DateTimeUtil.YmdFormat)),
+                    'd',
+                ) === 0
+            );
+        });
 
         const sum = historiesWithSameDay.reduce((total, history) => total + Number(history.totalVnd), 0);
-        if (historiesWithSameDay.length > 0) console.log(`${momentFromDate.format(DateTimeUtil.DmyFormat)}: ${sum}`);
 
         // do something
         result.results.push({
@@ -72,7 +77,7 @@ const getCoinPayChart = async (req: Request<any, any, any, GetDataChartRequest>,
 };
 
 const StatisticService = {
-    getCoinPayChart
+    getCoinPayChart,
 };
 
 export default StatisticService;

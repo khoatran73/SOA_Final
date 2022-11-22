@@ -16,7 +16,6 @@ export const getChatListUser = async(req: Request, res: Response) =>{
     const userChats = await User.find();
     const result = chats.map(chat => {
         const user = userChats.find((x) => x.id === chat.users[0])
-        console.log(user);
         return {
             id: user?.id,
             name: user?.fullName,

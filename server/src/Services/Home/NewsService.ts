@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import _ from 'lodash';
 import moment from 'moment';
+import TransactionHistory, { PaymentAction, PaymentMethod } from '../../Models/TransactionHistory';
 import DateTimeUtil from '../..//utils/DateTimeUtil';
 import { ResponseFail, ResponseOk } from '../../common/ApiResponse';
 import { PaginatedList, PaginatedListConstructor, PaginatedListQuery } from '../../common/PaginatedList';
@@ -57,7 +58,7 @@ const addNews = async (req: Request<any, any, NewsRequest>, res: Response) => {
         userId: user?.id,
     });
 
-    news.setId(Math.random())
+    news.setId(Math.random());
     news.save();
     await User.updateOne(
         { id: user?.id },
@@ -115,7 +116,7 @@ const showNews = async (req: Request<{ id: string }, any>, res: Response) => {
         ...doc,
         provinceName,
         districtName,
-        wardName, 
+        wardName,
         slug: category?.slug ?? '',
         isOnline: category?.type === SellType.SellOnline,
     } as NewsResponse;
@@ -306,26 +307,44 @@ const showNewsByUserId = async (req: Request<any, any, any, { userId: string }>,
 };
 
 const updateNewsBump = async (
-    req: Request<{ id: string }, any, { bumpImage: number | undefined; bumpPriority: number | undefined }, any>,
+    req: Request<
+        { id: string },
+        any,
+        {
+            bumpImage: {
+                day: number;
+                price: number;
+            } | null;
+            bumpPriority: {
+                day: number;
+                price: number;
+            } | null;
+        },
+        any
+    >,
     res: Response,
 ) => {
     const id = req.params.id;
     const { bumpImage, bumpPriority } = req.body;
-
     const news = await News.findOne({ id: id });
+    const user = req.session.user;
     if (!news) return res.json(ResponseFail('Không tìm thấy tin!'));
+    if (news.userId !== user?.id) return res.json(ResponseFail('Không phải tin của bạn!'));
+    const coinReduce = Number(bumpImage?.price ?? 0) + Number(bumpPriority?.price ?? 0)
+    const coinRemain = Number(user?.amount) - coinReduce;
+    if (coinRemain < 0) return res.json(ResponseFail('Không đủ coin'));
 
     let newBumpPriority: NewsBump | undefined = undefined;
     let newBumpImage: NewsBump | undefined = undefined;
     // truong hop bumpPriority
     if (bumpPriority) {
         const toDateLeft = news.bumpPriority?.toDate; // ngày kết thúc
-        newBumpPriority = calculateNewBump(toDateLeft, bumpPriority);
+        newBumpPriority = calculateNewBump(toDateLeft, bumpPriority.day);
     }
 
     if (bumpImage) {
         const toDateLeft = news.bumpImage?.toDate; // ngày kết thúc
-        newBumpImage = calculateNewBump(toDateLeft, bumpImage);
+        newBumpImage = calculateNewBump(toDateLeft, bumpImage.day);
     }
 
     await News.updateOne(
@@ -335,6 +354,23 @@ const updateNewsBump = async (
             bumpPriority: !!newBumpPriority ? newBumpPriority : news.bumpPriority,
         },
     );
+
+    await User.updateOne(
+        { id: user?.id },
+        {
+            amount: coinRemain,
+        },
+    );
+
+    const history = new TransactionHistory({
+        userTransferId: user?.id,
+        paymentMethod: PaymentMethod.Coin,
+        action: PaymentAction.NewsPush,
+        newsId: id,
+        totalVnd: coinReduce,
+    });
+    history.setId(Math.random());
+    await history.save(); 
 
     return res.json(ResponseOk());
 };
@@ -377,9 +413,6 @@ const calculateNewBump = (toDateLeft?: string, day?: number) => {
         day: day,
     } as NewsBump;
 };
-
-
-
 
 const calculatePageAndIndex = (allNews: INews[], news: INews) => {
     const listNews = allNews.filter(x => x.categoryId === news.categoryId);

@@ -127,11 +127,11 @@ const NewsView: React.FC = () => {
         const formValues = formRef.current?.getFieldsValue();
         const body = { ...formValues, imageUrls: state.imageUrls } as NewsCreateRequest;
 
-        // const isContainsBadWord = LocaleUtil.isContainsBadWords(body);
-        // if (isContainsBadWord) {
-        //     NotifyUtil.error(NotificationConstant.TITLE, 'Tin của bạn chứa từ ngữ không phù hợp, vui lòng thử lại!');
-        //     return;
-        // }
+        const isContainsBadWord = LocaleUtil.isContainsBadWords(body);
+        if (isContainsBadWord) {
+            NotifyUtil.error(NotificationConstant.TITLE, 'Tin của bạn chứa từ ngữ không phù hợp, vui lòng thử lại!');
+            return;
+        }
 
         if (!isEditView) {
             await onAddNews(body);

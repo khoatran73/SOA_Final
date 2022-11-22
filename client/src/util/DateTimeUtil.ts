@@ -33,6 +33,7 @@ export default class DateTimeUtil {
     static DmyFormat = 'DD/MM/YYYY';
     static DmyHmsFormat = 'DD/MM/YYYY HH:mm:ss';
     static HmsDmyFormat = 'HH:mm:ss DD/MM/YYYY';
+    static YmdFormat = 'YYYY-MM-DD'
     static OneDayByMilliSecond = 86400000;
 
     static diffTwoStringDate = (source: string, target: string, diff: Diff = 'ms') => {
@@ -44,7 +45,7 @@ export default class DateTimeUtil {
 
     static diffTwoMomentDate = (source: Moment, target: Moment, diff: Diff = 'ms') => source.diff(target, diff);
 
-    static checkExpirationDate = (source: string | Moment | undefined, diff: Diff = 'ms') => {
+    static checkExpirationDate = (source: string | Moment | undefined | Date, diff: Diff = 'ms') => {
         const sourceDate = moment(source);
         const now = moment();
 

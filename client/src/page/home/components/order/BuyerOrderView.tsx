@@ -36,7 +36,11 @@ const BuyerOrderView: React.FC<{ activeKey?: string }> = ({ activeKey }) => {
                         } as Record<string, any>)
                     }
                 >
-                    <Tabs.TabPane className="min-h-[200px]" tab={'Chờ xác nhận'} key={OrderStatus.Waiting}>
+                    <Tabs.TabPane
+                        className="min-h-[200px]"
+                        tab={`Chờ xác nhận (${ordersWaiting.length})`}
+                        key={OrderStatus.Waiting}
+                    >
                         {ordersWaiting.length === 0 ? (
                             <Empty description="Không có dữ liệu" />
                         ) : (
@@ -49,7 +53,11 @@ const BuyerOrderView: React.FC<{ activeKey?: string }> = ({ activeKey }) => {
                             })
                         )}
                     </Tabs.TabPane>
-                    <Tabs.TabPane className="min-h-[200px]" tab={'Chốt đơn'} key={OrderStatus.Confirm}>
+                    <Tabs.TabPane
+                        className="min-h-[200px]"
+                        tab={`Chốt đơn (${ordersConfirm.length})`}
+                        key={OrderStatus.Confirm}
+                    >
                         {ordersConfirm.length === 0 ? (
                             <Empty description="Không có dữ liệu" />
                         ) : (
@@ -62,7 +70,11 @@ const BuyerOrderView: React.FC<{ activeKey?: string }> = ({ activeKey }) => {
                             })
                         )}
                     </Tabs.TabPane>
-                    <Tabs.TabPane className="min-h-[200px]" tab={'Đang giao'} key={OrderStatus.Shipping}>
+                    <Tabs.TabPane
+                        className="min-h-[200px]"
+                        tab={`Đang giao (${ordersShipping.length})`}
+                        key={OrderStatus.Shipping}
+                    >
                         {ordersShipping.length === 0 ? (
                             <Empty description="Không có dữ liệu" />
                         ) : (
@@ -75,7 +87,11 @@ const BuyerOrderView: React.FC<{ activeKey?: string }> = ({ activeKey }) => {
                             })
                         )}
                     </Tabs.TabPane>
-                    <Tabs.TabPane className="min-h-[200px]" tab={'Đã giao'} key={OrderStatus.Done}>
+                    <Tabs.TabPane
+                        className="min-h-[200px]"
+                        tab={`Đã giao (${ordersDone.length})`}
+                        key={OrderStatus.Done}
+                    >
                         {ordersDone.length === 0 ? (
                             <Empty description="Không có dữ liệu" />
                         ) : (

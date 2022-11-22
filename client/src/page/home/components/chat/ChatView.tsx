@@ -1,3 +1,4 @@
+import { Avatar } from 'antd';
 import _ from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -6,6 +7,8 @@ import { useSocket } from '~/contexts/Socket/Context';
 import { GET_CHAT_DATA_API, GET_CHAT_LIST_DATA_API } from '~/contexts/Socket/Type';
 import { requestApi } from '~/lib/axios';
 import { chatSlice, fetchMessage, IMessage, setNewMessage } from '~/store/chatSlice';
+import defaultAvatar from '~/assets/default-avatar.png';
+
 const ChatView: React.FC = (props: any) => {
     const { authUser } = useSelector((state: RootState) => state.authData);
     const { data, message } = useSelector((state: RootState) => state.chat);
@@ -66,7 +69,6 @@ const ChatView: React.FC = (props: any) => {
     const onChat = (e: any) => {
         e.preventDefault();
         const input = inputRef.current?.value;
-        console.log(data);
         if (input !== '') {
             socket.emit('join_room', data);
             socket.emit('send_message', { ...data, message: { userId: authUser?.user.id, message: input } });
@@ -75,54 +77,48 @@ const ChatView: React.FC = (props: any) => {
     };
 
     return (
-        <div className="container mx-auto my-auto shadow-lg rounded-lg">
-            <div className="flex flex-row justify-between bg-white">
-                <div className="flex flex-col w-2/5 border-r-2 overflow-y-auto">
+        <div className="mx-auto my-auto shadow-lg max-w-[800px]">
+            <div className="flex flex-row justify-between bg-white rounded-lg">
+                <div className="flex flex-col w-[30%] border-r-2 overflow-y-auto">
                     {listMessageUser.map((item: any, index: number) => {
                         return (
                             <div
                                 key={index}
-                                className={`flex flex-row py-4 px-2 items-center border-b-2 ${
-                                    indexActiveUserChat.index === index ? 'border-l-4 border-blue-400' : ''
+                                className={`flex flex-row py-2 px-2 items-center border-b-2 ${
+                                    indexActiveUserChat.index === index ? 'bg-[#2d88ff1a]' : ''
                                 }`}
                                 onClick={() => onChatUser(item, index)}
                             >
-                                <div className="w-1/4">
-                                    <div className="p-2 mr-2 h-12 w-12 bg-blue-700 rounded-full text-white font-semibold flex items-center justify-center ml-1">
-                                        {item.username?.charAt(0).toUpperCase()}
-                                    </div>
-                                </div>
-                                <div className="w-full">
-                                    <div className="text-lg font-semibold">{item.name}</div>
-                                    <span className="text-gray-500">{item.lastMessage.message}</span>
+                                <Avatar size={48} style={{ fontSize: 20 }} src={defaultAvatar}>
+                                    {item.username?.charAt(0).toUpperCase()}
+                                </Avatar>
+                                <div className="ml-2">
+                                    <div className="text-base font-semibold line-clamp-1">{item.name}</div>
+                                    <span className="text-gray-500 text-md">{item.lastMessage.message}</span>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
-                <div className="w-full px-5 flex flex-col justify-between">
-                    <div className=" h-[500px] overflow-auto flex flex-col mt-5 scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
+                <div className="px-5 w-[70%] flex flex-col justify-between">
+                    <div className=" h-[450px] overflow-auto flex flex-col mt-5 scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
                         {message &&
                             message.length > 0 &&
-                            message.map((item: any, index: number) => {                                
+                            message.map((item: any, index: number) => {
                                 if (item.userId === authUser?.user.id) {
                                     return (
                                         <div key={index} className="flex justify-end mb-4">
-                                            <div className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
+                                            <div className="mr-2 py-1 px-4 bg-[#0084ff] rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white flex items-center">
                                                 {item.message}
                                             </div>
-                                            <div className="p-2 mr-2 h-8 w-8 bg-blue-700 rounded-full text-white font-semibold flex items-center justify-center ml-1">
-                                                {authUser?.user.username.charAt(0).toUpperCase()}
-                                            </div>
+                                            <Avatar size={32} style={{ fontSize: 20 }} src={defaultAvatar} />
                                         </div>
                                     );
                                 } else {
                                     return (
                                         <div key={index} className="flex justify-start mb-4">
-                                            <div className="p-2 mr-2 h-8 w-8 bg-blue-700 rounded-full text-white font-semibold flex items-center justify-center ml-1">
-                                                {indexActiveUserChat.username.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white">
+                                            <Avatar size={32} style={{ fontSize: 20 }} src={defaultAvatar} />
+                                            <div className="ml-2 py-1 px-4 bg-[#3e4042] bg-opacity-50 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white flex items-center">
                                                 {item.message}
                                             </div>
                                         </div>
@@ -134,9 +130,9 @@ const ChatView: React.FC = (props: any) => {
                         <input
                             ref={inputRef}
                             name="message"
-                            className="w-full bg-gray-300 py-5 px-3 rounded-xl outline-none"
+                            className="w-full bg-[#3a3b3c] bg-opacity-50 placeholder:text-[#e4e6eb] py-2 px-4 rounded-[40px] text-[#e4e6eb] outline-none"
                             type="text"
-                            placeholder="type your message here..."
+                            placeholder="Aa..."
                         />
                     </form>
                 </div>

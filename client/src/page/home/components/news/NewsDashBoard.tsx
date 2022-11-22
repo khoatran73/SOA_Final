@@ -82,15 +82,17 @@ const StatisticNews = ({ news }: { news: NewsSearch }) => {
                         Chi tiết
                     </Link>
                 </div>
-                <div className="bg-[#f4f4f4] text-xs flex px-3 py-1.5 rounded mt-2 justify-between items-center">
-                    <div>Đẩy tin ngay để tin lên trang đầu và bán nhanh hơn</div>
-                    <Link
-                        to={`/news/day-tin/${news.id}`}
-                        className="px-6 py-1.5 rounded text-green-2 border border-green-2 bg-green-4 hover:text-green-2"
-                    >
-                        Đẩy tin
-                    </Link>
-                </div>
+                {!DateTimeUtil.checkExpirationDate(news.bumpPriority?.toDate) && (
+                    <div className="bg-[#f4f4f4] text-xs flex px-3 py-1.5 rounded mt-2 justify-between items-center">
+                        <div>Đẩy tin ngay để tin lên trang đầu và bán nhanh hơn</div>
+                        <Link
+                            to={`/news/day-tin/${news.id}`}
+                            className="px-6 py-1.5 rounded text-green-2 border border-green-2 bg-green-4 hover:text-green-2"
+                        >
+                            Đẩy tin
+                        </Link>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -176,7 +178,7 @@ const NewsItem = (props: NewsItemProps) => {
                                     </span>
                                 </div>
                             </div>
-                            {isOnSell(news.status) && (
+                            {isOnSell(news.status) && !DateTimeUtil.checkExpirationDate(news.bumpPriority?.toDate) && (
                                 <div className="relative float-left w-[60%] h-[87%]">
                                     <Link
                                         to={`/category?categorySlug=${news.slug}&page=${news.page}`}
@@ -311,18 +313,18 @@ const NewsDashboard: React.FC = () => {
                             <div className=" float-left" style={{ width: 'calc(100% - 270px)' }}>
                                 <div className="text-lg my-2 mx-auto font-bold mt-18 py-[5px]">
                                     <Link to={''} className="text-[#1e1e1e] hover:text-[#1e1e1e]">
-                                        <span>Anh Khoa Trần</span>
+                                        <span>{authUser?.user?.fullName}</span>
                                     </Link>
                                 </div>
                                 <span>
                                     <Link
-                                        to={''}
+                                        to={`/user/info/${authUser?.user?.id}`}
                                         className="text-sm text-[#2d65a0] hover:text-[#2d65a0] font-medium border border-[#2d65a0] rounded py-2 px-2.5"
                                     >
                                         Trang cá nhân
                                     </Link>
                                 </span>
-                                &nbsp;&nbsp;
+                                {/* &nbsp;&nbsp;
                                 <span>
                                     <Link
                                         to={''}
@@ -330,7 +332,7 @@ const NewsDashboard: React.FC = () => {
                                     >
                                         Liên kết ví bán hàng
                                     </Link>
-                                </span>
+                                </span> */}
                             </div>
                         </div>
                         <div className="w-full text-[13px]">

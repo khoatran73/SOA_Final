@@ -8,6 +8,7 @@ export enum PaymentMethod {
 export enum PaymentAction {
     Coin = 'Coin', // mua coin
     Purchase = 'Purchase', // mua hàng
+    NewsPush = 'NewsPush' // đẩy tin
 }
 
 export type TransactionHistoryType = {

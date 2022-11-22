@@ -24,7 +24,7 @@ const NotFound: React.FC = () => {
                     key="primary"
                     type="primary"
                     onClick={() => {
-                        navigate('/home');
+                        navigate('/');
                     }}
                 >
                     {'Trở về trang chủ'}

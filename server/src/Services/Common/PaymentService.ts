@@ -32,12 +32,12 @@ const payment = async (req: Request, res: Response) => {
         note: note,
     });
     history.setId(Math.random());
+    await history.save(); 
     const order = new Order({
         historyId: history.id,
         status: OrderStatus.Waiting,
         updatedBy: userPaymentId,
     });
-    await history.save(); 
     order.setId(Math.random());
     await order.save();
     return res.json(ResponseOk());
