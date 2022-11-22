@@ -31,12 +31,12 @@ const payment = async (req: Request, res: Response) => {
         address: address,
         note: note,
     });
+    history.setId(Math.random());
     const order = new Order({
         historyId: history.id,
         status: OrderStatus.Waiting,
         updatedBy: userPaymentId,
     });
-    history.setId(Math.random());
     await history.save(); 
     order.setId(Math.random());
     await order.save();

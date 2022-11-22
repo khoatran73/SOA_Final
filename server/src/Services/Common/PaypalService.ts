@@ -140,12 +140,12 @@ export const PaymentPayPalSuccess = async (req: Request, res: Response) => {
                 },
                 note: note,
             });
+            history.setId(Math.random());
             const order = new Order({
                 historyId: history.id,
                 status: OrderStatus.Waiting,
                 updatedBy: userId,
             });
-            history.setId(Math.random());
             await history.save();
             order.setId(Math.random());
             await order.save();
