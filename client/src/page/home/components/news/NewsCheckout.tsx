@@ -116,12 +116,16 @@ const NewsCheckout: React.FC = () => {
             };
             const res = await requestApi('post', PAYPAL_API_PATH, { ...params });
             if (res.data.success) {
-                NotifyUtil.success(NotificationConstant.TITLE, 'Thanh toán thành công');
-                navigate(urlReturn);
-                return;
+                window.location.href = res.data.result;
+                // NotifyUtil.success(NotificationConstant.TITLE, 'Thanh toán thành công');
+                // navigate(urlReturn);
+                // return;
+            }
+            else{
+                NotifyUtil.error(NotificationConstant.TITLE, res.data.message ?? NotificationConstant.SERVER_ERROR);
             }
 
-            NotifyUtil.error(NotificationConstant.TITLE, res.data.message ?? NotificationConstant.SERVER_ERROR);
+            
             return;
         } else if (methodPayment === PaymentMethod.Coin) {
             const data = {
